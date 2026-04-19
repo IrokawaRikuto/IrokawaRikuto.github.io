@@ -92,6 +92,30 @@ img {
 }
 .nav-links a:hover { color: var(--text); opacity: 1; }
 
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.lang-toggle {
+    background: none;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s;
+}
+.lang-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .nav-toggle {
     display: none;
     background: none;

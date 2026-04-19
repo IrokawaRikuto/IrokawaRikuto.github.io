@@ -1,3 +1,26 @@
+// ===== 言語切り替え =====
+let currentLang = 'ja';
+const langBtn = document.getElementById('lang-toggle');
+
+function setLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    langBtn.textContent = lang === 'ja' ? 'EN' : 'JP';
+
+    document.querySelectorAll('[data-ja][data-en]').forEach(el => {
+        el.textContent = el.getAttribute('data-' + lang);
+    });
+
+    // placeholder切り替え
+    document.querySelectorAll('[data-placeholder-ja][data-placeholder-en]').forEach(el => {
+        el.placeholder = el.getAttribute('data-placeholder-' + lang);
+    });
+}
+
+langBtn.addEventListener('click', () => {
+    setLang(currentLang === 'ja' ? 'en' : 'ja');
+});
+
 // ハンバーガーメニュー
 const toggle = document.querySelector('.nav-toggle');
 const navLinks = document.querySelector('.nav-links');

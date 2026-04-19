@@ -18,9 +18,12 @@
             <li><a href="#works">Works</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
-        <button class="nav-toggle" aria-label="メニュー">
-            <span></span><span></span><span></span>
-        </button>
+        <div class="nav-right">
+            <button id="lang-toggle" class="lang-toggle" type="button">EN</button>
+            <button class="nav-toggle" aria-label="メニュー">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
     </div>
 </nav>
 
@@ -28,8 +31,8 @@
 <section id="hero">
     <div class="hero-content">
         <p class="hero-sub">Game Programmer</p>
-        <h1 class="hero-title">色川 陸登</h1>
-        <p class="hero-desc">── キャッチフレーズ準備中 ──</p>
+        <h1 class="hero-title" data-ja="色川 陸登" data-en="Rikuto Irokawa">色川 陸登</h1>
+        <p class="hero-desc" data-ja="── キャッチフレーズ準備中 ──" data-en="── Catchphrase coming soon ──">── キャッチフレーズ準備中 ──</p>
         <div class="hero-btn-wrap"><a href="#works" class="hero-btn">Works</a></div>
     </div>
     <div class="hero-bg-text" aria-hidden="true">PORTFOLIO</div>
@@ -45,12 +48,18 @@
                 <div class="photo-placeholder">PHOTO</div>
             </div>
             <div class="about-text">
-                <h3>色川 陸登<span class="ruby">（いろかわ りくと）</span></h3>
+                <h3><span data-ja="色川 陸登" data-en="Rikuto Irokawa">色川 陸登</span><span class="ruby" data-ja="（いろかわ りくと）" data-en="">（いろかわ りくと）</span></h3>
                 <table class="about-table">
-                    <tr><th>学校</th><td>HAL東京 ゲーム4年制学科 プログラマーコース</td></tr>
-                    <tr><th>志望職種</th><td>ゲームプログラマー</td></tr>
+                    <tr>
+                        <th data-ja="学校" data-en="School">学校</th>
+                        <td data-ja="HAL東京 ゲーム4年制学科 プログラマーコース" data-en="HAL Tokyo - 4-Year Game Development, Programmer Course">HAL東京 ゲーム4年制学科 プログラマーコース</td>
+                    </tr>
+                    <tr>
+                        <th data-ja="志望職種" data-en="Desired Position">志望職種</th>
+                        <td data-ja="ゲームプログラマー" data-en="Game Programmer">ゲームプログラマー</td>
+                    </tr>
                 </table>
-                <p class="about-pr">
+                <p class="about-pr" data-ja="ゲームプログラミングを軸としながら、動画制作・楽曲制作・画像編集・シナリオ制作など、ゲーム制作に関わることなら何にでも興味を持ち、積極的に取り組んでいます。プログラマーとしての技術は同期の学生からも高く評価されています。「つくる」こと全般に対する好奇心が、自分の最大の強みです。" data-en="With game programming as my core skill, I actively explore all aspects of game development — video production, music composition, image editing, and scenario writing. My programming skills are highly regarded among my peers. My greatest strength is an insatiable curiosity for creating things.">
                     ゲームプログラミングを軸としながら、動画制作・楽曲制作・画像編集・シナリオ制作など、
                     ゲーム制作に関わることなら何にでも興味を持ち、積極的に取り組んでいます。
                     プログラマーとしての技術は同期の学生からも高く評価されています。
@@ -132,16 +141,16 @@
                 <div class="work-media">
                     <!-- <img src="images/gamma.png" alt="GAMMA"> -->
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
                     <h3 class="work-title">GAMMA</h3>
                     <div class="work-tags">
                         <span class="tag">Unity</span>
                         <span class="tag">C#</span>
-                        <span class="tag">チーム → 個人リメイク</span>
+                        <span class="tag" data-ja="チーム → 個人リメイク" data-en="Team → Solo Remake">チーム → 個人リメイク</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="2年次HEWでチーム制作したパズルアクションを個人リメイク。影に変身し、物体の影を足場にして進むコンセプト。リメイク版ではプログラムの全面修正・操作感改善・演出強化に注力。" data-en="Solo remake of a puzzle-action game originally team-developed at HEW (2nd year). Transform into a shadow and use object shadows as platforms. The remake focused on full code refactoring, improved controls, and enhanced visual effects.">
                         2年次HEWでチーム制作したパズルアクションを個人リメイク。
                         影に変身し、物体の影を足場にして進むコンセプト。
                         リメイク版ではプログラムの全面修正・操作感改善・演出強化に注力。
@@ -153,17 +162,17 @@
             <article class="work-card" data-work="touhou">
                 <div class="work-media">
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
-                    <h3 class="work-title">東方春三校</h3>
-                    <span class="work-award">受賞作品</span>
+                    <h3 class="work-title" data-ja="東方春三校" data-en="Touhou Harusankou">東方春三校</h3>
+                    <span class="work-award" data-ja="受賞作品" data-en="Award Winner">受賞作品</span>
                     <div class="work-tags">
                         <span class="tag">Unity</span>
                         <span class="tag">C#</span>
-                        <span class="tag">個人制作</span>
+                        <span class="tag" data-ja="個人制作" data-en="Solo">個人制作</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="1年次の3校合同コンテスト（夏）にて制作した縦スクロール弾幕シューティング。東方Project原作を意識した弾幕パターンやゲーム性を再現。同コンテストにて意欲賞を受賞。" data-en="A vertical-scrolling bullet hell shooter created for the 3-School Joint Contest (Summer, 1st year). Recreated bullet patterns and gameplay inspired by the Touhou Project series. Won the Enthusiasm Award at the contest.">
                         1年次の3校合同コンテスト（夏）にて制作した縦スクロール弾幕シューティング。
                         東方Project原作を意識した弾幕パターンやゲーム性を再現。
                         同コンテストにて意欲賞を受賞。
@@ -175,17 +184,17 @@
             <article class="work-card" data-work="circlestriker">
                 <div class="work-media">
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
                     <h3 class="work-title">CIRCLESTRIKER</h3>
-                    <span class="work-award">受賞作品</span>
+                    <span class="work-award" data-ja="受賞作品" data-en="Award Winner">受賞作品</span>
                     <div class="work-tags">
                         <span class="tag">Unity</span>
                         <span class="tag">C#</span>
-                        <span class="tag">個人制作</span>
+                        <span class="tag" data-ja="個人制作" data-en="Solo">個人制作</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="1年次の3校合同コンテスト（冬）にて制作。筒を倒したようなステージを回転させながらジャンプで進むアクションゲーム。同コンテストにて構成力賞を受賞。" data-en="Created for the 3-School Joint Contest (Winter, 1st year). An action game where you jump through a cylindrical stage that rotates as you progress. Won the Composition Award at the contest.">
                         1年次の3校合同コンテスト（冬）にて制作。
                         筒を倒したようなステージを回転させながらジャンプで進むアクションゲーム。
                         同コンテストにて構成力賞を受賞。
@@ -197,15 +206,15 @@
             <article class="work-card" data-work="mario">
                 <div class="work-media">
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
-                    <h3 class="work-title">初代マリオ風アクションゲーム</h3>
+                    <h3 class="work-title" data-ja="初代マリオ風アクションゲーム" data-en="Super Mario Bros. Style Action Game">初代マリオ風アクションゲーム</h3>
                     <div class="work-tags">
                         <span class="tag">C++</span>
-                        <span class="tag">個人制作</span>
+                        <span class="tag" data-ja="個人制作" data-en="Solo">個人制作</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="初代スーパーマリオブラザーズを完全再現。既存の名作をゼロから作り上げることで、ゲームプログラミングの基礎力を鍛えました。" data-en="A complete recreation of the original Super Mario Bros. Built the classic from scratch to strengthen fundamental game programming skills.">
                         初代スーパーマリオブラザーズを完全再現。
                         既存の名作をゼロから作り上げることで、ゲームプログラミングの基礎力を鍛えました。
                     </p>
@@ -216,14 +225,14 @@
             <article class="work-card" data-work="sand-tetris">
                 <div class="work-media">
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
                     <h3 class="work-title">Sand Tetris</h3>
                     <div class="work-tags">
-                        <span class="tag">個人制作</span>
+                        <span class="tag" data-ja="個人制作" data-en="Solo">個人制作</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="既存作品を自分の手で再現する試み。砂の物理演算とテトリスのルールを組み合わせたユニークなパズルゲーム。" data-en="An attempt to recreate an existing concept by hand. A unique puzzle game combining sand physics simulation with Tetris rules.">
                         既存作品を自分の手で再現する試み。
                         砂の物理演算とテトリスのルールを組み合わせたユニークなパズルゲーム。
                     </p>
@@ -234,15 +243,15 @@
             <article class="work-card" data-work="console-shooter">
                 <div class="work-media">
                     <div class="media-placeholder">SCREENSHOT</div>
-                    <div class="work-overlay"><span>Click to View</span></div>
+                    <div class="work-overlay"><span data-ja="クリックして見る" data-en="Click to View">クリックして見る</span></div>
                 </div>
                 <div class="work-info">
-                    <h3 class="work-title">コンソールシューティング</h3>
+                    <h3 class="work-title" data-ja="コンソールシューティング" data-en="Console Shooter">コンソールシューティング</h3>
                     <div class="work-tags">
                         <span class="tag">C++</span>
-                        <span class="tag">個人制作</span>
+                        <span class="tag" data-ja="個人制作" data-en="Solo">個人制作</span>
                     </div>
-                    <p class="work-desc">
+                    <p class="work-desc" data-ja="コンソール表示のみでグラディウス風の横スクロールシューティングを制作。1年次の課題を3年で作り直し、制約の中で表現力を追求。" data-en="A Gradius-style horizontal scrolling shooter built entirely in console output. Revisited a 1st-year assignment in the 3rd year, pushing expressiveness within console constraints.">
                         コンソール表示のみでグラディウス風の横スクロールシューティングを制作。
                         1年次の課題を3年で作り直し、制約の中で表現力を追求。
                     </p>
@@ -259,7 +268,6 @@
     <div class="modal-content">
         <button class="modal-close" aria-label="閉じる">&times;</button>
         <div class="modal-body">
-            <!-- 動画/GIFがここに入る -->
             <p class="modal-placeholder">紹介動画・プレイ動画・GIF をここに設定してください</p>
         </div>
     </div>
@@ -270,7 +278,7 @@
     <div class="container">
         <h2 class="section-title">Contact</h2>
         <div class="contact-content">
-            <p>お問い合わせは下記よりお願いいたします。</p>
+            <p data-ja="お問い合わせは下記よりお願いいたします。" data-en="Feel free to reach out via the links below.">お問い合わせは下記よりお願いいたします。</p>
             <div class="contact-links">
                 <a href="https://github.com/IrokawaRikuto" class="contact-link" target="_blank" rel="noopener">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -293,22 +301,22 @@
         <h3 class="email-modal-title">Send Email</h3>
         <form id="email-form">
             <div class="form-group">
-                <label for="sender-email">Your Email</label>
+                <label for="sender-email" data-ja="あなたのメールアドレス" data-en="Your Email">あなたのメールアドレス</label>
                 <input type="email" id="sender-email" name="email" required placeholder="your@email.com">
             </div>
             <div class="form-group">
-                <label for="email-subject">Subject</label>
-                <input type="text" id="email-subject" name="_subject" required placeholder="件名を入力">
+                <label for="email-subject" data-ja="件名" data-en="Subject">件名</label>
+                <input type="text" id="email-subject" name="_subject" required data-placeholder-ja="件名を入力" data-placeholder-en="Enter subject" placeholder="件名を入力">
             </div>
             <div class="form-group">
-                <label for="email-body">Message</label>
-                <textarea id="email-body" name="message" rows="6" required placeholder="本文を入力"></textarea>
+                <label for="email-body" data-ja="本文" data-en="Message">本文</label>
+                <textarea id="email-body" name="message" rows="6" required data-placeholder-ja="本文を入力" data-placeholder-en="Enter your message" placeholder="本文を入力"></textarea>
             </div>
             <input type="hidden" name="_captcha" value="false">
             <input type="hidden" name="_template" value="table">
             <div class="form-actions">
-                <button type="button" id="email-cancel" class="btn-cancel">Cancel</button>
-                <button type="submit" class="btn-send">Send</button>
+                <button type="button" id="email-cancel" class="btn-cancel" data-ja="キャンセル" data-en="Cancel">キャンセル</button>
+                <button type="submit" class="btn-send" data-ja="送信" data-en="Send">送信</button>
             </div>
         </form>
         <p id="email-status" class="email-status" hidden></p>
