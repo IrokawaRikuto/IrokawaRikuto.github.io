@@ -42,7 +42,7 @@
             this.startY = this.y;
 
             this.speed = 1 + Math.random() * 2;
-            this.lineLength = 400 + Math.random() * 300;
+            this.lineLength = 700 + Math.random() * 200;
             this.opacity = 0.15 + Math.random() * 0.25;
             this.width = 0.5 + Math.random() * 1.5;
 
