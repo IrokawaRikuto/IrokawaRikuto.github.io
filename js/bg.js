@@ -41,8 +41,8 @@
             this.startX = this.x;
             this.startY = this.y;
 
-            this.speed = 3 + Math.random() * 5;
-            this.lineLength = 80 + Math.random() * 160;
+            this.speed = 1 + Math.random() * 2;
+            this.lineLength = 200 + Math.random() * 300;
             this.opacity = 0.15 + Math.random() * 0.25;
             this.width = 0.5 + Math.random() * 1.5;
 
@@ -88,11 +88,12 @@
                 tailY = this.startY;
             }
 
-            // 棒全体を一本の直線で描画（グラデーション：尾→先端）
+            // 棒全体を一本の直線で描画（均一な不透明度、両端だけ少しフェード）
             const grad = ctx.createLinearGradient(tailX, tailY, headX, headY);
             grad.addColorStop(0, this.color + '0)');
-            grad.addColorStop(0.3, this.color + (this.opacity * 0.5) + ')');
-            grad.addColorStop(1, this.color + this.opacity + ')');
+            grad.addColorStop(0.1, this.color + this.opacity + ')');
+            grad.addColorStop(0.9, this.color + this.opacity + ')');
+            grad.addColorStop(1, this.color + '0)');
 
             ctx.beginPath();
             ctx.strokeStyle = grad;
@@ -114,15 +115,24 @@
         }
     }
 
-    const lineCount = 18;
+    const lineCount = 10;
     const lines = [];
     for (let i = 0; i < lineCount; i++) {
         const line = new Line();
-        // 初期タイミングをずらす（最初から画面内にいくつか表示）
-        const preAdvance = Math.random() * Math.sqrt(w * w + h * h) * 0.6;
-        line.x += line.vx / line.speed * preAdvance;
-        line.y += line.vy / line.speed * preAdvance;
-        line.distance = preAdvance;
+        // 初期タイミングをずらす（最低3本は画面内に見えるように配置）
+        if (i < 4) {
+            // 最初の4本は画面内に配置
+            const preAdvance = 200 + Math.random() * Math.sqrt(w * w + h * h) * 0.4;
+            line.x += line.vx / line.speed * preAdvance;
+            line.y += line.vy / line.speed * preAdvance;
+            line.distance = preAdvance;
+        } else {
+            // 残りは少しずらして順次出現
+            const preAdvance = Math.random() * Math.sqrt(w * w + h * h) * 0.3;
+            line.x += line.vx / line.speed * preAdvance;
+            line.y += line.vy / line.speed * preAdvance;
+            line.distance = preAdvance;
+        }
         lines.push(line);
     }
 
