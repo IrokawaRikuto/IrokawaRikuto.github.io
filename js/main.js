@@ -80,6 +80,51 @@ window.addEventListener('scroll', () => {
     }
 });
 
+// ===== スクリーンショットカルーセル状態 =====
+let currentScreenshots = [];
+let currentSSIndex = 0;
+
+function changeScreenshot(dir) {
+    if (currentScreenshots.length <= 1) return;
+    currentSSIndex = (currentSSIndex + dir + currentScreenshots.length) % currentScreenshots.length;
+    const img = document.querySelector('.work-detail-screenshot img');
+    if (img) img.src = currentScreenshots[currentSSIndex];
+}
+
+// ===== ライトボックス =====
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = lightbox.querySelector('.lightbox-img');
+const lightboxClose = lightbox.querySelector('.lightbox-close');
+const lightboxBackdrop = lightbox.querySelector('.lightbox-backdrop');
+const lightboxPrev = lightbox.querySelector('.lightbox-prev');
+const lightboxNext = lightbox.querySelector('.lightbox-next');
+
+function openLightbox(index) {
+    currentSSIndex = index;
+    lightboxImg.src = currentScreenshots[currentSSIndex];
+    lightboxPrev.style.display = currentScreenshots.length > 1 ? '' : 'none';
+    lightboxNext.style.display = currentScreenshots.length > 1 ? '' : 'none';
+    lightbox.classList.add('active');
+}
+
+function closeLightbox() {
+    lightbox.classList.remove('active');
+}
+
+function lightboxNav(dir) {
+    if (currentScreenshots.length <= 1) return;
+    currentSSIndex = (currentSSIndex + dir + currentScreenshots.length) % currentScreenshots.length;
+    lightboxImg.src = currentScreenshots[currentSSIndex];
+    // モーダル側のサムネイルも同期
+    const modalImg = document.querySelector('.work-detail-screenshot img');
+    if (modalImg) modalImg.src = currentScreenshots[currentSSIndex];
+}
+
+lightboxClose.addEventListener('click', closeLightbox);
+lightboxBackdrop.addEventListener('click', closeLightbox);
+lightboxPrev.addEventListener('click', () => lightboxNav(-1));
+lightboxNext.addEventListener('click', () => lightboxNav(1));
+
 // ===== モーダル（作品クリック時） =====
 const modal = document.getElementById('work-modal');
 const modalClose = modal.querySelector('.modal-close');
@@ -97,7 +142,7 @@ const workData = {
             en: 'A vertical-scrolling bullet hell shooter created for the 3-School Joint Contest (Summer, 1st year). Recreated bullet patterns and gameplay inspired by the Touhou Project series. Won the Enthusiasm Award.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshot: '',
+        screenshots: [],
         download: '',
     },
     'circlestriker': {
@@ -110,7 +155,7 @@ const workData = {
             en: 'Created for the 3-School Joint Contest (Winter, 1st year). An action game where you jump through a cylindrical stage that rotates as you progress. Won the Composition Award.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshot: '',
+        screenshots: [],
         download: '',
     },
     'gamma': {
@@ -123,7 +168,7 @@ const workData = {
             en: 'A puzzle-action game developed as a team project at HEW (2nd year). Transform into a shadow and use object shadows as platforms to reach otherwise inaccessible areas. Responsible for character controls, bug fixes, conflict resolution, promotional video, and management support.'
         },
         video: { type: 'video', src: 'videos/gamma_pv.mp4' },
-        screenshot: 'images/gamma_screenshot.jpg',
+        screenshots: ['images/gamma_screenshot.jpg'],
         download: '',
     },
     'regamma': {
@@ -136,7 +181,7 @@ const workData = {
             en: 'A complete solo remake of the team-developed GAMMA. Retaining the original game concept, this version focuses on full code refactoring, improved controls, and enhanced visual effects.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshot: '',
+        screenshots: [],
         download: '',
     },
     'sand-tetris': {
@@ -149,7 +194,7 @@ const workData = {
             en: 'An attempt to recreate an existing concept by hand. A unique puzzle game combining sand physics simulation with Tetris rules.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshot: '',
+        screenshots: [],
         download: '',
     },
     'console-shooter': {
@@ -162,7 +207,7 @@ const workData = {
             en: 'A Gradius-style horizontal scrolling shooter built entirely in console output. Revisited a 1st-year assignment in the 3rd year, pushing expressiveness within console constraints.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshot: '',
+        screenshots: [],
         download: '',
     },
 };
@@ -208,7 +253,8 @@ function openModal(workId) {
     }).join('');
 
     // 作品情報：年号
-    modal.querySelector('.work-detail-year').textContent = data.year;
+    const yearLabel = currentLang === 'ja' ? '制作年：' : 'Year: ';
+    modal.querySelector('.work-detail-year').textContent = yearLabel + data.year;
 
     // 作品情報：受賞
     const awardEl = modal.querySelector('.work-detail-award');
@@ -234,10 +280,30 @@ function openModal(workId) {
         el.textContent = el.getAttribute('data-' + lang);
     });
 
-    // スクリーンショット
+    // スクリーンショット（カルーセル）
     const ssArea = modal.querySelector('.work-detail-screenshot');
-    if (data.screenshot) {
-        ssArea.innerHTML = '<img src="' + data.screenshot + '" alt="screenshot">';
+    const screenshots = data.screenshots || [];
+    currentScreenshots = screenshots;
+    currentSSIndex = 0;
+    ssArea.innerHTML = '';
+    if (screenshots.length > 0) {
+        const img = document.createElement('img');
+        img.src = screenshots[0];
+        img.alt = 'screenshot';
+        img.addEventListener('click', () => openLightbox(currentSSIndex));
+        ssArea.appendChild(img);
+        if (screenshots.length > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'screenshot-nav prev';
+            prevBtn.innerHTML = '&#8249;';
+            prevBtn.addEventListener('click', (e) => { e.stopPropagation(); changeScreenshot(-1); });
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'screenshot-nav next';
+            nextBtn.innerHTML = '&#8250;';
+            nextBtn.addEventListener('click', (e) => { e.stopPropagation(); changeScreenshot(1); });
+            ssArea.appendChild(prevBtn);
+            ssArea.appendChild(nextBtn);
+        }
     } else {
         ssArea.innerHTML = '<div class="media-placeholder">SCREENSHOT</div>';
     }
@@ -251,6 +317,7 @@ function openModal(workId) {
 }
 
 function closeModal() {
+    closeLightbox();
     // 再生中の動画を停止
     const video = modal.querySelector('video');
     if (video) { video.pause(); video.currentTime = 0; }
@@ -269,8 +336,33 @@ modalClose.addEventListener('click', closeModal);
 modalBackdrop.addEventListener('click', closeModal);
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        closeModal();
-        closeEmailModal();
+        if (lightbox.classList.contains('active')) {
+            closeLightbox();
+        } else {
+            closeModal();
+            closeEmailModal();
+        }
+    }
+    // ライトボックス内の左右キー
+    if (lightbox.classList.contains('active')) {
+        if (e.key === 'ArrowLeft') lightboxNav(-1);
+        if (e.key === 'ArrowRight') lightboxNav(1);
+    }
+});
+
+// ===== Worksカードにサムネイル表示 =====
+document.querySelectorAll('.work-card[data-work]').forEach(card => {
+    const data = workData[card.dataset.work];
+    if (data && data.screenshots && data.screenshots.length > 0) {
+        const mediaDiv = card.querySelector('.work-media');
+        const placeholder = mediaDiv.querySelector('.media-placeholder');
+        if (placeholder) {
+            const img = document.createElement('img');
+            img.src = data.screenshots[0];
+            img.alt = card.dataset.work;
+            img.className = 'work-card-thumb';
+            placeholder.replaceWith(img);
+        }
     }
 });
 

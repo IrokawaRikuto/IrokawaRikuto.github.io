@@ -64,9 +64,20 @@
             this.y += this.vy;
             this.distance += this.speed;
 
-            // 先頭が画面外に十分出たらリセット
-            if (this.x < -300 || this.x > w + 300 ||
-                this.y < -300 || this.y > h + 300) {
+            // 先頭と尾の両方が画面外に出たらリセット
+            const dx = Math.cos(this.angle);
+            const dy = Math.sin(this.angle);
+            let tailX, tailY;
+            if (this.distance < this.lineLength) {
+                tailX = this.startX;
+                tailY = this.startY;
+            } else {
+                tailX = this.x - dx * this.lineLength;
+                tailY = this.y - dy * this.lineLength;
+            }
+            const headOut = this.x < 0 || this.x > w || this.y < 0 || this.y > h;
+            const tailOut = tailX < 0 || tailX > w || tailY < 0 || tailY > h;
+            if (headOut && tailOut) {
                 this.reset();
             }
         }

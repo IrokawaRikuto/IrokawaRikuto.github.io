@@ -82,6 +82,7 @@ img {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
 }
 
 .nav-logo {
@@ -95,6 +96,9 @@ img {
     display: flex;
     list-style: none;
     gap: 32px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .nav-links a {
@@ -119,7 +123,9 @@ img {
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.1em;
-    padding: 4px 12px;
+    padding: 4px 0;
+    width: 40px;
+    text-align: center;
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
@@ -267,6 +273,12 @@ section {
     color: var(--text-muted);
     font-size: 0.85rem;
     letter-spacing: 0.1em;
+}
+
+.about-text {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 28px 32px;
 }
 
 .about-text h3 {
@@ -775,7 +787,8 @@ section {
     width: 100%;
     aspect-ratio: 16/9;
     border-radius: 4px;
-    object-fit: cover;
+    object-fit: contain;
+    background: #1a1a28;
 }
 .work-detail-screenshot .media-placeholder {
     display: flex;
@@ -981,12 +994,17 @@ footer {
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .nav-links { display: none; }
+    .nav-links {
+        position: static;
+        transform: none;
+    }
     .nav-links.active {
         display: flex;
         flex-direction: column;
         position: absolute;
         top: 60px;
         left: 0;
+        transform: none;
         width: 100%;
         background: rgba(10, 10, 15, 0.97);
         padding: 24px;
@@ -1033,6 +1051,134 @@ footer {
         flex-direction: column;
         align-items: center;
     }
+}
+
+/* ===== Screenshot Carousel ===== */
+.work-detail-screenshot {
+    position: relative;
+}
+
+.screenshot-nav {
+    position: absolute;
+    top: 0;
+    width: 40px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 1.6rem;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+    padding: 0;
+    font-family: inherit;
+}
+.work-detail-screenshot:hover .screenshot-nav {
+    opacity: 1;
+}
+.screenshot-nav.prev { left: 0; border-radius: 4px 0 0 4px; }
+.screenshot-nav.next { right: 0; border-radius: 0 4px 4px 0; }
+.screenshot-nav:hover { background: rgba(0, 0, 0, 0.7); }
+
+.work-detail-screenshot img {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.work-detail-screenshot img:hover {
+    opacity: 0.85;
+}
+
+/* ===== Lightbox ===== */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+.lightbox.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.lightbox-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.lightbox-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.lightbox-close {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    z-index: 2;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.lightbox-close:hover { color: var(--accent); }
+
+.lightbox-prev,
+.lightbox-next {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    font-size: 2.2rem;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    padding: 0;
+}
+.lightbox-prev { left: 0; border-radius: 0 4px 4px 0; }
+.lightbox-next { right: 0; border-radius: 4px 0 0 4px; }
+.lightbox-prev:hover,
+.lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+/* ===== Work Card Screenshot ===== */
+.work-media img.work-card-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: contain;
+    background: #1a1a28;
+    display: block;
 }
 
 /* ===== Animations ===== */
