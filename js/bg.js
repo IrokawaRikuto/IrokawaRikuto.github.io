@@ -91,9 +91,8 @@
             // 棒全体を一本の直線で描画（均一な不透明度、両端だけ少しフェード）
             const grad = ctx.createLinearGradient(tailX, tailY, headX, headY);
             grad.addColorStop(0, this.color + '0)');
-            grad.addColorStop(0.1, this.color + this.opacity + ')');
-            grad.addColorStop(0.9, this.color + this.opacity + ')');
-            grad.addColorStop(1, this.color + '0)');
+            grad.addColorStop(0.3, this.color + this.opacity + ')');
+            grad.addColorStop(1, this.color + this.opacity + ')');
 
             ctx.beginPath();
             ctx.strokeStyle = grad;
