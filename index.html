@@ -141,23 +141,23 @@
                 <span class="timeline-label">2024</span>
                 <span class="timeline-sub" data-ja="1年" data-en="1st Year">1年</span>
                 <div class="timeline-tooltip">
-                    <span data-ja="東方春三校" data-en="Touhou Harusankou">東方春三校</span>
-                    <span>CIRCLESTRIKER</span>
+                    <a href="#work-touhou" class="tooltip-link" data-ja="東方春三校" data-en="Touhou Harusankou">東方春三校</a>
+                    <a href="#work-circlestriker" class="tooltip-link">CIRCLESTRIKER</a>
                 </div>
             </div>
             <div class="timeline-year">
                 <span class="timeline-label">2025</span>
                 <span class="timeline-sub" data-ja="2年" data-en="2nd Year">2年</span>
                 <div class="timeline-tooltip">
-                    <span>GAMMA</span>
+                    <a href="#work-gamma" class="tooltip-link">GAMMA</a>
                 </div>
             </div>
             <div class="timeline-year">
                 <span class="timeline-label">2026</span>
                 <span class="timeline-sub" data-ja="3年" data-en="3rd Year">3年</span>
                 <div class="timeline-tooltip">
-                    <span>Sand Tetris</span>
-                    <span data-ja="コンソールシューティング" data-en="Console Shooter">コンソールシューティング</span>
+                    <a href="#work-sand-tetris" class="tooltip-link">Sand Tetris</a>
+                    <a href="#work-console-shooter" class="tooltip-link" data-ja="コンソールシューティング" data-en="Console Shooter">コンソールシューティング</a>
                 </div>
             </div>
         </div>
@@ -165,7 +165,7 @@
         <div class="works-grid">
 
             <!-- 2024: 東方春三校 -->
-            <article class="work-card" data-work="touhou">
+            <article class="work-card" id="work-touhou" data-work="touhou">
                 <div class="work-media">
                     <span class="work-year">2024</span>
                     <div class="media-placeholder">SCREENSHOT</div>
@@ -188,7 +188,7 @@
             </article>
 
             <!-- 2024: CIRCLESTRIKER -->
-            <article class="work-card" data-work="circlestriker">
+            <article class="work-card" id="work-circlestriker" data-work="circlestriker">
                 <div class="work-media">
                     <span class="work-year">2024</span>
                     <div class="media-placeholder">SCREENSHOT</div>
@@ -211,7 +211,7 @@
             </article>
 
             <!-- 2025: GAMMA -->
-            <article class="work-card" data-work="gamma">
+            <article class="work-card" id="work-gamma" data-work="gamma">
                 <div class="work-media">
                     <span class="work-year">2025</span>
                     <!-- <img src="images/gamma.png" alt="GAMMA"> -->
@@ -234,7 +234,7 @@
             </article>
 
             <!-- 2026: Sand Tetris -->
-            <article class="work-card" data-work="sand-tetris">
+            <article class="work-card" id="work-sand-tetris" data-work="sand-tetris">
                 <div class="work-media">
                     <span class="work-year">2026</span>
                     <div class="media-placeholder">SCREENSHOT</div>
@@ -253,7 +253,7 @@
             </article>
 
             <!-- 2026: コンソールシューティング -->
-            <article class="work-card" data-work="console-shooter">
+            <article class="work-card" id="work-console-shooter" data-work="console-shooter">
                 <div class="work-media">
                     <span class="work-year">2026</span>
                     <div class="media-placeholder">SCREENSHOT</div>
@@ -280,10 +280,28 @@
 <!-- モーダル（作品詳細） -->
 <div id="work-modal" class="modal">
     <div class="modal-backdrop"></div>
-    <div class="modal-content">
+    <div class="modal-content work-modal-content">
         <button class="modal-close" aria-label="閉じる">&times;</button>
-        <div class="modal-body">
-            <p class="modal-placeholder">紹介動画・プレイ動画・GIF をここに設定してください</p>
+        <div class="modal-body work-detail">
+            <h3 class="work-detail-title"></h3>
+            <div class="work-detail-grid">
+                <div class="work-detail-left">
+                    <div class="work-detail-video">
+                        <div class="media-placeholder">VIDEO</div>
+                    </div>
+                    <div class="work-detail-meta">
+                        <span class="work-detail-year"></span>
+                        <div class="work-detail-tags"></div>
+                    </div>
+                    <p class="work-detail-award"></p>
+                </div>
+                <div class="work-detail-right">
+                    <div class="work-detail-screenshot">
+                        <div class="media-placeholder">SCREENSHOT</div>
+                    </div>
+                    <p class="work-detail-desc"></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

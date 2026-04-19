@@ -75,50 +75,135 @@ window.addEventListener('scroll', () => {
 
 // ===== モーダル（作品クリック時） =====
 const modal = document.getElementById('work-modal');
-const modalBody = modal.querySelector('.modal-body');
 const modalClose = modal.querySelector('.modal-close');
 const modalBackdrop = modal.querySelector('.modal-backdrop');
 
-// 作品ごとのメディア設定（後で差し替え）
-// type: 'video' | 'gif' | 'youtube'
-// src: ファイルパス or YouTube埋め込みURL
-const workMedia = {
-    'gamma':            { type: 'placeholder', src: '' },
-    'touhou':           { type: 'placeholder', src: '' },
-    'circlestriker':    { type: 'placeholder', src: '' },
-    'sand-tetris':      { type: 'placeholder', src: '' },
-    'console-shooter':  { type: 'placeholder', src: '' },
+// 作品ごとのデータ
+const workData = {
+    'touhou': {
+        title: { ja: '東方春三校', en: 'Touhou Harusankou' },
+        year: '2024',
+        tags: ['Unity', 'C#', { ja: '個人制作', en: 'Solo' }],
+        award: { ja: '3校合同コンテスト（夏） 意欲賞 受賞', en: '3-School Joint Contest (Summer) — Enthusiasm Award' },
+        desc: {
+            ja: '1年次の3校合同コンテスト（夏）にて制作した縦スクロール弾幕シューティング。東方Project原作を意識した弾幕パターンやゲーム性を再現。同コンテストにて意欲賞を受賞。',
+            en: 'A vertical-scrolling bullet hell shooter created for the 3-School Joint Contest (Summer, 1st year). Recreated bullet patterns and gameplay inspired by the Touhou Project series. Won the Enthusiasm Award.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+    },
+    'circlestriker': {
+        title: { ja: 'CIRCLESTRIKER', en: 'CIRCLESTRIKER' },
+        year: '2024',
+        tags: ['Unity', 'C#', { ja: '個人制作', en: 'Solo' }],
+        award: { ja: '3校合同コンテスト（冬） 構成力賞 受賞', en: '3-School Joint Contest (Winter) — Composition Award' },
+        desc: {
+            ja: '1年次の3校合同コンテスト（冬）にて制作。筒を倒したようなステージを回転させながらジャンプで進むアクションゲーム。同コンテストにて構成力賞を受賞。',
+            en: 'Created for the 3-School Joint Contest (Winter, 1st year). An action game where you jump through a cylindrical stage that rotates as you progress. Won the Composition Award.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+    },
+    'gamma': {
+        title: { ja: 'GAMMA', en: 'GAMMA' },
+        year: '2025',
+        tags: ['Unity', 'C#', { ja: 'チーム → 個人リメイク', en: 'Team → Solo Remake' }],
+        award: null,
+        desc: {
+            ja: '2年次HEWでチーム制作したパズルアクションを個人リメイク。影に変身し、物体の影を足場にして進むコンセプト。リメイク版ではプログラムの全面修正・操作感改善・演出強化に注力。',
+            en: 'Solo remake of a puzzle-action game originally team-developed at HEW (2nd year). Transform into a shadow and use object shadows as platforms. The remake focused on full code refactoring, improved controls, and enhanced visual effects.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+    },
+    'sand-tetris': {
+        title: { ja: 'Sand Tetris', en: 'Sand Tetris' },
+        year: '2026',
+        tags: [{ ja: '個人制作', en: 'Solo' }],
+        award: null,
+        desc: {
+            ja: '既存作品を自分の手で再現する試み。砂の物理演算とテトリスのルールを組み合わせたユニークなパズルゲーム。',
+            en: 'An attempt to recreate an existing concept by hand. A unique puzzle game combining sand physics simulation with Tetris rules.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+    },
+    'console-shooter': {
+        title: { ja: 'コンソールシューティング', en: 'Console Shooter' },
+        year: '2026',
+        tags: ['C++', { ja: '個人制作', en: 'Solo' }],
+        award: null,
+        desc: {
+            ja: 'コンソール表示のみでグラディウス風の横スクロールシューティングを制作。1年次の課題を3年で作り直し、制約の中で表現力を追求。',
+            en: 'A Gradius-style horizontal scrolling shooter built entirely in console output. Revisited a 1st-year assignment in the 3rd year, pushing expressiveness within console constraints.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+    },
 };
 
 function openModal(workId) {
-    const media = workMedia[workId];
-    modalBody.innerHTML = '';
+    const data = workData[workId];
+    if (!data) return;
 
-    if (!media || media.type === 'placeholder' || !media.src) {
-        modalBody.innerHTML = '<p class="modal-placeholder">紹介動画・プレイ動画・GIF をここに設定してください</p>';
-    } else if (media.type === 'video') {
-        const video = document.createElement('video');
-        video.src = media.src;
-        video.controls = true;
-        video.autoplay = true;
-        video.style.maxWidth = '100%';
-        modalBody.appendChild(video);
-    } else if (media.type === 'gif') {
+    const lang = currentLang;
+
+    // タイトル
+    modal.querySelector('.work-detail-title').textContent =
+        typeof data.title === 'object' ? data.title[lang] : data.title;
+
+    // 動画エリア
+    const videoArea = modal.querySelector('.work-detail-video');
+    videoArea.innerHTML = '';
+    const vid = data.video;
+    if (!vid || vid.type === 'placeholder' || !vid.src) {
+        videoArea.innerHTML = '<div class="media-placeholder">VIDEO</div>';
+    } else if (vid.type === 'video') {
+        const v = document.createElement('video');
+        v.src = vid.src; v.controls = true; v.autoplay = true;
+        videoArea.appendChild(v);
+    } else if (vid.type === 'gif') {
         const img = document.createElement('img');
-        img.src = media.src;
-        img.alt = workId;
-        modalBody.appendChild(img);
-    } else if (media.type === 'youtube') {
+        img.src = vid.src; img.alt = workId;
+        videoArea.appendChild(img);
+    } else if (vid.type === 'youtube') {
         const iframe = document.createElement('iframe');
-        iframe.src = media.src;
-        iframe.width = '100%';
-        iframe.height = '450';
+        iframe.src = vid.src; iframe.width = '100%'; iframe.height = '100%';
         iframe.frameBorder = '0';
         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         iframe.allowFullscreen = true;
-        iframe.style.borderRadius = '4px';
-        modalBody.appendChild(iframe);
+        videoArea.appendChild(iframe);
     }
+
+    // 年号
+    modal.querySelector('.work-detail-year').textContent = data.year;
+
+    // タグ
+    const tagsEl = modal.querySelector('.work-detail-tags');
+    tagsEl.innerHTML = data.tags.map(t => {
+        const text = typeof t === 'object' ? t[lang] : t;
+        return '<span class="tag">' + text + '</span>';
+    }).join('');
+
+    // 受賞
+    const awardEl = modal.querySelector('.work-detail-award');
+    if (data.award) {
+        awardEl.textContent = typeof data.award === 'object' ? data.award[lang] : data.award;
+    } else {
+        awardEl.textContent = '';
+    }
+
+    // スクリーンショット
+    const ssArea = modal.querySelector('.work-detail-screenshot');
+    if (data.screenshot) {
+        ssArea.innerHTML = '<img src="' + data.screenshot + '" alt="screenshot">';
+    } else {
+        ssArea.innerHTML = '<div class="media-placeholder">SCREENSHOT</div>';
+    }
+
+    // 説明文
+    modal.querySelector('.work-detail-desc').textContent =
+        typeof data.desc === 'object' ? data.desc[lang] : data.desc;
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -127,7 +212,6 @@ function openModal(workId) {
 function closeModal() {
     modal.classList.remove('active');
     document.body.style.overflow = '';
-    setTimeout(() => { modalBody.innerHTML = ''; }, 300);
 }
 
 // 作品カードのクリックイベント

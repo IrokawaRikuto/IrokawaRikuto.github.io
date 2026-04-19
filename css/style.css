@@ -439,9 +439,16 @@ section {
     pointer-events: auto;
 }
 
-.timeline-tooltip span {
+.tooltip-link {
     font-size: 0.8rem;
     color: var(--text);
+    transition: color 0.2s;
+    display: block;
+    padding: 2px 0;
+}
+.tooltip-link:hover {
+    color: var(--accent);
+    opacity: 1;
 }
 
 /* ===== Works ===== */
@@ -634,6 +641,119 @@ section {
     color: var(--text-muted);
     font-size: 0.9rem;
     padding: 60px 0;
+}
+
+/* ===== Work Detail Modal ===== */
+.work-modal-content {
+    max-width: 900px;
+}
+
+.work-detail {
+    text-align: left;
+}
+
+.work-detail-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-right: 40px;
+}
+
+.work-detail-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+}
+
+.work-detail-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.work-detail-video .media-placeholder,
+.work-detail-video video,
+.work-detail-video iframe,
+.work-detail-video img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 4px;
+    object-fit: cover;
+}
+.work-detail-video .media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a28;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+}
+
+.work-detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.work-detail-year {
+    font-family: "Arial Black", "Helvetica Neue", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--text-muted);
+}
+
+.work-detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.work-detail-award {
+    font-size: 0.85rem;
+    color: var(--award);
+    font-weight: 600;
+}
+.work-detail-award:empty {
+    display: none;
+}
+
+.work-detail-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.work-detail-screenshot .media-placeholder,
+.work-detail-screenshot img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 4px;
+    object-fit: cover;
+}
+.work-detail-screenshot .media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a28;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+}
+
+.work-detail-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+    .work-detail-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ===== Contact ===== */
