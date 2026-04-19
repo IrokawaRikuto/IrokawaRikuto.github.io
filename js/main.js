@@ -109,11 +109,24 @@ const workData = {
     'gamma': {
         title: { ja: 'GAMMA', en: 'GAMMA' },
         year: '2025',
-        tags: ['Unity', 'C#', { ja: 'チーム → 個人リメイク', en: 'Team → Solo Remake' }],
+        tags: ['C++', 'DirectX', { ja: 'チーム制作', en: 'Team' }],
         award: null,
         desc: {
-            ja: '2年次HEWでチーム制作したパズルアクションを個人リメイク。影に変身し、物体の影を足場にして進むコンセプト。リメイク版ではプログラムの全面修正・操作感改善・演出強化に注力。',
-            en: 'Solo remake of a puzzle-action game originally team-developed at HEW (2nd year). Transform into a shadow and use object shadows as platforms. The remake focused on full code refactoring, improved controls, and enhanced visual effects.'
+            ja: '2年次HEWでチーム制作したパズルアクションゲーム。影に変身し、物体の影を足場にして本来届かない場所へ進むコンセプト。キャラクター操作・バグ修正・コンフリクト修正・紹介動画制作・マネジメント補佐を担当。',
+            en: 'A puzzle-action game developed as a team project at HEW (2nd year). Transform into a shadow and use object shadows as platforms to reach otherwise inaccessible areas. Responsible for character controls, bug fixes, conflict resolution, promotional video, and management support.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshot: '',
+        download: '',
+    },
+    'regamma': {
+        title: { ja: 'RE:GAMMA', en: 'RE:GAMMA' },
+        year: '2026',
+        tags: ['C++', 'DirectX', { ja: 'リメイク', en: 'Remake' }, { ja: '個人制作', en: 'Solo' }],
+        award: null,
+        desc: {
+            ja: 'チーム制作したGAMMAを個人で完全リメイク。ゲームコンセプトはそのままに、プログラムの全面修正・操作感の改善・演出の強化に注力した作品。',
+            en: 'A complete solo remake of the team-developed GAMMA. Retaining the original game concept, this version focuses on full code refactoring, improved controls, and enhanced visual effects.'
         },
         video: { type: 'placeholder', src: '' },
         screenshot: '',
