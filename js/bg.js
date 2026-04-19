@@ -1,4 +1,4 @@
-// 背景アニメーション：不規則に走る青いライン
+// 背景アニメーション：まっすぐ走る青いライン（近未来風）
 (function () {
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
@@ -18,7 +18,7 @@
         }
 
         reset() {
-            // ランダムな開始位置（画面端から）
+            // ランダムな開始位置（画面端から）& まっすぐ進む角度
             const side = Math.random();
             if (side < 0.25) {
                 this.x = 0;
@@ -38,42 +38,35 @@
                 this.angle = -Math.PI / 2 + (Math.random() * 0.8 - 0.4); // 上方向
             }
 
-            this.speed = 2 + Math.random() * 4;
-            this.length = 60 + Math.random() * 140;
-            this.opacity = 0.08 + Math.random() * 0.15;
+            this.speed = 3 + Math.random() * 5;
+            this.length = 80 + Math.random() * 160;
+            this.opacity = 0.15 + Math.random() * 0.25;
             this.width = 0.5 + Math.random() * 1.5;
             this.life = 0;
-            this.maxLife = this.length / this.speed + 20 + Math.random() * 40;
 
-            // 青系の色バリエーション
-            const hue = 210 + Math.random() * 40; // 210-250 (青〜紫青)
-            this.color = 'hsla(' + hue + ', 80%, 60%, ';
+            // 画面を横断するのに十分な寿命
+            const diagonal = Math.sqrt(w * w + h * h);
+            this.maxLife = diagonal / this.speed + 20;
+
+            // 青系の明るめの色（近未来風）
+            const hue = 200 + Math.random() * 50; // 200-250 (シアン〜青〜紫青)
+            const lightness = 65 + Math.random() * 15; // 65-80% (明るめ)
+            this.color = 'hsla(' + hue + ', 85%, ' + lightness + '%, ';
+
+            // 速度ベクトル（固定＝まっすぐ）
+            this.vx = Math.cos(this.angle) * this.speed;
+            this.vy = Math.sin(this.angle) * this.speed;
 
             // 軌跡を記録
             this.trail = [];
-
-            // 不規則な方向変化
-            this.turnSpeed = (Math.random() - 0.5) * 0.02;
-            this.turnTimer = 0;
-            this.turnInterval = 20 + Math.random() * 40;
         }
 
         update() {
             this.life++;
 
-            // 不規則に方向を変える
-            this.turnTimer++;
-            if (this.turnTimer > this.turnInterval) {
-                this.turnSpeed = (Math.random() - 0.5) * 0.04;
-                this.turnInterval = 15 + Math.random() * 35;
-                this.turnTimer = 0;
-            }
-            this.angle += this.turnSpeed;
-
-            const vx = Math.cos(this.angle) * this.speed;
-            const vy = Math.sin(this.angle) * this.speed;
-            this.x += vx;
-            this.y += vy;
+            // まっすぐ進む
+            this.x += this.vx;
+            this.y += this.vy;
 
             this.trail.push({ x: this.x, y: this.y });
 
@@ -83,8 +76,10 @@
                 this.trail.shift();
             }
 
-            // 寿命チェック
-            if (this.life > this.maxLife) {
+            // 画面外に出たらリセット
+            if (this.life > this.maxLife ||
+                this.x < -200 || this.x > w + 200 ||
+                this.y < -200 || this.y > h + 200) {
                 this.reset();
             }
         }
@@ -96,8 +91,8 @@
             let fadeMultiplier = 1;
             if (this.life < 20) {
                 fadeMultiplier = this.life / 20;
-            } else if (this.life > this.maxLife - 20) {
-                fadeMultiplier = (this.maxLife - this.life) / 20;
+            } else if (this.life > this.maxLife - 30) {
+                fadeMultiplier = Math.max(0, (this.maxLife - this.life) / 30);
             }
 
             ctx.lineWidth = this.width;
@@ -117,28 +112,27 @@
 
             // 先端に小さなグロウ
             const tip = this.trail[this.trail.length - 1];
-            const glowAlpha = this.opacity * fadeMultiplier * 0.5;
-            const glow = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 4);
+            const glowAlpha = this.opacity * fadeMultiplier * 0.6;
+            const glow = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 5);
             glow.addColorStop(0, this.color + glowAlpha + ')');
             glow.addColorStop(1, this.color + '0)');
             ctx.beginPath();
             ctx.fillStyle = glow;
-            ctx.arc(tip.x, tip.y, 4, 0, Math.PI * 2);
+            ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
             ctx.fill();
         }
     }
 
-    // ライン数（パフォーマンスに配慮）
-    const lineCount = 15;
+    // ライン数
+    const lineCount = 18;
     const lines = [];
     for (let i = 0; i < lineCount; i++) {
         const line = new Line();
-        line.life = Math.random() * line.maxLife; // 初期タイミングをずらす
+        line.life = Math.random() * line.maxLife * 0.5; // 初期タイミングをずらす
         lines.push(line);
     }
 
     function animate() {
-        // 半透明の黒で塗りつぶし（残像なし、bodyのbgを活かす）
         ctx.clearRect(0, 0, w, h);
 
         for (const line of lines) {
