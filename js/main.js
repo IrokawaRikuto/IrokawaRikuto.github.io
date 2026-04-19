@@ -251,6 +251,9 @@ function openModal(workId) {
 }
 
 function closeModal() {
+    // 再生中の動画を停止
+    const video = modal.querySelector('video');
+    if (video) { video.pause(); video.currentTime = 0; }
     modal.classList.remove('active');
     document.body.style.overflowY = '';
 }
