@@ -98,20 +98,10 @@
             ctx.beginPath();
             ctx.strokeStyle = grad;
             ctx.lineWidth = this.width;
-            ctx.lineCap = 'round';
+            ctx.lineCap = 'butt';
             ctx.moveTo(tailX, tailY);
             ctx.lineTo(headX, headY);
             ctx.stroke();
-
-            // 先端に小さなグロウ
-            const glowAlpha = this.opacity * 0.6;
-            const glow = ctx.createRadialGradient(headX, headY, 0, headX, headY, 5);
-            glow.addColorStop(0, this.color + glowAlpha + ')');
-            glow.addColorStop(1, this.color + '0)');
-            ctx.beginPath();
-            ctx.fillStyle = glow;
-            ctx.arc(headX, headY, 5, 0, Math.PI * 2);
-            ctx.fill();
         }
     }
 
