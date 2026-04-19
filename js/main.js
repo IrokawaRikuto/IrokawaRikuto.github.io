@@ -50,8 +50,16 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.querySelectorAll('.work-card, .skill-category, .about-grid, .contact-content').forEach(el => {
+// フェードイン対象を登録
+document.querySelectorAll('.section-title, .about-grid, .skill-category, .timeline, .contact-content').forEach(el => {
     el.classList.add('fade-in');
+    observer.observe(el);
+});
+
+// Worksカードは2列なので交互にstaggerをつける
+document.querySelectorAll('.work-card').forEach((el, i) => {
+    el.classList.add('fade-in');
+    el.classList.add(i % 2 === 0 ? 'stagger-1' : 'stagger-2');
     observer.observe(el);
 });
 
