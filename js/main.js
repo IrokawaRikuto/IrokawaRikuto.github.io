@@ -195,7 +195,7 @@ const workData = {
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/SANDTETRIS_Title.png', 'images/SANDTETRIS_GamePlay.png'],
-        download: '',
+        download: 'SandTetris.exe',
     },
     'console-shooter': {
         title: { ja: 'コンソールシューティング', en: 'Console Shooter' },
