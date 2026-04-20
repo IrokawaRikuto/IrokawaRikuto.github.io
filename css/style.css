@@ -1046,18 +1046,11 @@ footer {
         justify-content: center;
         padding-left: 0;
     }
-    .hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    .hero-text {
-        text-align: center;
-    }
     .hero-icon {
-        width: 150px;
+        width: 120px;
     }
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .about-grid {
