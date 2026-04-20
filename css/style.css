@@ -861,8 +861,10 @@ section {
 .contact-link {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 14px 32px;
+    min-width: 180px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
