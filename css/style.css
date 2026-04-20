@@ -533,7 +533,7 @@ section {
 .work-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(108, 99, 255, 0.15);
+    background: rgba(255, 68, 68, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -597,7 +597,7 @@ section {
 }
 
 .tag {
-    background: rgba(108, 99, 255, 0.1);
+    background: rgba(255, 68, 68, 0.1);
     color: var(--accent);
     font-size: 0.7rem;
     padding: 3px 10px;
