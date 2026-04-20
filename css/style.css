@@ -1066,42 +1066,46 @@ footer {
     .timeline {
         flex-direction: column;
         gap: 0;
-        padding: 0 20px 0 0;
-        align-items: flex-end;
+        padding: 0;
+        align-items: stretch;
+        position: relative;
     }
     .timeline-line {
         top: 18px;
-        right: 25px;
-        left: auto;
+        left: 50%;
+        right: auto;
         bottom: 18px;
         width: 2px;
         height: auto;
+        transform: translateX(-50%);
         display: block;
     }
     .timeline-year {
         display: flex;
-        flex-direction: row-reverse;
         align-items: center;
-        gap: 16px;
-        text-align: right;
+        text-align: center;
         padding: 12px 0;
+        flex-direction: column;
+        position: relative;
     }
     .timeline-year::before {
-        margin: 0;
+        margin: 0 0 4px;
         flex-shrink: 0;
     }
     .timeline-label {
         font-size: 1.2rem;
     }
     .timeline-sub {
-        margin-left: 8px;
+        display: block;
+        margin-left: 0;
     }
     .timeline-tooltip {
-        position: relative;
-        left: auto;
+        position: absolute;
+        left: calc(50% + 30px);
+        right: auto;
         bottom: auto;
-        top: auto;
-        transform: none;
+        top: 50%;
+        transform: translateY(-50%);
         opacity: 0;
         visibility: hidden;
         background: var(--bg-card);
@@ -1109,22 +1113,22 @@ footer {
         border-radius: var(--radius);
         padding: 8px 14px;
         box-shadow: 0 4px 20px var(--accent-glow);
-        margin-right: 8px;
+        margin: 0;
     }
     .timeline-tooltip::after {
         top: 50%;
-        right: -16px;
-        left: auto;
+        left: -16px;
+        right: auto;
         transform: translateY(-50%);
         border: 8px solid transparent;
-        border-left-color: var(--accent);
+        border-right-color: var(--accent);
         border-top-color: transparent;
     }
     .timeline-year:hover .timeline-tooltip,
     .timeline-year.tooltip-active .timeline-tooltip {
         opacity: 1;
         visibility: visible;
-        transform: none;
+        transform: translateY(-50%);
     }
 
     .works-grid {
