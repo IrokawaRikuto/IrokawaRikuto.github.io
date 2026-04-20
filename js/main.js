@@ -187,7 +187,7 @@ const workData = {
     'sand-tetris': {
         title: { ja: 'Sand Tetris', en: 'Sand Tetris' },
         year: '2026',
-        tags: [{ ja: '個人制作', en: 'Solo' }],
+        tags: ['C++', { ja: '自主制作', en: 'Self-initiated' }],
         award: null,
         desc: {
             ja: '既存作品を自分の手で再現する試み。砂の物理演算とテトリスのルールを組み合わせたユニークなパズルゲーム。',
@@ -200,7 +200,7 @@ const workData = {
     'console-shooter': {
         title: { ja: 'コンソールシューティング', en: 'Console Shooter' },
         year: '2026',
-        tags: ['C++', { ja: '個人制作', en: 'Solo' }],
+        tags: ['C++', { ja: '自主制作', en: 'Self-initiated' }],
         award: null,
         desc: {
             ja: 'コンソール表示のみでグラディウス風の横スクロールシューティングを制作。1年次の課題を3年で作り直し、制約の中で表現力を追求。',
