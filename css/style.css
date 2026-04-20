@@ -1071,14 +1071,7 @@ footer {
         position: relative;
     }
     .timeline-line {
-        top: 18px;
-        left: 50%;
-        right: auto;
-        bottom: 18px;
-        width: 2px;
-        height: auto;
-        transform: translateX(-50%);
-        display: block;
+        display: none;
     }
     .timeline-year {
         display: grid;
@@ -1088,6 +1081,18 @@ footer {
         padding: 16px 0;
         position: relative;
         width: auto;
+    }
+    .timeline-year::after {
+        content: "";
+        position: absolute;
+        top: calc(50% + 6px);
+        bottom: calc(-50% - 6px);
+        right: 5px;
+        width: 2px;
+        background: var(--border);
+    }
+    .timeline-year:last-child::after {
+        display: none;
     }
     .timeline-year::before {
         margin: 0;
