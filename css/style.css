@@ -185,11 +185,9 @@ img {
 }
 
 .hero-icon {
-    width: clamp(150px, 20vw, 280px);
+    width: 200px;
     height: auto;
-    position: absolute;
-    top: 80px;
-    right: 40px;
+    flex-shrink: 0;
 }
 
 .hero-sub {
@@ -200,7 +198,7 @@ img {
 }
 
 .hero-title {
-    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-size: 4rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     margin-bottom: 16px;
@@ -1045,6 +1043,12 @@ footer {
     }
     .hero-text {
         text-align: center;
+    }
+    .hero-icon {
+        width: 150px;
+    }
+    .hero-title {
+        font-size: 2.5rem;
     }
 
     .about-grid {
