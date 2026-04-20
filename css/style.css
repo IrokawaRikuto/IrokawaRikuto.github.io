@@ -328,6 +328,15 @@ section {
     padding-right: 24px;
 }
 
+.about-certs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.about-certs li {
+    padding: 2px 0;
+}
+
 .about-pr {
     font-size: 0.95rem;
     line-height: 1.9;
