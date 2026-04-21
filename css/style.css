@@ -389,7 +389,7 @@ section {
     top: 18px;
     left: 20px;
     right: 20px;
-    height: 2px;
+    height: 3px;
     background: var(--border);
 }
 .timeline-line::after {
@@ -1060,7 +1060,7 @@ footer {
         left: 50%;
         right: auto;
         bottom: 18px;
-        width: 2px;
+        width: 3px;
         height: auto;
         transform: translateX(-50%);
         display: block;
