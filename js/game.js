@@ -1060,9 +1060,13 @@
 
     function showRanking(from, showDiff) {
         rankingFrom = from || 'title';
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
         state = 'RANKING';
+        overlay.hidden = false;
         overScreen.hidden = true; titleScreen.hidden = true;
         diffScreen.hidden = true; rankingScreen.hidden = false;
+        initTitleParticles();
+        drawTitleBg();
         var tabDiff = showDiff || diffKey;
         rankingTabs.querySelectorAll('.ranking-tab').forEach(function (t) {
             t.classList.toggle('active', t.dataset.diff === tabDiff);
@@ -1121,37 +1125,42 @@
 
     // ===== Game Loop =====
     function gameLoop() {
-        if (state !== 'PLAYING' && state !== 'GAMEOVER') return;
         frame++;
 
-        // Update
+        // Update (only while playing)
         if (state === 'PLAYING') {
-            updateBgParticles(bgParticles);
-            updatePlayer(); updatePBullets(); updateEnemies();
-            updateEBullets(); updateItems(); updateParticles();
-            updateDeleteEffects();
-            checkCollisions();
+            try {
+                updateBgParticles(bgParticles);
+                updatePlayer(); updatePBullets(); updateEnemies();
+                updateEBullets(); updateItems(); updateParticles();
+                updateDeleteEffects();
+                checkCollisions();
+            } catch (e) {
+                console.error('Game update error:', e);
+            }
         }
 
-        // Draw - always render the last frame even on GAMEOVER
-        // Clear full canvas
+        // Draw (always, so last frame visible on gameover)
         ctx.fillStyle = '#0a0810';
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
         // Draw game field (clipped & translated)
         ctx.save();
-        ctx.translate(FIELD_X, FIELD_Y);
-        ctx.beginPath();
-        ctx.rect(0, 0, W, H);
-        ctx.clip();
+        try {
+            ctx.translate(FIELD_X, FIELD_Y);
+            ctx.beginPath();
+            ctx.rect(0, 0, W, H);
+            ctx.clip();
 
-        drawGameBg();
-        drawCollectLine();
-        drawItems(); drawPBullets(); drawEnemies(); drawBoss();
-        drawEBullets(); drawPlayer(); drawParticles();
-        drawDeleteEffects();
-
-        ctx.restore();
+            drawGameBg();
+            drawCollectLine();
+            drawItems(); drawPBullets(); drawEnemies(); drawBoss();
+            drawEBullets(); drawPlayer(); drawParticles();
+            drawDeleteEffects();
+        } catch (e) {
+            console.error('Game draw error:', e);
+        }
+        ctx.restore(); // always restore even on error
 
         // Field border (東方風の二重枠)
         ctx.strokeStyle = '#888';
@@ -1162,9 +1171,16 @@
         ctx.strokeRect(FIELD_X - 3, FIELD_Y - 3, W + 6, H + 6);
 
         // Right-side HUD
-        drawHUDPanel();
+        try {
+            drawHUDPanel();
+        } catch (e) {
+            console.error('HUD draw error:', e);
+        }
 
-        if (state === 'PLAYING') animId = requestAnimationFrame(gameLoop);
+        // Always keep the loop running while in game states
+        if (state === 'PLAYING' || state === 'GAMEOVER') {
+            animId = requestAnimationFrame(gameLoop);
+        }
     }
 
     // ===== Title Scene =====
@@ -1225,9 +1241,10 @@
     function closeGameModal() {
         modal.classList.remove('active');
         document.body.style.overflowY = '';
+        state = 'CLOSED';
         if (animId) { cancelAnimationFrame(animId); animId = null; }
         if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
-        state = 'TITLE'; keys = {}; resetMobileKeys();
+        keys = {}; resetMobileKeys();
     }
 
     // ===== Input =====
