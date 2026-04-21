@@ -389,7 +389,7 @@ section {
     top: 18px;
     left: 20px;
     right: 20px;
-    height: 3px;
+    height: 4px;
     background: var(--border);
 }
 .timeline-line::after {
@@ -417,7 +417,7 @@ section {
     height: 12px;
     background: var(--accent);
     border-radius: 50%;
-    margin: 12px auto 16px;
+    margin: 14px auto 16px;
     box-shadow: 0 0 10px var(--accent-glow);
     position: relative;
     z-index: 1;
@@ -1060,7 +1060,7 @@ footer {
         left: 50%;
         right: auto;
         bottom: 18px;
-        width: 3px;
+        width: 4px;
         height: auto;
         transform: translateX(-50%);
         display: block;
