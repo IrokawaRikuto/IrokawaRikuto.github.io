@@ -818,6 +818,7 @@ section {
     font-size: 0.9rem;
     color: var(--text-muted);
     line-height: 1.8;
+    white-space: pre-line;
 }
 
 @media (max-width: 768px) {
