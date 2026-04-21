@@ -39,21 +39,24 @@
 - meta description / OGPタグ追加済み
 - モバイル時の年表を縦ライン形式に変更（中央ライン、左に年号、右に吹き出し、タッチ対応）
 - 作品カードのscroll-margin-top: 80px（ナビバーに隠れない）
+- ダウンロード用ファイルを`games/`フォルダに格納（SandTetris.exe）
+- Sand Tetrisの説明文を技術詳細込みの長文に刷新（セルオートマトン物理、最適化手法、AI協業方針）
+- モーダル説明文の改行対応（white-space: pre-line）
+- CIRCLESTRIKERのロゴをスクリーンショットとして追加
 
 ## 作品一覧（workData）表示順：新しい順
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
 |----|---------|-----|------|----------|------|----|----|
-| sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅ |
+| sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅（games/） |
 | console-shooter | コンソールシューティング | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
 | regamma | RE:GAMMA | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | gamma | GAMMA | 2025 | C++, DirectX, 課題制作：チーム | VS / DX11 | ✅ | ✅ | - |
-| circlestriker | CIRCLESTRIKER | 2024 | Unity, C#, 課題制作：個人 | Unity / VS Code | - | - | - |
+| circlestriker | CIRCLESTRIKER | 2024 | Unity, C#, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
 | touhou | 東方春三校 | 2024 | Unity, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
 
 ※ RE:GAMMAは製作中のため非表示（HTMLコメントアウト）
 
 ## 未完了・予定
-- CIRCLESTRIKERのスクリーンショット追加
 - プロフィール写真（現在プレースホルダー）
 - 各作品のPV動画追加
 - 各作品のダウンロードURL追加
