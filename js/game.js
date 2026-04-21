@@ -369,8 +369,8 @@
         switch (it.type) {
             case 'scoreS': score += 100; break;
             case 'score':  score += 1000; break;
-            case 'powerS': power = Math.min(MAX_POWER, power + 1); break;
-            case 'power':  power = Math.min(MAX_POWER, power + 5); break;
+            case 'powerS': power = Math.min(MAX_POWER, power + 1); break;   // +0.01
+            case 'power':  power = Math.min(MAX_POWER, power + 10); break;  // +0.10
             case 'bomb':   bombs = Math.min(MAX_BOMBS + 2, bombs + 1); break;
             case 'life':   lives++; break;
         }
@@ -416,6 +416,24 @@
     }
 
     // ===== Enemies =====
+    // Bullet patterns: 'down', 'way3', 'way5', 'circle', 'aimed', 'diagonal', 'random'
+    var BULLET_PATTERNS_SMALL = ['down', 'aimed', 'diagonal'];
+    var BULLET_PATTERNS_MEDIUM = ['way3', 'aimed', 'diagonal', 'random'];
+    var BULLET_PATTERNS_LARGE = ['way5', 'circle', 'way3', 'random'];
+
+    function pickBulletPattern(type) {
+        // Later stages unlock more patterns
+        var pool;
+        if (type === 'small') pool = BULLET_PATTERNS_SMALL;
+        else if (type === 'medium') pool = BULLET_PATTERNS_MEDIUM;
+        else pool = BULLET_PATTERNS_LARGE;
+        // Stage progression: later stages add harder patterns
+        if (waveIndex >= 2 && type === 'small') pool = ['down', 'aimed', 'diagonal', 'way3'];
+        if (waveIndex >= 4 && type === 'small') pool = ['down', 'aimed', 'diagonal', 'way3', 'random'];
+        if (waveIndex >= 3 && type === 'medium') pool = ['way3', 'way5', 'aimed', 'diagonal', 'circle', 'random'];
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
     function spawnEnemy(type) {
         var e = {
             x: 30 + Math.random() * (W - 60), y: -20,
@@ -423,22 +441,26 @@
             pattern: 'straight', fireRate: 200,
             fireTimer: Math.floor(Math.random() * 60),
             size: 8, age: 0, baseX: 0,
-            dir: Math.random() > 0.5 ? 1 : -1
+            dir: Math.random() > 0.5 ? 1 : -1,
+            bulletPattern: 'down'
         };
         var patRoll = Math.random();
         if (type === 'small') {
             e.hp = 3; e.maxHp = 3; e.size = 8;
             e.speed = 1.5 + Math.random() * 1;
             e.fireRate = Math.floor(180 / diff.bullets);
+            e.bulletPattern = pickBulletPattern('small');
             if (patRoll > 0.7) { e.pattern = 'sine'; e.baseX = e.x; }
         } else if (type === 'medium') {
             e.hp = 15; e.maxHp = 15; e.size = 14;
             e.speed = 1 + Math.random() * 0.5;
             e.fireRate = Math.floor(100 / diff.bullets);
+            e.bulletPattern = pickBulletPattern('medium');
             if (patRoll > 0.5) { e.pattern = 'sine'; e.baseX = e.x; }
         } else if (type === 'large') {
             e.hp = 50; e.maxHp = 50; e.size = 20; e.speed = 0.4;
             e.fireRate = Math.floor(60 / diff.bullets);
+            e.bulletPattern = pickBulletPattern('large');
             e.pattern = 'hover'; e.targetY = 60 + Math.random() * 60;
         }
         enemies.push(e);
@@ -457,7 +479,8 @@
                 hp: 3, maxHp: 3, speed: spd, type: 'small',
                 pattern: 'drift', fireRate: Math.floor(180 / diff.bullets),
                 fireTimer: Math.floor(Math.random() * 60),
-                size: 8, age: 0, baseX: 0, dir: dir
+                size: 8, age: 0, baseX: 0, dir: dir,
+                bulletPattern: pickBulletPattern('small')
             });
         }
     }
@@ -490,14 +513,19 @@
             return;
         }
 
-        var spawnRate = 40;
+        // Stage-based scaling: same base count per difficulty, increases with stages
+        var stageScale = 1 + waveIndex * 0.15; // +15% enemies per stage
+        var spawnRate = Math.max(20, Math.floor(40 / stageScale));
         if (waveTimer % spawnRate === 0) {
             spawnEnemy('small');
-            if (Math.random() > 0.6) spawnEnemy('small');
+            if (Math.random() > 0.6 / stageScale) spawnEnemy('small');
         }
-        if (waveTimer % 120 === 0 && waveTimer > 60) spawnDriftFormation();
-        if (waveTimer % 200 === 0 && waveTimer > 200) spawnEnemy('medium');
-        if (waveTimer % 500 === 0 && waveTimer > 500) spawnEnemy('large');
+        var driftRate = Math.max(60, Math.floor(120 / stageScale));
+        if (waveTimer % driftRate === 0 && waveTimer > 60) spawnDriftFormation();
+        var medRate = Math.max(100, Math.floor(200 / stageScale));
+        if (waveTimer % medRate === 0 && waveTimer > 150) spawnEnemy('medium');
+        var lgRate = Math.max(250, Math.floor(500 / stageScale));
+        if (waveTimer % lgRate === 0 && waveTimer > 400) spawnEnemy('large');
 
         if (waveTimer >= bossInterval) {
             waveTimer = 0; waveIndex++;
@@ -522,17 +550,54 @@
     function fireEnemyBullet(e) {
         var angle = Math.atan2(player.y - e.y, player.x - e.x);
         var spd = (1.5 + Math.random() * 0.5) * diff.speed;
-        if (e.type === 'small') {
-            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, size: 3, grazed: false });
-        } else if (e.type === 'medium') {
-            var n = Math.floor(2 * diff.bullets), spread = 0.3;
-            for (var a = -spread; a <= spread + 0.01; a += spread * 2 / Math.max(n - 1, 1))
-                eBullets.push({ x: e.x, y: e.y, vx: Math.cos(angle + a) * spd, vy: Math.sin(angle + a) * spd, size: 4, grazed: false });
-        } else if (e.type === 'large') {
-            var n = Math.floor(5 * diff.bullets);
-            for (var i = 0; i < n; i++) {
-                var a = (Math.PI * 2 / n) * i + e.age * 0.03;
-                eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd * 0.8, vy: Math.sin(a) * spd * 0.8, size: 4, grazed: false });
+        var sz = e.type === 'small' ? 3 : 4;
+        var bp = e.bulletPattern || 'down';
+
+        switch (bp) {
+            case 'down': // Straight down
+                eBullets.push({ x: e.x, y: e.y, vx: 0, vy: spd, size: sz, grazed: false });
+                break;
+            case 'way3': { // 3-way downward spread
+                var base = Math.PI / 2; // downward
+                for (var i = -1; i <= 1; i++) {
+                    var a = base + i * 0.3;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: sz, grazed: false });
+                }
+                break;
+            }
+            case 'way5': { // 5-way spread
+                var base = Math.PI / 2;
+                for (var i = -2; i <= 2; i++) {
+                    var a = base + i * 0.25;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: sz, grazed: false });
+                }
+                break;
+            }
+            case 'circle': { // All-direction
+                var n = Math.floor(5 * diff.bullets);
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + e.age * 0.03;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd * 0.8, vy: Math.sin(a) * spd * 0.8, size: sz, grazed: false });
+                }
+                break;
+            }
+            case 'aimed': // Aimed at player
+                eBullets.push({ x: e.x, y: e.y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, size: sz, grazed: false });
+                break;
+            case 'diagonal': { // Left-right diagonal
+                var dirX = e.x < W / 2 ? 1 : -1;
+                eBullets.push({ x: e.x, y: e.y, vx: dirX * spd * 0.7, vy: spd * 0.7, size: sz, grazed: false });
+                eBullets.push({ x: e.x, y: e.y, vx: -dirX * spd * 0.5, vy: spd * 0.85, size: sz, grazed: false });
+                break;
+            }
+            case 'random': { // Random direction (biased downward)
+                var n = e.type === 'large' ? 3 : (e.type === 'medium' ? 2 : 1);
+                for (var i = 0; i < n; i++) {
+                    var a = Math.PI * 0.15 + Math.random() * Math.PI * 0.7; // ~downward hemisphere
+                    var s = spd * (0.7 + Math.random() * 0.6);
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: sz, grazed: false });
+                }
+                break;
             }
         }
     }
@@ -541,14 +606,17 @@
         spawnExplosion(e.x, e.y, '#ff4444', e.size > 14 ? 12 : 6);
         score += e.type === 'small' ? 100 : e.type === 'medium' ? 500 : 2000;
         if (e.type === 'small') {
-            if (Math.random() > 0.5) spawnItems(e.x, e.y, 'scoreS', 1);
-            else spawnItems(e.x, e.y, 'powerS', 1);
+            // 80% score, 20% small power
+            if (Math.random() < 0.2) spawnItems(e.x, e.y, 'powerS', 1);
+            else spawnItems(e.x, e.y, 'scoreS', 1);
         } else if (e.type === 'medium') {
-            if (Math.random() > 0.5) spawnItems(e.x, e.y, 'score', 1);
-            else spawnItems(e.x, e.y, 'power', 1);
+            spawnItems(e.x, e.y, 'score', 1);
+            // 25% chance for power
+            if (Math.random() < 0.25) spawnItems(e.x, e.y, 'power', 1);
+            else spawnItems(e.x, e.y, 'scoreS', 2);
         } else if (e.type === 'large') {
-            spawnItems(e.x, e.y, 'score', 2); spawnItems(e.x, e.y, 'scoreS', 4);
-            spawnItems(e.x, e.y, 'power', 1); spawnItems(e.x, e.y, 'powerS', 3);
+            spawnItems(e.x, e.y, 'score', 3); spawnItems(e.x, e.y, 'scoreS', 5);
+            spawnItems(e.x, e.y, 'power', 1); spawnItems(e.x, e.y, 'powerS', 2);
             var rng = Math.random();
             if (rng < 0.15) spawnItems(e.x, e.y, 'life', 1);
             else if (rng < 0.35) spawnItems(e.x, e.y, 'bomb', 1);
@@ -726,7 +794,19 @@
     function playerHit() {
         lives--;
         invTimer = INVINCIBLE_FRAMES;
-        power = Math.max(MIN_POWER, power - 50);
+        var oldPower = power;
+        power = Math.max(MIN_POWER, power - 100); // -1.00
+        var lost = oldPower - power;
+        // Drop 40-60% of lost power as items
+        if (lost > 0) {
+            var dropRate = 0.4 + Math.random() * 0.2; // 40-60%
+            var dropAmount = Math.floor(lost * dropRate);
+            // Mix of big P (10=0.10) and small P (1=0.01)
+            var bigCount = Math.floor(dropAmount / 10);
+            var smallCount = dropAmount - bigCount * 10;
+            if (bigCount > 0) spawnItems(player.x, player.y, 'power', bigCount);
+            if (smallCount > 0) spawnItems(player.x, player.y, 'powerS', smallCount);
+        }
         spawnExplosion(player.x, player.y, '#ffffff', 10);
         eBullets = [];
         player.x = W / 2; player.y = H - 60;
