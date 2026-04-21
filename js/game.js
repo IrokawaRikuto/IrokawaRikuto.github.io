@@ -17,6 +17,7 @@
     var nameInput = document.getElementById('game-name');
     var startBtn = document.getElementById('game-start-btn');
     var submitBtn = document.getElementById('game-submit-btn');
+    var skipBtn = document.getElementById('game-skip-btn');
     var rankingList = document.getElementById('game-ranking-list');
     var rankingBtns = document.getElementById('game-ranking-btns');
     var rankingTabs = document.getElementById('game-ranking-tabs');
@@ -990,7 +991,11 @@
     }
 
     function handleMenuKey(code) {
-        if (state === 'GAMEOVER') { if (code === 'Enter') submitBtn.click(); return; }
+        if (state === 'GAMEOVER') {
+            if (code === 'Enter') submitBtn.click();
+            else if (code === 'KeyX' || code === 'Escape') skipBtn.click();
+            return;
+        }
         var items = getMenuItems();
         if (!items || items.length === 0) return;
         if (code === 'ArrowUp') { menuIndex = (menuIndex - 1 + items.length) % items.length; updateMenuHighlight(); }
@@ -1089,6 +1094,10 @@
     nameInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); submitBtn.click(); }
         e.stopPropagation();
+    });
+
+    skipBtn.addEventListener('click', function () {
+        showRanking('gameover', diffKey);
     });
 
     rankingTabs.querySelectorAll('.ranking-tab').forEach(function (tab) {
