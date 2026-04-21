@@ -43,7 +43,7 @@
 
             this.speed = 1 + Math.random() * 2;
             this.lineLength = 700 + Math.random() * 200;
-            this.opacity = 0.15 + Math.random() * 0.25;
+            this.opacity = 0.25 + Math.random() * 0.15;
             this.width = 0.5 + Math.random() * 1.5;
 
             // 赤系の色（近未来風）
