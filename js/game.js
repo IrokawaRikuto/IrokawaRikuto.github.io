@@ -880,112 +880,149 @@
     }
 
     // ===== Right-side HUD Panel (東方スタイル) =====
+    var DIFF_COLORS = { easy: '#44aaff', normal: '#44ff44', hard: '#ffaa44', lunatic: '#ff4444' };
+
+    function drawStar(cx, cy, r, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        for (var i = 0; i < 5; i++) {
+            var a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+            var a2 = a + Math.PI / 5;
+            if (i === 0) ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+            else ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+            ctx.lineTo(cx + Math.cos(a2) * r * 0.4, cy + Math.sin(a2) * r * 0.4);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function formatScore(n) {
+        var s = n.toString();
+        var out = '';
+        for (var i = 0; i < s.length; i++) {
+            if (i > 0 && (s.length - i) % 3 === 0) out += ',';
+            out += s[i];
+        }
+        return out;
+    }
+
     function drawHUDPanel() {
         ctx.save();
-        ctx.textBaseline = 'top';
-        ctx.textAlign = 'left';
 
         // Panel background
-        ctx.fillStyle = '#08060e';
-        ctx.fillRect(FIELD_X + W + 2, 0, CANVAS_W - FIELD_X - W - 2, CANVAS_H);
+        var panelX = FIELD_X + W + 4;
+        ctx.fillStyle = '#0a0810';
+        ctx.fillRect(panelX, 0, CANVAS_W - panelX, CANVAS_H);
+
+        // Subtle decorative pattern on panel
+        ctx.globalAlpha = 0.03;
+        for (var i = 0; i < 8; i++) {
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(CANVAS_W - 40, CANVAS_H - 60, 30 + i * 20, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
 
         var px = HUD_X;
-        var py = FIELD_Y + 8;
+        var rightX = px + HUD_W;
+        var py = FIELD_Y + 10;
 
-        // Difficulty
-        ctx.font = 'bold 14px "Courier New", monospace';
-        ctx.fillStyle = '#ff4444';
-        ctx.fillText(diff.label, px, py);
-        ctx.fillStyle = '#555';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('Stage ' + (waveIndex + 1), px + HUD_W - 50, py + 2);
+        ctx.textBaseline = 'top';
+
+        // Difficulty (大きく色付き、東方風)
+        var diffCol = DIFF_COLORS[diffKey] || '#ff4444';
+        ctx.font = 'bold 18px "Courier New", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = diffCol;
+        ctx.fillText(diff.label.toUpperCase(), rightX, py);
         py += 28;
 
-        // Score label + value
-        ctx.fillStyle = '#666';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('SCORE', px, py);
-        py += 14;
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px "Courier New", monospace';
-        ctx.fillText(score.toString(), px, py);
+        // ハイスコア (HiScore)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u30CF\u30A4\u30B9\u30B3\u30A2', px, py);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ccc';
+        ctx.font = '13px "Courier New", monospace';
+        ctx.fillText(formatScore(Math.max(score, 0)), rightX, py);
+        py += 20;
+
+        // スコア (Score)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u30B9\u30B3\u30A2', px, py);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 15px "Courier New", monospace';
+        ctx.fillText(formatScore(score), rightX, py);
         py += 30;
 
-        // Separator
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + HUD_W, py); ctx.stroke();
-        py += 12;
-
-        // Lives
-        ctx.fillStyle = '#666';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('PLAYER', px, py);
+        // 残り人数 (Lives)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u6B8B\u308A\u4EBA\u6570', px, py);
         py += 16;
         for (var i = 0; i < Math.max(MAX_LIVES, lives); i++) {
-            ctx.fillStyle = i < lives ? '#ff4444' : '#222';
-            ctx.beginPath();
-            // Star shape for lives
-            var sx = px + 10 + i * 18, sy = py + 2;
-            ctx.arc(sx, sy, 6, 0, Math.PI * 2);
-            ctx.fill();
-            if (i < lives) {
-                ctx.fillStyle = '#ff8888';
-                ctx.beginPath(); ctx.arc(sx - 2, sy - 2, 2, 0, Math.PI * 2); ctx.fill();
-            }
+            drawStar(px + 8 + i * 16, py + 5, i < lives ? 6 : 5, i < lives ? '#ff4444' : '#222');
         }
         py += 22;
 
-        // Bombs
-        ctx.fillStyle = '#666';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('BOMB', px, py);
+        // スペルカード (Bombs)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u30B9\u30DA\u30EB\u30AB\u30FC\u30C9', px, py);
         py += 16;
         for (var i = 0; i < Math.max(MAX_BOMBS, bombs); i++) {
-            ctx.fillStyle = i < bombs ? '#44ff44' : '#222';
-            var bx = px + 10 + i * 18, by = py + 2;
-            ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
-            if (i < bombs) {
-                ctx.fillStyle = '#88ff88';
-                ctx.beginPath(); ctx.arc(bx - 2, by - 2, 2, 0, Math.PI * 2); ctx.fill();
-            }
+            drawStar(px + 8 + i * 16, py + 5, i < bombs ? 6 : 5, i < bombs ? '#44ff44' : '#222');
         }
-        py += 26;
+        py += 30;
 
-        // Separator
-        ctx.strokeStyle = '#333';
-        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + HUD_W, py); ctx.stroke();
-        py += 12;
-
-        // Power
-        ctx.fillStyle = '#666';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('POWER', px, py);
-        py += 16;
+        // 霊力 (Power)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u970A\u529B', px, py);
+        ctx.textAlign = 'right';
         ctx.fillStyle = '#ffaa44';
         ctx.font = 'bold 14px "Courier New", monospace';
-        ctx.fillText((power / 100).toFixed(2) + ' / ' + (MAX_POWER / 100).toFixed(2), px, py);
-        py += 8;
+        ctx.fillText((power / 100).toFixed(2) + ' / ' + (MAX_POWER / 100).toFixed(2), rightX, py);
+        py += 22;
+
         // Power bar
-        var barW = HUD_W - 4;
-        var barH = 6;
-        py += 10;
-        ctx.fillStyle = '#222';
+        var barW = HUD_W;
+        var barH = 4;
+        ctx.fillStyle = '#1a1a2a';
         ctx.fillRect(px, py, barW, barH);
         ctx.fillStyle = '#ffaa44';
         ctx.fillRect(px, py, barW * (power / MAX_POWER), barH);
-        ctx.strokeStyle = '#444';
-        ctx.strokeRect(px, py, barW, barH);
-        py += 22;
+        py += 18;
 
-        // Graze
-        ctx.fillStyle = '#666';
-        ctx.font = '10px "Courier New", monospace';
-        ctx.fillText('GRAZE', px, py);
-        py += 14;
-        ctx.fillStyle = '#aaaaaa';
+        // グレイズ (Graze)
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#888';
+        ctx.fillText('\u30B0\u30EC\u30A4\u30BA', px, py);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ccc';
         ctx.font = 'bold 14px "Courier New", monospace';
-        ctx.fillText(graze.toString(), px, py);
+        ctx.fillText(formatScore(graze), rightX, py);
+        py += 40;
+
+        // Stage
+        ctx.textAlign = 'left';
+        ctx.font = '11px "Courier New", monospace';
+        ctx.fillStyle = '#666';
+        ctx.fillText('STAGE', px, py);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#aaa';
+        ctx.font = 'bold 14px "Courier New", monospace';
+        ctx.fillText((waveIndex + 1).toString(), rightX, py);
 
         ctx.restore();
     }
@@ -1084,15 +1121,21 @@
 
     // ===== Game Loop =====
     function gameLoop() {
+        if (state !== 'PLAYING' && state !== 'GAMEOVER') return;
         frame++;
-        updateBgParticles(bgParticles);
-        updatePlayer(); updatePBullets(); updateEnemies();
-        updateEBullets(); updateItems(); updateParticles();
-        updateDeleteEffects();
-        checkCollisions();
 
+        // Update
+        if (state === 'PLAYING') {
+            updateBgParticles(bgParticles);
+            updatePlayer(); updatePBullets(); updateEnemies();
+            updateEBullets(); updateItems(); updateParticles();
+            updateDeleteEffects();
+            checkCollisions();
+        }
+
+        // Draw - always render the last frame even on GAMEOVER
         // Clear full canvas
-        ctx.fillStyle = '#08060e';
+        ctx.fillStyle = '#0a0810';
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
         // Draw game field (clipped & translated)
@@ -1110,10 +1153,13 @@
 
         ctx.restore();
 
-        // Field border
-        ctx.strokeStyle = '#555';
+        // Field border (東方風の二重枠)
+        ctx.strokeStyle = '#888';
         ctx.lineWidth = 2;
         ctx.strokeRect(FIELD_X - 1, FIELD_Y - 1, W + 2, H + 2);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(FIELD_X - 3, FIELD_Y - 3, W + 6, H + 6);
 
         // Right-side HUD
         drawHUDPanel();
