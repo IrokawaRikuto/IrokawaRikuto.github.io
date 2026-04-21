@@ -21,7 +21,7 @@
 - トップに戻るボタン（右下、48px、スクロールで出現）
 - スクロールバー非表示（ガタつき防止）
 - ファビコン（IRファビコン.png）、ナビバーロゴ（IRファビコン.png）
-- Skills: C++, C#, Unity, HTML/CSS, Visual Studio, VS Code, Blender, Maya, MMD, PMXEditor, YMM4, AviUtl, Studio One 6
+- Skills: C++, C#, JavaScript, Unity, HTML/CSS, Visual Studio, VS Code, Blender, Maya, MMD, PMXEditor, YMM4, AviUtl, Studio One 6
 - Skillsカテゴリのホバーエフェクト削除済み（クリック不可のため）
 - About: 学校、志望職種、受賞歴、資格、自己紹介文
 - スクリーンショットは配列形式（screenshots: [...]）で複数枚対応

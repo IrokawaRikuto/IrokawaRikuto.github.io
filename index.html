@@ -122,6 +122,10 @@
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML" class="skill-icon">
                         <span class="skill-name">HTML</span>
                     </li>
+                    <li>
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" class="skill-icon">
+                        <span class="skill-name">JavaScript</span>
+                    </li>
                 </ul>
             </div>
             <div class="skill-category">
@@ -463,9 +467,6 @@
                     <canvas id="game-canvas"></canvas>
                     <div id="game-overlay">
                         <div id="game-title-screen">
-                            <h3>SHOOTING</h3>
-                            <p id="game-instructions" data-ja="移動: ↑←↓→　ショット: Z　ボム: X　低速: Shift\n決定: Z　キャンセル: X" data-en="Move: ↑←↓→  Shot: Z  Bomb: X  Slow: Shift\nSelect: Z  Cancel: X">移動: ↑←↓→　ショット: Z　ボム: X　低速: Shift
-決定: Z　キャンセル: X</p>
                             <div class="title-menu">
                                 <button class="title-menu-item selected" data-action="start" data-ja="ゲームスタート" data-en="Game Start">ゲームスタート</button>
                                 <button class="title-menu-item" data-action="ranking" data-ja="ランキング" data-en="Ranking">ランキング</button>
@@ -505,18 +506,31 @@
                     </div>
                 </div>
             </div>
-            <div class="game-info">
-                <div class="game-info-row">
-                    <span class="game-info-label" data-ja="制作年" data-en="Year">制作年</span>
-                    <span>2026</span>
+            <div class="game-detail-grid">
+                <div class="game-detail-left">
+                    <div class="game-detail-section">
+                        <h4 class="game-detail-label" data-ja="制作年" data-en="Year">制作年</h4>
+                        <p>2026</p>
+                    </div>
+                    <div class="game-detail-section">
+                        <h4 class="game-detail-label" data-ja="開発環境" data-en="Environment">開発環境</h4>
+                        <p>HTML5 Canvas / JavaScript / Claude Code Pro</p>
+                    </div>
+                    <div class="game-detail-section">
+                        <h4 class="game-detail-label" data-ja="使用素材" data-en="Assets">使用素材</h4>
+                        <p data-ja="Coming Soon" data-en="Coming Soon">Coming Soon</p>
+                    </div>
                 </div>
-                <div class="game-info-row">
-                    <span class="game-info-label" data-ja="開発環境" data-en="Environment">開発環境</span>
-                    <span>HTML5 Canvas / JavaScript / Claude Code Pro</span>
-                </div>
-                <div class="game-info-row">
-                    <span class="game-info-label" data-ja="素材" data-en="Assets">素材</span>
-                    <span data-ja="プログラムで生成（外部素材不使用）" data-en="All procedurally generated (no external assets)">プログラムで生成（外部素材不使用）</span>
+                <div class="game-detail-right">
+                    <div class="game-detail-section">
+                        <h4 class="game-detail-label" data-ja="概要" data-en="Overview">概要</h4>
+                        <p data-ja="ポートフォリオサイトに埋め込んだ東方風縦スクロールシューティングゲーム。HTML5 CanvasとJavaScriptのみで制作。ステージが進むにつれ敵の数や弾幕パターンが増加し、各ステージ最後にボスが出現する。Firebaseによるオンラインランキングに対応。" data-en="A Touhou-style vertical scrolling shooting game embedded in this portfolio site. Built with HTML5 Canvas and JavaScript only. Enemy count and bullet patterns increase as stages progress, with a boss at the end of each stage. Supports online ranking via Firebase.">ポートフォリオサイトに埋め込んだ東方風縦スクロールシューティングゲーム。HTML5 CanvasとJavaScriptのみで制作。ステージが進むにつれ敵の数や弾幕パターンが増加し、各ステージ最後にボスが出現する。Firebaseによるオンラインランキングに対応。</p>
+                    </div>
+                    <div class="game-detail-section">
+                        <h4 class="game-detail-label" data-ja="操作方法" data-en="Controls">操作方法</h4>
+                        <p data-ja="移動: ↑←↓→ / ショット: Z / ボム: X / 低速移動: Shift&#10;メニュー決定: Z / キャンセル: X" data-en="Move: ↑←↓→ / Shot: Z / Bomb: X / Slow: Shift&#10;Menu Select: Z / Cancel: X">移動: ↑←↓→ / ショット: Z / ボム: X / 低速移動: Shift
+メニュー決定: Z / キャンセル: X</p>
+                    </div>
                 </div>
             </div>
             <div class="game-controls">

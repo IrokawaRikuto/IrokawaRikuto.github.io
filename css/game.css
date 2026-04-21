@@ -42,28 +42,41 @@
     border-radius: 4px;
 }
 
-/* ===== Game Info ===== */
-.game-info {
+/* ===== Game Detail Grid (作品紹介スタイル) ===== */
+.game-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 24px;
     border-top: 1px solid var(--border);
-    padding-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 500px;
+    padding-top: 20px;
+    max-width: 700px;
     margin: 0 auto;
 }
-.game-info-row {
+.game-detail-left,
+.game-detail-right {
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+    gap: 14px;
+}
+.game-detail-section p {
     font-size: 0.85rem;
     color: var(--text);
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-line;
 }
-.game-info-label {
-    color: var(--accent);
+.game-detail-label {
     font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    min-width: 80px;
-    flex-shrink: 0;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+@media (max-width: 768px) {
+    .game-detail-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ===== Game Overlay ===== */

@@ -177,23 +177,20 @@
 
     function drawTitleBackground() {
         var grd = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-        grd.addColorStop(0, '#12081a');
-        grd.addColorStop(0.4, '#1a0a20');
-        grd.addColorStop(0.7, '#14061a');
-        grd.addColorStop(1, '#0a0410');
+        grd.addColorStop(0, '#1a0e28');
+        grd.addColorStop(0.4, '#241232');
+        grd.addColorStop(0.7, '#1e0c28');
+        grd.addColorStop(1, '#120818');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
         drawBgParticles(titleParticles);
 
-        // Title text
+        // Title text (single layer)
         ctx.save();
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ff4444';
         ctx.shadowColor = '#ff4444';
-        ctx.shadowBlur = 25;
-        ctx.font = 'bold 38px "Courier New", monospace';
-        ctx.fillText('SHOOTING', CANVAS_W / 2, CANVAS_H * 0.28);
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 20;
         ctx.font = 'bold 38px "Courier New", monospace';
         ctx.fillText('SHOOTING', CANVAS_W / 2, CANVAS_H * 0.28);
         ctx.shadowBlur = 0;
@@ -552,7 +549,11 @@
                 if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
             }
             if (enemies.length === 0) {
-                forceCollectAllItems(); preBoss = false; spawnBoss();
+                forceCollectAllItems();
+                // ボス出現時に残っている弾を消去エフェクト付きで消す
+                for (var j = 0; j < eBullets.length; j++) spawnDeleteEffect(eBullets[j].x, eBullets[j].y);
+                eBullets = [];
+                preBoss = false; spawnBoss();
             }
             return;
         }
