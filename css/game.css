@@ -20,59 +20,98 @@
 
 /* ===== Game Modal ===== */
 .game-modal-content {
-    max-width: 420px;
+    max-width: 560px;
     padding: 0;
     overflow: hidden;
-    background: #000;
+    background: #111;
     border: 1px solid var(--accent);
 }
 
-.game-wrapper {
-    position: relative;
+.game-layout {
+    display: flex;
     width: 100%;
-    aspect-ratio: 9/16;
-    max-height: 85vh;
-    margin: 0 auto;
-    overflow: hidden;
 }
 
+/* ===== Play Area ===== */
+.game-play-area {
+    position: relative;
+    width: 360px;
+    flex-shrink: 0;
+}
 #game-canvas {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    background: #000;
 }
 
-/* ===== Game HUD ===== */
-#game-hud {
-    position: absolute;
-    top: 8px;
-    left: 12px;
-    right: 12px;
+/* ===== HUD Side Panel ===== */
+.game-hud-panel {
+    width: 160px;
+    background: #0a0a14;
+    padding: 16px 12px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 14px;
+    border-left: 1px solid #222;
     font-family: "Courier New", monospace;
-    font-size: 0.85rem;
     color: #fff;
-    z-index: 2;
-    pointer-events: none;
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+    font-size: 0.75rem;
+}
+.hud-label {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+}
+.hud-value {
+    font-size: 0.9rem;
+    color: #fff;
+}
+.hud-lives, .hud-bombs {
+    display: flex;
+    gap: 3px;
+}
+.hud-lives span, .hud-bombs span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.hud-lives span { background: #ff4444; }
+.hud-lives span.empty { background: #333; }
+.hud-bombs span { background: #44ff44; }
+.hud-bombs span.empty { background: #333; }
+.hud-power-bar {
+    width: 100%;
+    height: 6px;
+    background: #222;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.hud-power-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4444, #ff8844);
+    transition: width 0.2s;
+}
+.hud-difficulty {
+    color: var(--accent);
+    font-size: 0.7rem;
 }
 
-/* ===== Game Overlay (Title / GameOver / Ranking) ===== */
+/* ===== Game Overlay ===== */
 #game-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 3;
 }
-#game-overlay[hidden] {
-    display: none;
-}
+#game-overlay[hidden] { display: none; }
 #game-overlay h3 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 900;
     letter-spacing: 0.1em;
     color: #fff;
@@ -80,6 +119,7 @@
 }
 
 #game-title-screen,
+#game-difficulty-screen,
 #game-over-screen,
 #game-ranking-screen {
     text-align: center;
@@ -87,17 +127,54 @@
     padding: 20px;
 }
 #game-title-screen[hidden],
+#game-difficulty-screen[hidden],
 #game-over-screen[hidden],
 #game-ranking-screen[hidden] {
     display: none;
 }
 
 #game-instructions {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     margin-bottom: 20px;
+    white-space: pre-line;
 }
 
+/* ===== Difficulty Select ===== */
+.difficulty-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+}
+.difficulty-btn {
+    display: block;
+    width: 180px;
+    margin: 0 auto;
+    padding: 10px 0;
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: transparent;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+.difficulty-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.difficulty-btn.easy { color: #44aaff; border-color: #44aaff33; }
+.difficulty-btn.easy:hover { border-color: #44aaff; background: #44aaff11; }
+.difficulty-btn.normal { color: #44ff44; border-color: #44ff4433; }
+.difficulty-btn.normal:hover { border-color: #44ff44; background: #44ff4411; }
+.difficulty-btn.hard { color: #ffaa44; border-color: #ffaa4433; }
+.difficulty-btn.hard:hover { border-color: #ffaa44; background: #ffaa4411; }
+.difficulty-btn.lunatic { color: #ff4444; border-color: #ff444433; }
+.difficulty-btn.lunatic:hover { border-color: #ff4444; background: #ff444411; }
+
+/* ===== Buttons ===== */
 .game-btn {
     display: inline-block;
     padding: 10px 36px;
@@ -142,7 +219,6 @@
     border-color: var(--accent);
 }
 
-/* ===== Final Score ===== */
 #game-final-score {
     font-family: "Courier New", monospace;
     font-size: 1.4rem;
@@ -150,7 +226,7 @@
     margin: 12px 0;
 }
 
-/* ===== Ranking List ===== */
+/* ===== Ranking ===== */
 #game-ranking-list {
     list-style: none;
     padding: 0;
@@ -169,25 +245,116 @@
     color: var(--text);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-#game-ranking-list li .rank {
-    color: var(--accent);
-    width: 28px;
+#game-ranking-list li .rank { color: var(--accent); width: 28px; }
+#game-ranking-list li .name { flex: 1; }
+#game-ranking-list li .score { text-align: right; min-width: 70px; }
+
+/* ===== Mobile Controls ===== */
+.game-controls {
+    display: none;
+    background: #0a0a14;
+    padding: 12px;
+    border-top: 1px solid #222;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
-#game-ranking-list li .name {
-    flex: 1;
-}
-#game-ranking-list li .score {
-    text-align: right;
-    min-width: 70px;
+.game-controls-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 360px;
+    margin: 0 auto;
 }
 
-/* ===== Mobile ===== */
+/* D-Pad */
+.dpad {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+.dpad-btn {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+}
+.dpad-btn:active, .dpad-btn.active {
+    background: rgba(255, 68, 68, 0.3);
+    border-color: var(--accent);
+}
+.dpad-up { top: 0; left: 40px; }
+.dpad-down { bottom: 0; left: 40px; }
+.dpad-left { top: 40px; left: 0; }
+.dpad-right { top: 40px; right: 0; }
+
+/* Action Buttons */
+.action-btns {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.action-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+.action-btn:active, .action-btn.active {
+    background: rgba(255, 68, 68, 0.3);
+    border-color: var(--accent);
+}
+.action-btn.bomb-btn { border-color: #44ff4444; color: #44ff44; }
+.action-btn.bomb-btn:active, .action-btn.bomb-btn.active { background: rgba(68, 255, 68, 0.2); border-color: #44ff44; }
+.action-btn.slow-btn { border-color: #44aaff44; color: #44aaff; }
+.action-btn.slow-btn:active, .action-btn.slow-btn.active { background: rgba(68, 170, 255, 0.2); border-color: #44aaff; }
+.action-btn.shot-btn { border-color: #ff444444; color: #ff4444; }
+.action-btn.shot-btn:active, .action-btn.shot-btn.active { background: rgba(255, 68, 68, 0.3); border-color: #ff4444; }
+
+/* ===== Mobile Layout ===== */
 @media (max-width: 768px) {
     .game-modal-content {
-        width: 95%;
-        max-width: none;
+        max-width: 100%;
+        width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        border: none;
     }
-    .game-wrapper {
-        max-height: 80vh;
+    .game-layout {
+        flex-direction: column;
+    }
+    .game-play-area {
+        width: 100%;
+    }
+    .game-hud-panel {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 12px;
+        border-left: none;
+        border-top: 1px solid #222;
+    }
+    .game-hud-panel > div {
+        min-width: 60px;
+    }
+    .game-controls {
+        display: flex;
     }
 }

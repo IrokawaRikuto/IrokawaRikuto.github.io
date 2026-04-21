@@ -457,32 +457,81 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content game-modal-content">
         <button class="modal-close" aria-label="閉じる">&times;</button>
-        <div class="game-wrapper">
-            <canvas id="game-canvas"></canvas>
-            <div id="game-hud">
-                <span id="game-score">SCORE: 0</span>
-                <span id="game-lives"></span>
-            </div>
-            <div id="game-overlay">
-                <div id="game-title-screen">
-                    <h3>SHOOTER</h3>
-                    <p id="game-instructions" data-ja="矢印キー/WASD: 移動　Space: 発射&#10;モバイル: タッチで移動+自動発射" data-en="Arrow/WASD: Move  Space: Fire&#10;Mobile: Touch to move + auto-fire">矢印キー/WASD: 移動　Space: 発射&#10;モバイル: タッチで移動+自動発射</p>
-                    <button id="game-play-btn" class="game-btn">PLAY</button>
-                </div>
-                <div id="game-over-screen" hidden>
-                    <h3>GAME OVER</h3>
-                    <p id="game-final-score"></p>
-                    <div class="game-name-input">
-                        <label data-ja="名前" data-en="Name">名前</label>
-                        <input type="text" id="game-name" maxlength="12" placeholder="AAA" autocomplete="off">
+        <div class="game-layout">
+            <div class="game-play-area">
+                <canvas id="game-canvas"></canvas>
+                <div id="game-overlay">
+                    <div id="game-title-screen">
+                        <h3>SHOOTER</h3>
+                        <p id="game-instructions" data-ja="移動: ↑←↓→　ショット: Z　ボム: X　低速: Shift" data-en="Move: ↑←↓→  Shot: Z  Bomb: X  Slow: Shift">移動: ↑←↓→　ショット: Z　ボム: X　低速: Shift</p>
+                        <button id="game-play-btn" class="game-btn">PLAY</button>
                     </div>
-                    <button id="game-submit-btn" class="game-btn" data-ja="スコア送信" data-en="Submit Score">スコア送信</button>
-                    <button id="game-retry-btn" class="game-btn" data-ja="リトライ" data-en="Retry">リトライ</button>
+                    <div id="game-difficulty-screen" hidden>
+                        <h3 data-ja="難易度選択" data-en="Difficulty">難易度選択</h3>
+                        <div class="difficulty-list">
+                            <button class="difficulty-btn easy" data-diff="easy">Easy</button>
+                            <button class="difficulty-btn normal" data-diff="normal">Normal</button>
+                            <button class="difficulty-btn hard" data-diff="hard">Hard</button>
+                            <button class="difficulty-btn lunatic" data-diff="lunatic">Lunatic</button>
+                        </div>
+                    </div>
+                    <div id="game-over-screen" hidden>
+                        <h3>GAME OVER</h3>
+                        <p id="game-final-score"></p>
+                        <div class="game-name-input">
+                            <label data-ja="名前" data-en="Name">名前</label>
+                            <input type="text" id="game-name" maxlength="12" placeholder="AAA" autocomplete="off">
+                        </div>
+                        <button id="game-submit-btn" class="game-btn" data-ja="スコア送信" data-en="Submit Score">スコア送信</button>
+                        <button id="game-retry-btn" class="game-btn" data-ja="リトライ" data-en="Retry">リトライ</button>
+                    </div>
+                    <div id="game-ranking-screen" hidden>
+                        <h3 data-ja="ランキング" data-en="Ranking">ランキング</h3>
+                        <ol id="game-ranking-list"></ol>
+                        <button id="game-ranking-close" class="game-btn" data-ja="戻る" data-en="Back">戻る</button>
+                    </div>
                 </div>
-                <div id="game-ranking-screen" hidden>
-                    <h3 data-ja="ランキング" data-en="Ranking">ランキング</h3>
-                    <ol id="game-ranking-list"></ol>
-                    <button id="game-ranking-close" class="game-btn" data-ja="戻る" data-en="Back">戻る</button>
+            </div>
+            <div class="game-hud-panel">
+                <div>
+                    <div class="hud-label">HI-SCORE</div>
+                    <div class="hud-value" id="hud-hiscore">0</div>
+                </div>
+                <div>
+                    <div class="hud-label">SCORE</div>
+                    <div class="hud-value" id="hud-score">0</div>
+                </div>
+                <div>
+                    <div class="hud-label">LIVES</div>
+                    <div class="hud-lives" id="hud-lives"></div>
+                </div>
+                <div>
+                    <div class="hud-label">BOMBS</div>
+                    <div class="hud-bombs" id="hud-bombs"></div>
+                </div>
+                <div>
+                    <div class="hud-label">POWER</div>
+                    <div class="hud-value" id="hud-power-val" style="font-size:0.75rem">0.00 / 4.00</div>
+                    <div class="hud-power-bar"><div class="hud-power-fill" id="hud-power-fill"></div></div>
+                </div>
+                <div>
+                    <div class="hud-label">DIFFICULTY</div>
+                    <div class="hud-difficulty" id="hud-difficulty">Normal</div>
+                </div>
+            </div>
+        </div>
+        <div class="game-controls">
+            <div class="game-controls-inner">
+                <div class="dpad">
+                    <div class="dpad-btn dpad-up">&#9650;</div>
+                    <div class="dpad-btn dpad-down">&#9660;</div>
+                    <div class="dpad-btn dpad-left">&#9664;</div>
+                    <div class="dpad-btn dpad-right">&#9654;</div>
+                </div>
+                <div class="action-btns">
+                    <div class="action-btn bomb-btn">BOMB</div>
+                    <div class="action-btn slow-btn">SLOW</div>
+                    <div class="action-btn shot-btn">SHOT</div>
                 </div>
             </div>
         </div>
