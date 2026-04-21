@@ -139,8 +139,8 @@ const workData = {
         award: { ja: 'おもしろゲームづくり学内コンテスト 意欲賞 受賞', en: 'Fun Game Making In-School Contest — Enthusiasm Award' },
         env: 'Unity',
         desc: {
-            ja: 'おもしろゲームづくり学内コンテストにて制作した縦スクロール弾幕シューティング。東方Projectを題材に、自機狙い弾や大中小の弾幕パターン、残機・得点・スコアランキングなどのシステムを実装した。',
-            en: 'A vertical-scrolling bullet hell shooter created for the Fun Game Making In-School Contest. Inspired by the Touhou Project, featuring aimed shots and bullet patterns in three sizes, along with lives, scoring, and score ranking systems.'
+            ja: '準備中…',
+            en: 'Coming soon...'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/東方春三校_Title.png', 'images/東方春三校_GamePlay.png'],
@@ -153,8 +153,8 @@ const workData = {
         award: { ja: 'オリジナルTPS学内コンペ 構成力賞 受賞', en: 'Original TPS In-School Competition — Composition Award' },
         env: 'Unity / Visual Studio Code',
         desc: {
-            ja: 'オリジナルTPS学内コンペにて制作した3Dアクションゲーム。円筒状のステージを左右に回転させながらジャンプで進む独自の操作システムを設計し、タイム計測やランキング機能も実装した。',
-            en: 'A 3D action game created for the Original TPS In-School Competition. Designed a unique control system where players rotate a cylindrical stage left and right while jumping to advance, with time tracking and ranking features.'
+            ja: '準備中…',
+            en: 'Coming soon...'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/CircleStrikerLogo.png'],
@@ -167,8 +167,8 @@ const workData = {
         award: null,
         env: 'Visual Studio / DirectX11',
         desc: {
-            ja: '2年次の未来創造展（HEW）にてチーム制作したパズルアクションゲーム。プレイヤーが影に変身し、物体の影を足場にして進む独自のコンセプト。キャラクター操作の実装、紹介動画の制作、チームのマネジメント補佐を担当した。',
-            en: 'A puzzle-action game developed as a team project for HEW (2nd year). Players transform into shadows and use object shadows as platforms to reach otherwise inaccessible areas. Responsible for character controls implementation, promotional video production, and team management support.'
+            ja: '準備中…',
+            en: 'Coming soon...'
         },
         video: { type: 'video', src: 'videos/gamma_pv.mp4' },
         screenshots: ['images/gamma_screenshot.jpg'],
@@ -181,8 +181,8 @@ const workData = {
         award: null,
         env: 'Visual Studio / DirectX11 / Claude Code Pro',
         desc: {
-            ja: 'チーム制作したGAMMAを個人で完全リメイク。ゲームコンセプトはそのままに、プログラムの全面修正・操作感の改善・演出の強化に注力した作品。',
-            en: 'A complete solo remake of the team-developed GAMMA. Retaining the original game concept, this version focuses on full code refactoring, improved controls, and enhanced visual effects.'
+            ja: '準備中…',
+            en: 'Coming soon...'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: [],
@@ -209,8 +209,8 @@ const workData = {
         award: null,
         env: 'Visual Studio / Claude Code Pro',
         desc: {
-            ja: 'Sand Tetrisに続きClaude Codeを活用して制作。今回は自分でコードを書き、Claude Codeにはバグ修正や方向性の提示を任せる形で開発した。未来創造展で後輩の課題作品を見て、今の自分ならどこまで作れるかを試したのがきっかけ。ダブルバッファによる滑らかな描画、操作性、コンソール特有の視認性、安定性を意識し、1日で完成させた。全3ステージ構成で、ミニゲームとしても遊びごたえのある作品に仕上がった。',
-            en: 'Built with Claude Code following Sand Tetris. This time I wrote the code myself, using Claude Code for bug fixes and direction guidance. Inspired by seeing junior students\' HEW projects, I wanted to test my current abilities. Focused on smooth rendering with double buffering, controls, console-specific readability, and stability — completed in one day. Features 3 stages with satisfying gameplay as a mini-game.'
+            ja: '準備中…',
+            en: 'Coming soon...'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/コンソールシューティング_Title.png', 'images/コンソールシューティング_GamePlay.png'],
