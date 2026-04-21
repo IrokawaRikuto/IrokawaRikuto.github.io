@@ -36,13 +36,18 @@
     function loadSprite(key, src) {
         var img = new Image();
         img.src = src;
+        img.onerror = function () { sprites[key] = null; };
         sprites[key] = img;
     }
-    loadSprite('bulletS', 'シューティング素材/nc165950_弾幕素材_小弾.png');
-    loadSprite('bulletM', 'シューティング素材/nc177465_弾幕素材_中弾.png');
-    loadSprite('bulletL', 'シューティング素材/nc177425_弾幕素材_大弾.png');
-    loadSprite('magicCircle', 'シューティング素材/ボス魔法陣.png');
-    loadSprite('deleteEffect', 'シューティング素材/nc165947_敵弾消去エフェクト.png');
+    function isSpriteReady(key) {
+        var img = sprites[key];
+        return img && img.complete && img.naturalWidth > 0;
+    }
+    loadSprite('bulletS', 'assets/game/bullet_small.png');
+    loadSprite('bulletM', 'assets/game/bullet_medium.png');
+    loadSprite('bulletL', 'assets/game/bullet_large.png');
+    loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
+    loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     // Sprite layout: small=16x16 x9, medium=64x32 x8, large=128x64 x8
     // Colors: 0=red,1=orange,2=yellow,3=green,4=cyan,5=blue,6=purple,7=gray (8=white for 9-sprites)
     var BULLET_COLORS = { red: 0, orange: 1, yellow: 2, green: 3, cyan: 4, blue: 5, purple: 6, gray: 7 };
@@ -445,8 +450,8 @@
         }
     }
     function drawDeleteEffects() {
+        if (!isSpriteReady('deleteEffect')) return;
         var img = sprites.deleteEffect;
-        if (!img || !img.complete) return;
         // 256x32, 8 frames of 32x32
         for (var i = 0; i < deleteEffects.length; i++) {
             var de = deleteEffects[i];
@@ -741,8 +746,8 @@
     function drawBoss() {
         if (!boss) return;
         // Magic circle behind boss
-        var mc = sprites.magicCircle;
-        if (mc && mc.complete) {
+        if (isSpriteReady('magicCircle')) {
+            var mc = sprites.magicCircle;
             ctx.save();
             ctx.translate(boss.x, boss.y);
             ctx.rotate(boss.age * 0.02);
@@ -774,8 +779,8 @@
         }
     }
     function drawEBullets() {
+        var useSprite = isSpriteReady('bulletS');
         var imgS = sprites.bulletS;
-        var useSprite = imgS && imgS.complete;
         for (var i = 0; i < eBullets.length; i++) {
             var b = eBullets[i];
             if (useSprite) {
