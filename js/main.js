@@ -210,7 +210,7 @@ const workData = {
         env: 'Visual Studio / Claude Code Pro',
         desc: {
             ja: 'Sand Tetrisに続きClaude Codeを活用して制作。今回は自分でコードを書き、Claude Codeにはバグ修正や方向性の提示を任せる形で開発した。未来創造展で後輩の課題作品を見て、今の自分ならどこまで作れるかを試したのがきっかけ。ダブルバッファによる滑らかな描画、操作性、コンソール特有の視認性、安定性を意識し、1日で完成させた。全3ステージ構成で、ミニゲームとしても遊びごたえのある作品に仕上がった。',
-            en: 'Built with Claude Code following Sand Tetris. This time I wrote the code myself, using Claude Code for bug fixes and direction guidance. Inspired by seeing junior students\\' HEW projects, I wanted to test my current abilities. Focused on smooth rendering with double buffering, controls, console-specific readability, and stability — completed in one day. Features 3 stages with satisfying gameplay as a mini-game.'
+            en: 'Built with Claude Code following Sand Tetris. This time I wrote the code myself, using Claude Code for bug fixes and direction guidance. Inspired by seeing junior students\' HEW projects, I wanted to test my current abilities. Focused on smooth rendering with double buffering, controls, console-specific readability, and stability — completed in one day. Features 3 stages with satisfying gameplay as a mini-game.'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/コンソールシューティング_Title.png', 'images/コンソールシューティング_GamePlay.png'],
