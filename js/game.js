@@ -106,6 +106,7 @@
     var items = [];
     var particles = [];
     var deleteEffects = []; // bullet delete animations
+    var bombOrbs = []; // 夢想封印オーブ
 
     var keys = {};
 
@@ -239,25 +240,12 @@
             fireTimer = FIRE_INTERVAL - 1;
         }
 
-        // Bomb
+        // Bomb（夢想封印）
         if ((keys['KeyX'] || mobileKeys.bomb) && bombTimer <= 0 && bombs > 0) {
             bombs--;
-            bombTimer = BOMB_DURATION;
-            invTimer = Math.max(invTimer, BOMB_DURATION);
-            for (var i = 0; i < eBullets.length; i++) {
-                spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
-            }
-            eBullets = [];
-            for (var i = 0; i < enemies.length; i++) enemies[i].hp -= 30;
-            if (boss) boss.hp -= 50;
+            launchBombOrbs();
         }
-        if (bombTimer > 0) {
-            bombTimer--;
-            if (frame % 10 === 0) {
-                for (var i = 0; i < enemies.length; i++) enemies[i].hp -= 5;
-                if (boss) boss.hp -= 10;
-            }
-        }
+        if (bombTimer > 0) bombTimer--;
 
         attractItems(slow);
     }
@@ -343,11 +331,7 @@
 
         ctx.restore();
 
-        if (bombTimer > 0) {
-            var ba = bombTimer / BOMB_DURATION * 0.3;
-            ctx.fillStyle = 'rgba(68,255,68,' + ba + ')';
-            ctx.fillRect(0, 0, W, H);
-        }
+        // (bombフラッシュは夢想封印オーブに置き換え)
     }
 
     // ===== Player Bullets =====
@@ -502,6 +486,104 @@
             ctx.drawImage(img, fi * 32, 0, 32, 32, de.x - 16, de.y - 16, 32, 32);
         }
         ctx.globalAlpha = 1;
+    }
+
+    // ===== Bomb Orbs（夢想封印） =====
+    var BOMB_ORB_RADIUS = 28;
+    var BOMB_ORB_SPEED = 5;
+    var BOMB_ORB_COUNT = 6;
+    var BOMB_ORB_DAMAGE = 8;
+
+    function launchBombOrbs() {
+        bombOrbs = [];
+        var baseAngle = -Math.PI / 2; // 上方向
+        var spread = Math.PI * 0.8;
+        for (var i = 0; i < BOMB_ORB_COUNT; i++) {
+            var a = baseAngle - spread / 2 + (spread / (BOMB_ORB_COUNT - 1)) * i;
+            bombOrbs.push({
+                x: player.x, y: player.y,
+                vx: Math.cos(a) * BOMB_ORB_SPEED,
+                vy: Math.sin(a) * BOMB_ORB_SPEED,
+                radius: BOMB_ORB_RADIUS,
+                life: 120, // フレーム寿命
+                hue: (360 / BOMB_ORB_COUNT) * i
+            });
+        }
+        bombTimer = 120;
+        invTimer = Math.max(invTimer, 120);
+    }
+
+    function updateBombOrbs() {
+        for (var i = bombOrbs.length - 1; i >= 0; i--) {
+            var orb = bombOrbs[i];
+            orb.x += orb.vx; orb.y += orb.vy;
+            orb.life--;
+            orb.hue = (orb.hue + 3) % 360; // 虹色回転
+
+            // 敵弾を消去
+            for (var j = eBullets.length - 1; j >= 0; j--) {
+                var b = eBullets[j];
+                var dx = b.x - orb.x, dy = b.y - orb.y;
+                if (dx * dx + dy * dy < (orb.radius + b.size) * (orb.radius + b.size)) {
+                    spawnDeleteEffect(b.x, b.y);
+                    eBullets.splice(j, 1);
+                    score += 10;
+                }
+            }
+
+            // 敵にダメージ
+            for (var j = 0; j < enemies.length; j++) {
+                var e = enemies[j];
+                var dx = e.x - orb.x, dy = e.y - orb.y;
+                if (dx * dx + dy * dy < (orb.radius + e.size) * (orb.radius + e.size)) {
+                    e.hp -= BOMB_ORB_DAMAGE;
+                }
+            }
+            // ボスにダメージ
+            if (boss && !boss.entering) {
+                var dx = boss.x - orb.x, dy = boss.y - orb.y;
+                if (dx * dx + dy * dy < (orb.radius + boss.size) * (orb.radius + boss.size)) {
+                    boss.hp -= BOMB_ORB_DAMAGE;
+                }
+            }
+
+            if (orb.life <= 0 || orb.x < -50 || orb.x > W + 50 || orb.y < -50 || orb.y > H + 50) {
+                bombOrbs.splice(i, 1);
+            }
+        }
+        // オーブが全て消えたらボム終了
+        if (bombOrbs.length === 0 && bombTimer > 0) bombTimer = 0;
+    }
+
+    function drawBombOrbs() {
+        for (var i = 0; i < bombOrbs.length; i++) {
+            var orb = bombOrbs[i];
+            var alpha = Math.min(1, orb.life / 20);
+            ctx.save();
+            ctx.translate(orb.x, orb.y);
+
+            // 虹色グロー（外側）
+            var grd = ctx.createRadialGradient(0, 0, orb.radius * 0.2, 0, 0, orb.radius * 1.5);
+            grd.addColorStop(0, 'hsla(' + orb.hue + ', 100%, 80%, ' + (alpha * 0.8) + ')');
+            grd.addColorStop(0.4, 'hsla(' + ((orb.hue + 60) % 360) + ', 100%, 60%, ' + (alpha * 0.5) + ')');
+            grd.addColorStop(1, 'hsla(' + ((orb.hue + 120) % 360) + ', 100%, 50%, 0)');
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(0, 0, orb.radius * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // コア（白く輝く中心）
+            var coreGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, orb.radius);
+            coreGrd.addColorStop(0, 'rgba(255,255,255,' + alpha + ')');
+            coreGrd.addColorStop(0.5, 'hsla(' + orb.hue + ', 100%, 75%, ' + (alpha * 0.9) + ')');
+            coreGrd.addColorStop(1, 'hsla(' + ((orb.hue + 180) % 360) + ', 80%, 50%, ' + (alpha * 0.3) + ')');
+            ctx.fillStyle = coreGrd;
+            ctx.beginPath();
+            ctx.arc(0, 0, orb.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
     }
 
     // ===== Enemies =====
@@ -1018,7 +1100,6 @@
 
     // ===== Enemy Bullets =====
     function updateEBullets() {
-        if (bombTimer > 0) return;
         for (var i = eBullets.length - 1; i >= 0; i--) {
             var b = eBullets[i]; b.x += b.vx; b.y += b.vy;
             if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) eBullets.splice(i, 1);
@@ -1280,6 +1361,7 @@
         player.x = W / 2; player.y = H - 60;
         pBullets = []; enemies = []; eBullets = []; items = []; particles = [];
         deleteEffects = [];
+        bombOrbs = [];
         initBgParticles();
         buildWaveScript();
     }
@@ -1377,7 +1459,7 @@
             try {
                 updateBgParticles(bgParticles);
                 updatePlayer(); updatePBullets(); updateEnemies();
-                updateEBullets(); updateItems(); updateParticles();
+                updateEBullets(); updateBombOrbs(); updateItems(); updateParticles();
                 updateDeleteEffects();
                 checkCollisions();
             } catch (e) {
@@ -1400,7 +1482,7 @@
             drawGameBg();
             drawCollectLine();
             drawItems(); drawPBullets(); drawEnemies(); drawBoss();
-            drawEBullets(); drawPlayer(); drawParticles();
+            drawEBullets(); drawBombOrbs(); drawPlayer(); drawParticles();
             drawDeleteEffects();
         } catch (e) {
             console.error('Game draw error:', e);
