@@ -66,7 +66,10 @@
 - フッターの START ボタンから起動
 - HTML5 Canvas + JavaScript（640x480、4:3、東方原作スタイルのフィールド+HUD）
 - 構成: js/game.js, js/game-firebase.js, css/game.css, assets/game/（スプライト素材）
-- Firebase Firestore によるオンラインランキング（localStorage フォールバック付き）
+- Firebase Firestore によるオンラインランキング（localStorage ミラー＋フォールバック付き）
+  - 送信: Firebase成否に関わらず常にlocalStorageにもミラー保存
+  - 取得: `where('difficulty','==',x)` のみでFirestoreから取得し、score降順ソート・件数制限はクライアント側で実施（複合インデックス不要）。結果にlocal側の直近送信分を name+score キーで重複除去マージ
+  - Firebase読込/書込失敗は `console.error('[Ranking] ...')` で可視化
 - 4難易度（Easy/Normal/Hard/Lunatic）
 - モバイル対応（スライドパッド + BOMB/SLOWボタン、自動発射、キャンバス直下・詳細情報の上に配置）。表示条件は `@media (hover: none) and (pointer: coarse)` のタッチ端末のみ（PCで窓を狭めても出ない）
 - HUD英語表記: HI SCORE, SCORE, PLAYER, BOMB, POWER, GRAZE, STAGE
@@ -138,3 +141,4 @@
 - 各作品のPV動画追加
 - 各作品のダウンロードURL追加
 - ミニゲーム使用素材クレジット（現在 Coming Soon）
+- ミニゲームの敵キャラ動作（途中）：出現パターン・移動挙動・弾幕密度などの調整継続中
