@@ -298,7 +298,7 @@
     background: #0a0a14;
     padding: 12px;
     border-top: 1px solid #222;
-    border-radius: 0 0 var(--radius) var(--radius);
+    border-radius: 0;
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;

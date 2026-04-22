@@ -62,7 +62,7 @@
 - 構成: js/game.js, js/game-firebase.js, css/game.css, assets/game/（スプライト素材）
 - Firebase Firestore によるオンラインランキング（localStorage フォールバック付き）
 - 4難易度（Easy/Normal/Hard/Lunatic）
-- モバイル対応（タッチD-Pad + アクションボタン、ゲーム画面直下に配置）
+- モバイル対応（タッチD-Pad + アクションボタン、キャンバス直下・詳細情報の上に配置）
 - HUD英語表記: HI SCORE, SCORE, PLAYER, BOMB, POWER, GRAZE, STAGE
 - ゲーム情報: 操作方法（方向キー/Z/X/Shift）→概要（制作経緯・東方春三校との差分）の順で表示
 
