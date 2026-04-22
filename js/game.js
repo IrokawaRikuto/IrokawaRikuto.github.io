@@ -48,6 +48,7 @@
     loadSprite('bulletL', 'assets/game/bullet_large.png');
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
+    loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
     // Sprite layout: small=16x16 x9, medium=64x32 x8, large=128x64 x8
     // Colors: 0=red,1=orange,2=yellow,3=green,4=cyan,5=blue,6=purple,7=gray (8=white for 9-sprites)
     var BULLET_COLORS = { red: 0, orange: 1, yellow: 2, green: 3, cyan: 4, blue: 5, purple: 6, gray: 7 };
@@ -933,7 +934,14 @@
             hp: Math.floor(600 * diff.bossHp),
             maxHp: Math.floor(600 * diff.bossHp),
             size: 30, phase: 0, phaseTimer: 0,
-            fireTimer: 0, age: 0, entering: true, firing: false
+            fireTimer: 0, age: 0, entering: true, firing: false,
+            // 大技（スペルカード）
+            spellActive: false, spellsUsed: [], spellIdx: -1,
+            spellTimer: 0, spellDuration: 0, spellFlash: 0,
+            // 移動モード
+            moveMode: 'sine', moveTimer: 0,
+            targetX: W / 2, targetY: 70,
+            dashTargetX: W / 2, dashTargetY: 70
         };
     }
 
@@ -1017,9 +1025,15 @@
                   bp === 'spread' ? 2 : 0;
 
         switch (bp) {
-            case 'down':
-                eBullets.push({ x: e.x, y: e.y, vx: 0, vy: spd, size: sz, grazed: false, color: col });
+            case 'down': {
+                // 3発を縦に広げて発射（単発禁止）
+                var base = Math.PI / 2;
+                for (var i = -1; i <= 1; i++) {
+                    var a = base + i * 0.12;
+                    eBullets.push({ x: e.x + i * 6, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: sz, grazed: false, color: col });
+                }
                 break;
+            }
             case 'way3': {
                 var base = Math.PI / 2;
                 for (var i = -1; i <= 1; i++) {
@@ -1037,24 +1051,33 @@
                 break;
             }
             case 'circle': {
-                var n = Math.floor(5 * diff.bullets);
+                var n = Math.max(3, Math.floor(5 * diff.bullets));
                 for (var i = 0; i < n; i++) {
                     var a = (Math.PI * 2 / n) * i + e.age * 0.03;
                     eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd * 0.8, vy: Math.sin(a) * spd * 0.8, size: sz, grazed: false, color: col });
                 }
                 break;
             }
-            case 'aimed':
-                eBullets.push({ x: e.x, y: e.y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, size: sz, grazed: false, color: col });
+            case 'aimed': {
+                // 自機狙い3発（わずかな広がり、連射で自機依存ストリーム）
+                var n = 3, spread = 0.18;
+                for (var i = 0; i < n; i++) {
+                    var a = angle - spread + (spread * 2 / (n - 1)) * i;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: sz, grazed: false, color: col });
+                }
                 break;
+            }
             case 'diagonal': {
+                // 3方向: 自機側斜め、反対斜め、真下
                 var dirX = e.x < W / 2 ? 1 : -1;
                 eBullets.push({ x: e.x, y: e.y, vx: dirX * spd * 0.7, vy: spd * 0.7, size: sz, grazed: false, color: col });
                 eBullets.push({ x: e.x, y: e.y, vx: -dirX * spd * 0.5, vy: spd * 0.85, size: sz, grazed: false, color: col });
+                eBullets.push({ x: e.x, y: e.y, vx: 0, vy: spd, size: sz, grazed: false, color: col });
                 break;
             }
             case 'random': {
-                var n = e.type === 'large' ? 3 : (e.type === 'medium' ? 2 : 1);
+                // 最低3発確保
+                var n = e.type === 'large' ? 5 : (e.type === 'medium' ? 4 : 3);
                 for (var i = 0; i < n; i++) {
                     var a = Math.PI * 0.15 + Math.random() * Math.PI * 0.7;
                     var s = spd * (0.7 + Math.random() * 0.6);
@@ -1135,42 +1158,213 @@
     function updateBoss() {
         if (!boss) return; boss.age++;
         if (boss.entering) { boss.y += 1; if (boss.y >= 70) boss.entering = false; return; }
-        boss.x += Math.sin(boss.age * 0.01) * 1.5;
-        if (boss.x < 50) boss.x = 50; if (boss.x > W - 50) boss.x = W - 50;
-        boss.phaseTimer++; boss.fireTimer++;
-        var fireRate = Math.floor(30 / diff.bullets);
-        if (boss.fireTimer >= fireRate) { boss.fireTimer = 0; fireBossBullets(); }
+
+        // 大技（スペルカード）発動判定
+        var hpRatio = boss.hp / boss.maxHp;
+        if (!boss.spellActive) {
+            if (hpRatio <= 0.7 && boss.spellsUsed.indexOf(0) === -1) startSpellcard(0);
+            else if (hpRatio <= 0.35 && boss.spellsUsed.indexOf(1) === -1) startSpellcard(1);
+        }
+
+        if (boss.spellActive) {
+            updateSpellcard();
+        } else {
+            updateBossMovement();
+            boss.phaseTimer++; boss.fireTimer++;
+            var fireRate = Math.floor(30 / diff.bullets);
+            if (boss.fireTimer >= fireRate) { boss.fireTimer = 0; fireBossBullets(); }
+            if (boss.phaseTimer > 360) { boss.phase++; boss.phaseTimer = 0; boss.moveTimer = 0; onBossPhaseChange(); }
+        }
+
+        boss.firing = true;
+        if (boss.spellFlash > 0) boss.spellFlash--;
         if (boss.hp <= 0) bossDefeated();
     }
 
+    function onBossPhaseChange() {
+        var p = boss.phase % 4;
+        if (p === 0) boss.moveMode = 'sine';
+        else if (p === 1) boss.moveMode = 'center';
+        else if (p === 2) boss.moveMode = 'dash';
+        else boss.moveMode = 'figure8';
+    }
+
+    function updateBossMovement() {
+        boss.moveTimer++;
+        var m = boss.moveMode;
+        if (m === 'sine') {
+            boss.x += Math.sin(boss.age * 0.012) * 1.6;
+            boss.y = 70 + Math.sin(boss.age * 0.018) * 8;
+        } else if (m === 'center') {
+            boss.x += (W / 2 - boss.x) * 0.04;
+            boss.y += (80 - boss.y) * 0.04;
+        } else if (m === 'dash') {
+            if (boss.moveTimer % 90 === 1) {
+                boss.dashTargetX = 70 + Math.random() * (W - 140);
+                boss.dashTargetY = 50 + Math.random() * 50;
+            }
+            boss.x += (boss.dashTargetX - boss.x) * 0.12;
+            boss.y += (boss.dashTargetY - boss.y) * 0.12;
+        } else if (m === 'figure8') {
+            var cx = W / 2, cy = 80, rx = 110, ry = 30;
+            var t = boss.moveTimer * 0.02;
+            boss.x = cx + Math.sin(t) * rx;
+            boss.y = cy + Math.sin(t * 2) * ry;
+        }
+        if (boss.x < 50) boss.x = 50;
+        if (boss.x > W - 50) boss.x = W - 50;
+        if (boss.y < 40) boss.y = 40;
+        if (boss.y > 160) boss.y = 160;
+    }
+
     function fireBossBullets() {
-        boss.firing = true;
-        var spd = 2 * diff.speed, phase = boss.phase % 3;
+        var spd = 2 * diff.speed, phase = boss.phase % 4;
         if (phase === 0) {
-            // 自機狙い扇状
+            // 自機狙い扇5発
             var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
-            var n = Math.floor(3 * diff.bullets), spread = 0.4;
+            var n = Math.max(5, Math.floor(5 * diff.bullets)), spread = 0.5;
             for (var i = 0; i < n; i++) {
-                var a = angle - spread + (spread * 2 / Math.max(n - 1, 1)) * i;
+                var a = angle - spread + (spread * 2 / (n - 1)) * i;
                 eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: 5, grazed: false, color: 0, bulletType: 'medium' });
             }
         } else if (phase === 1) {
-            // 全方位回転（星弾）
-            var n = Math.floor(6 * diff.bullets);
+            // 全方位回転（星弾）2層逆回転
+            var n = Math.max(6, Math.floor(7 * diff.bullets));
             for (var i = 0; i < n; i++) {
                 var a = (Math.PI * 2 / n) * i + boss.age * 0.05;
-                eBullets.push({ x: boss.x, y: boss.y + boss.size * 0.5, vx: Math.cos(a) * spd * 0.9, vy: Math.sin(a) * spd * 0.9, size: 5, grazed: false, color: 5, bulletType: 'star' });
+                eBullets.push({ x: boss.x, y: boss.y + boss.size * 0.5, vx: Math.cos(a) * spd * 0.9, vy: Math.sin(a) * spd * 0.9, size: 5, grazed: false, color: 5, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
             }
-        } else {
+            if ((boss.phaseTimer / 18) % 2 < 1) {
+                var n2 = Math.max(5, Math.floor(5 * diff.bullets));
+                for (var i = 0; i < n2; i++) {
+                    var a = (Math.PI * 2 / n2) * i - boss.age * 0.05;
+                    eBullets.push({ x: boss.x, y: boss.y + boss.size * 0.5, vx: Math.cos(a) * spd * 1.1, vy: Math.sin(a) * spd * 1.1, size: 5, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                }
+            }
+        } else if (phase === 2) {
             // ランダム散らし（星弾）
-            var n = Math.floor(8 * diff.bullets);
+            var n = Math.max(5, Math.floor(8 * diff.bullets));
             for (var i = 0; i < n; i++) {
                 var a = Math.random() * Math.PI * 0.8 + Math.PI * 0.1;
                 var s = spd * (0.7 + Math.random() * 0.6);
-                eBullets.push({ x: boss.x + (Math.random() - 0.5) * 30, y: boss.y + boss.size, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: 6, bulletType: 'star' });
+                eBullets.push({ x: boss.x + (Math.random() - 0.5) * 30, y: boss.y + boss.size, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+            }
+        } else {
+            // way5 + 自機狙い3発
+            var base = Math.PI / 2;
+            for (var i = -2; i <= 2; i++) {
+                var a = base + i * 0.25;
+                eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: 5, grazed: false, color: 3, bulletType: 'medium' });
+            }
+            var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+            for (var i = -1; i <= 1; i++) {
+                var a = angle + i * 0.2;
+                eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd * 1.2, vy: Math.sin(a) * spd * 1.2, size: 5, grazed: false, color: 0, bulletType: 'medium' });
             }
         }
-        if (boss.phaseTimer > 300) { boss.phase++; boss.phaseTimer = 0; }
+    }
+
+    // ===== Boss Spellcard（大技） =====
+    function startSpellcard(idx) {
+        boss.spellActive = true;
+        boss.spellIdx = idx;
+        boss.spellTimer = 0;
+        boss.spellDuration = 540; // 約9秒
+        boss.spellFlash = 30;
+        boss.spellsUsed.push(idx);
+        // 発動演出: 画面の敵弾を一掃（通常弾消去エフェクト）
+        for (var i = 0; i < eBullets.length; i++) spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
+        eBullets = [];
+        spawnExplosion(boss.x, boss.y, '#ffff88', 30);
+        for (var c = 0; c < 6; c++) {
+            spawnExplosion(boss.x, boss.y, c % 2 === 0 ? '#ff4444' : '#ffaaff', 12);
+        }
+        boss.dashTargetX = boss.x; boss.dashTargetY = boss.y;
+    }
+
+    function updateSpellcard() {
+        boss.spellTimer++;
+        if (boss.spellIdx === 0) {
+            // 大技1「紅蓮双輪」: 中央固定で逆回転する2層の星弾リング＋周期的な自機狙い
+            boss.x += (W / 2 - boss.x) * 0.05;
+            boss.y += (80 - boss.y) * 0.05;
+            var t = boss.spellTimer;
+
+            if (t % 10 === 0) {
+                var n = Math.max(8, Math.floor(10 * diff.bullets));
+                var rot = t * 0.04;
+                var s = 1.8 * diff.speed;
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + rot;
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: i % 7, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                }
+            }
+            if (t % 14 === 4) {
+                var n = Math.max(6, Math.floor(8 * diff.bullets));
+                var rot = -t * 0.05;
+                var s = 2.3 * diff.speed;
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + rot;
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                }
+            }
+            if (t % 100 === 80) {
+                var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+                for (var i = -2; i <= 2; i++) {
+                    var a = angle + i * 0.16;
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * 2.8 * diff.speed, vy: Math.sin(a) * 2.8 * diff.speed, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                }
+            }
+        } else if (boss.spellIdx === 1) {
+            // 大技2「朱紅爆裂」: ワープ移動＋放射爆発＋回転リング
+            var dashInterval = 110;
+            if (boss.spellTimer % dashInterval === 1) {
+                boss.dashTargetX = 70 + Math.random() * (W - 140);
+                boss.dashTargetY = 55 + Math.random() * 50;
+            }
+            boss.x += (boss.dashTargetX - boss.x) * 0.1;
+            boss.y += (boss.dashTargetY - boss.y) * 0.1;
+
+            var t = boss.spellTimer;
+            if (t % 8 === 0) {
+                var n = Math.max(9, Math.floor(12 * diff.bullets));
+                var rot = t * 0.03;
+                var s = 1.6 * diff.speed;
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + rot;
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 4, grazed: false, color: (i + Math.floor(t / 30)) % 7, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                }
+            }
+            if (t % dashInterval === dashInterval - 10) {
+                var n = Math.max(16, Math.floor(24 * diff.bullets));
+                var s = 2.5 * diff.speed;
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + Math.random() * 0.08;
+                    var ss = s * (0.75 + Math.random() * 0.5);
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * ss, vy: Math.sin(a) * ss, size: 5, grazed: false, color: 1, bulletType: 'medium' });
+                }
+                spawnExplosion(boss.x, boss.y, '#ffaa44', 18);
+            }
+            if (t % 70 === 50) {
+                var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+                for (var i = -1; i <= 1; i++) {
+                    var a = angle + i * 0.22;
+                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * 3 * diff.speed, vy: Math.sin(a) * 3 * diff.speed, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                }
+            }
+        }
+
+        if (boss.spellTimer >= boss.spellDuration) endSpellcard();
+    }
+
+    function endSpellcard() {
+        boss.spellActive = false;
+        for (var i = 0; i < eBullets.length; i++) spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
+        eBullets = [];
+        boss.phaseTimer = 0;
+        boss.fireTimer = 0;
+        boss.moveTimer = 0;
+        onBossPhaseChange();
     }
 
     function bossDefeated() {
@@ -1190,16 +1384,39 @@
         if (!boss) return;
         ctx.save(); ctx.translate(boss.x, boss.y);
 
-        // 魔法陣（射撃中のみ、時計回り回転）
+        // 大技発動フラッシュ（発動直後の光の波紋）
+        if (boss.spellFlash > 0) {
+            var t = 1 - boss.spellFlash / 30;
+            ctx.save();
+            var flashR = boss.size + 120 * t;
+            var grd = ctx.createRadialGradient(0, 0, flashR * 0.2, 0, 0, flashR);
+            grd.addColorStop(0, 'rgba(255,255,200,' + (0.6 * (1 - t)) + ')');
+            grd.addColorStop(0.6, 'rgba(255,120,120,' + (0.3 * (1 - t)) + ')');
+            grd.addColorStop(1, 'rgba(255,0,0,0)');
+            ctx.fillStyle = grd;
+            ctx.beginPath(); ctx.arc(0, 0, flashR, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
+
+        // 魔法陣（射撃中のみ、時計回り回転）大技中は拡大＋逆回転の二重
         if (boss.firing && !boss.entering && isSpriteReady('magicCircle')) {
             var mc = sprites.magicCircle;
+            var baseSize = boss.size * (boss.spellActive ? 4.5 : 3.5);
             ctx.save();
-            ctx.rotate(boss.age * 0.03); // 時計回り
-            ctx.globalAlpha = 0.5;
-            var mcSize = boss.size * 3.5;
-            ctx.drawImage(mc, -mcSize / 2, -mcSize / 2, mcSize, mcSize);
-            ctx.globalAlpha = 1;
+            ctx.rotate(boss.age * 0.03);
+            ctx.globalAlpha = boss.spellActive ? 0.65 : 0.5;
+            ctx.drawImage(mc, -baseSize / 2, -baseSize / 2, baseSize, baseSize);
             ctx.restore();
+            if (boss.spellActive) {
+                // 逆回転の外周
+                ctx.save();
+                ctx.rotate(-boss.age * 0.02);
+                ctx.globalAlpha = 0.35;
+                var outerSize = baseSize * 1.45;
+                ctx.drawImage(mc, -outerSize / 2, -outerSize / 2, outerSize, outerSize);
+                ctx.restore();
+            }
+            ctx.globalAlpha = 1;
         }
 
         // ボス本体
@@ -1209,24 +1426,31 @@
         ctx.beginPath(); ctx.moveTo(boss.size, 0); ctx.lineTo(boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, boss.size * 0.25, 0, Math.PI * 2); ctx.fill();
 
-        // 円形HPバー（12時始まり、時計回りに消える）
+        // 円形HPバー（画像ベース、12時始まり、ダメージで時計回りに削れる）
         var hpRatio = Math.max(0, boss.hp / boss.maxHp);
-        var hpRadius = boss.size + 8;
+        var hpRadius = boss.size + 10;
         var startAngle = -Math.PI / 2; // 12時
-        var endAngle = startAngle + Math.PI * 2 * hpRatio;
-        // 背景（暗いリング）
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, 0, hpRadius, 0, Math.PI * 2);
-        ctx.stroke();
-        // HPリング
+        // 方向反転: 12時から反時計回りに残HPを描く → ダメージで12時から時計回りに欠ける
+        var endAngle = startAngle - Math.PI * 2 * hpRatio;
+
+        // HPリング塗りつぶし（画像の下地として）
         if (hpRatio > 0) {
             ctx.strokeStyle = hpRatio > 0.5 ? '#ff2222' : hpRatio > 0.25 ? '#ff8800' : '#ffff00';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.beginPath();
-            ctx.arc(0, 0, hpRadius, startAngle, endAngle);
+            ctx.arc(0, 0, hpRadius, startAngle, endAngle, true);
             ctx.stroke();
+        }
+
+        // HPバー画像（二重リング装飾）を上から重ねる
+        if (isSpriteReady('bossHpBar')) {
+            var hb = sprites.bossHpBar;
+            var hbSize = (hpRadius + 6) * 2;
+            ctx.save();
+            ctx.rotate(boss.age * 0.01); // ゆっくり回転
+            ctx.globalAlpha = 0.9;
+            ctx.drawImage(hb, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
+            ctx.restore();
         }
 
         ctx.restore();
@@ -1239,9 +1463,10 @@
             if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) eBullets.splice(i, 1);
         }
     }
-    function drawBulletStar(x, y, r, color, col) {
-        // 星型描画
+    function drawBulletStar(x, y, r, color, col, rot) {
+        // 星型描画（常時回転）
         ctx.save(); ctx.translate(x, y);
+        ctx.rotate(rot);
         ctx.fillStyle = color;
         ctx.beginPath();
         for (var i = 0; i < 5; i++) {
@@ -1252,7 +1477,7 @@
             ctx.lineTo(Math.cos(a2) * r * 0.4, Math.sin(a2) * r * 0.4);
         }
         ctx.closePath(); ctx.fill();
-        // 中心の白い点
+        // 中心の白い点（回転の影響を受けない位置）
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.beginPath(); ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
@@ -1274,7 +1499,9 @@
 
             if (bt === 'star') {
                 var starColor = BULLET_TYPE_COLORS[col] || '#ff4444';
-                drawBulletStar(b.x, b.y, b.size * 2, starColor, col);
+                // 星ごとに固有のスピン + フレーム依存の共通回転で常時回転
+                var spin = (b.spin !== undefined) ? b.spin : 0;
+                drawBulletStar(b.x, b.y, b.size * 2, starColor, col, frame * 0.12 + spin);
             } else if (bt === 'large' && useSpriteL) {
                 // Large bullet sprite: 1024x64, 8 sprites of 128x64
                 var drawSize = b.size * 5;
