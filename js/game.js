@@ -647,6 +647,33 @@
         }
     }
 
+    // 画面上部で左右から合計40体が5列でランダムに横断、全員自機狙い
+    function spawnMassRush() {
+        var totalCount = 40;
+        var rows = 5;
+        var rowSpacing = 20;
+        var baseY = 25;
+        for (var r = 0; r < rows; r++) {
+            var rowY = baseY + r * rowSpacing;
+            var perRow = Math.floor(totalCount / rows);
+            for (var i = 0; i < perRow; i++) {
+                var dir = Math.random() > 0.5 ? 1 : -1;
+                var startX = dir > 0 ? -10 - Math.random() * 80 : W + 10 + Math.random() * 80;
+                var spd = 1.8 + Math.random() * 1.2;
+                var delay = Math.floor(Math.random() * 60); // 出現タイミングをばらす
+                enemies.push({
+                    x: startX - dir * spd * delay,
+                    y: rowY + (Math.random() - 0.5) * 8,
+                    hp: 1, maxHp: 1, speed: spd, type: 'small',
+                    pattern: 'drift', fireRate: Math.floor(90 / diff.bullets),
+                    fireTimer: Math.floor(Math.random() * 40),
+                    size: 8, age: 0, baseX: 0, dir: dir,
+                    bulletPattern: 'aimed'
+                });
+            }
+        }
+    }
+
     // ===== Wave Script System =====
     var waveScript = [];
     var waveScriptIdx = 0;
@@ -660,7 +687,7 @@
 
         // 基本パターンプール
         var pool = ['streamL', 'streamR', 'formation'];
-        if (stage >= 1) { pool.push('crossStream', 'topAimed'); }
+        if (stage >= 1) { pool.push('crossStream', 'topAimed', 'massRush'); }
         if (stage >= 2) { pool.push('sineWave', 'mediumEscort'); }
         if (stage >= 2) { pool.push('dualTurret'); }
         if (stage >= 3) { pool.push('largeTank', 'topAimedHeavy'); }
@@ -718,6 +745,9 @@
                 break;
             case 'dualTurret':
                 spawnDualTurrets();
+                break;
+            case 'massRush':
+                spawnMassRush();
                 break;
         }
     }
