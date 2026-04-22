@@ -748,12 +748,12 @@
     }
 
     function spawnDriftFormation() {
-        var count = 6 + Math.floor(Math.random() * 6); // 6-11体
+        var count = 7 + Math.floor(Math.random() * 5); // 7-11体
         var dir = Math.random() > 0.5 ? 1 : -1;
         var baseY = 30 + Math.random() * 40;
         var startX = dir > 0 ? -15 : W + 15;
         var spd = 1.5 + Math.random() * 1;
-        var spacing = 25;
+        var spacing = 18;
         for (var i = 0; i < count; i++) {
             enemies.push({
                 x: startX - dir * spacing * i,
@@ -793,7 +793,7 @@
 
     // 左右の下から出現し逆U字（∩）で反対側へ抜ける編隊
     function spawnInvertedU() {
-        var countPerSide = 4 + Math.floor(Math.random() * 2); // 4-5/side = 8-10体
+        var countPerSide = 6 + Math.floor(Math.random() * 2); // 6-7/side = 12-14体
         var peakY = 45 + Math.random() * 20;
         var duration = 180; // ∩を描ききるフレーム数
         for (var side = 0; side < 2; side++) {
@@ -804,7 +804,7 @@
                     x: startX, y: H + 30,
                     hp: 1, maxHp: 1, speed: 1, type: 'small',
                     pattern: 'arcPath',
-                    pathT: -i * 0.18,
+                    pathT: -i * 0.10,
                     pathSpeed: 1 / duration,
                     pathStartX: startX, pathEndX: endX, pathPeakY: peakY,
                     fireRate: Math.floor(70 / diff.bullets),
@@ -819,11 +819,11 @@
     // 左右の上からS字を描いて降下する編隊
     function spawnSCurveFormation() {
         var side = Math.random() > 0.5 ? 1 : -1;
-        var count = 6 + Math.floor(Math.random() * 3); // 6-8
+        var count = 7 + Math.floor(Math.random() * 3); // 7-9
         var startX = side > 0 ? 40 : W - 40;
         for (var i = 0; i < count; i++) {
             enemies.push({
-                x: startX, y: -20 - i * 32,
+                x: startX, y: -20 - i * 20,
                 hp: 1, maxHp: 1, speed: 1.4, type: 'small',
                 pattern: 'sCurve',
                 entrySide: side, entryX: startX,
@@ -838,11 +838,11 @@
     // 左右の上からZ字（ジグザグ）で降下する編隊
     function spawnZCurveFormation() {
         var side = Math.random() > 0.5 ? 1 : -1;
-        var count = 6 + Math.floor(Math.random() * 3); // 6-8
+        var count = 7 + Math.floor(Math.random() * 3); // 7-9
         var startX = side > 0 ? 30 : W - 30;
         for (var i = 0; i < count; i++) {
             enemies.push({
-                x: startX, y: -20 - i * 30,
+                x: startX, y: -20 - i * 20,
                 hp: 1, maxHp: 1, speed: 1.5, type: 'small',
                 pattern: 'zCurve',
                 entrySide: side, entryX: startX,
@@ -975,13 +975,13 @@
         switch (pat) {
             case 'streamL': spawnDriftFormation(); break;
             case 'streamR':
-                var count = 6 + Math.floor(Math.random() * 6);
+                var count = 7 + Math.floor(Math.random() * 5);
                 var dir = Math.random() > 0.5 ? 1 : -1;
                 var baseY = 30 + Math.random() * 40;
                 var startX = dir > 0 ? -15 : W + 15;
                 for (var i = 0; i < count; i++) {
                     enemies.push({
-                        x: startX - dir * 25 * i, y: baseY,
+                        x: startX - dir * 18 * i, y: baseY,
                         hp: 1, maxHp: 1, speed: 1.5 + Math.random(), type: 'small',
                         pattern: 'drift', fireRate: Math.floor(110 / diff.bullets),
                         fireTimer: Math.floor(Math.random() * 60),
@@ -1001,7 +1001,7 @@
                 break;
             case 'largeTank':
                 spawnEnemy('large');
-                for (var j = 0; j < 3; j++) spawnEnemy('small');
+                for (var j = 0; j < 6; j++) spawnEnemy('small');
                 break;
             case 'dualTurret':
                 spawnDualTurrets();
