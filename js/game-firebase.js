@@ -60,15 +60,18 @@ const GameRanking = (function () {
         let remote = null;
         if (db) {
             try {
+                // 複合インデックス(difficulty+score)を要求しないよう where のみで取得し、
+                // 並び替え・件数制限はクライアント側で行う
                 const snap = await db.collection(COLLECTION)
                     .where('difficulty', '==', difficulty)
-                    .orderBy('score', 'desc')
-                    .limit(limit * 2)
                     .get();
-                remote = snap.docs.map(function (doc) {
-                    var d = doc.data();
-                    return { name: d.name, score: d.score };
-                });
+                remote = snap.docs
+                    .map(function (doc) {
+                        var d = doc.data();
+                        return { name: d.name, score: d.score };
+                    })
+                    .sort(function (a, b) { return b.score - a.score; })
+                    .slice(0, limit * 2);
                 console.log('[Ranking] Firebase read OK:', difficulty, 'count=', remote.length);
             } catch (e) {
                 console.error('[Ranking] Firebase read failed. Falling back to localStorage.', e);
