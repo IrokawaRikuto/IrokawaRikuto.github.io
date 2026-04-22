@@ -1364,8 +1364,7 @@
         if (e.type === 'spawner') {
             spawnExplosion(e.x, e.y, '#ffffff', 16);
             score += 1500;
-            spawnItems(e.x, e.y, 'score', 2); spawnItems(e.x, e.y, 'scoreS', 4);
-            spawnItems(e.x, e.y, 'power', 1); spawnItems(e.x, e.y, 'powerS', 1);
+            // スポナーはアイテムを落とさない
             return;
         }
         score += e.type === 'small' ? 100 : e.type === 'medium' ? 500 : 2000;
