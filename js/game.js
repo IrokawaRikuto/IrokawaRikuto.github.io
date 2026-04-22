@@ -2150,6 +2150,8 @@
         resetGame();
         state = 'PLAYING';
         overlay.hidden = true;
+        // 固定ステップの時刻をリセット（高リフレッシュ環境での倍速化対策）
+        loopLastTime = 0; loopAccum = 0;
         animId = requestAnimationFrame(gameLoop);
     }
 
@@ -2232,21 +2234,41 @@
     function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     // ===== Game Loop =====
-    function gameLoop() {
-        frame++;
+    // ===== Fixed-step loop =====
+    // 画面のリフレッシュレートに依存せず60FPS相当で更新
+    var LOOP_STEP_MS = 1000 / 60;
+    var LOOP_MAX_STEPS_PER_FRAME = 4;
+    var loopLastTime = 0;
+    var loopAccum = 0;
 
-        // Update (only while playing)
-        if (state === 'PLAYING') {
-            try {
-                updateBgParticles(bgParticles);
-                updatePlayer(); updatePBullets(); updateEnemies();
-                updateEBullets(); updateBombOrbs(); updateItems(); updateParticles();
-                updateDeleteEffects();
-                checkCollisions();
-            } catch (e) {
-                console.error('Game update error:', e);
+    function gameLoop(now) {
+        now = now || performance.now();
+        if (!loopLastTime) loopLastTime = now;
+        var delta = now - loopLastTime;
+        loopLastTime = now;
+        if (delta > 250) delta = 250; // スパイラル防止
+        loopAccum += delta;
+
+        // 固定ステップでゲーム更新（最大回数を制限）
+        var stepsRun = 0;
+        while (loopAccum >= LOOP_STEP_MS && stepsRun < LOOP_MAX_STEPS_PER_FRAME) {
+            frame++;
+            if (state === 'PLAYING') {
+                try {
+                    updateBgParticles(bgParticles);
+                    updatePlayer(); updatePBullets(); updateEnemies();
+                    updateEBullets(); updateBombOrbs(); updateItems(); updateParticles();
+                    updateDeleteEffects();
+                    checkCollisions();
+                } catch (e) {
+                    console.error('Game update error:', e);
+                }
             }
+            loopAccum -= LOOP_STEP_MS;
+            stepsRun++;
         }
+        // 追いつけない場合は蓄積をクリア（遅延の永続化防止）
+        if (loopAccum > LOOP_STEP_MS * LOOP_MAX_STEPS_PER_FRAME) loopAccum = 0;
 
         // Draw (always, so last frame visible on gameover)
         ctx.fillStyle = '#0a0810';
@@ -2292,12 +2314,27 @@
     }
 
     // ===== Title Scene =====
+    var titleLoopLastTime = 0;
+    var titleLoopAccum = 0;
     function drawTitleBg() {
         if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
-        function titleFrame() {
+        titleLoopLastTime = 0; titleLoopAccum = 0;
+        function titleFrame(now) {
             if (state !== 'TITLE' && state !== 'DIFFICULTY' && state !== 'RANKING') { titleAnimId = null; return; }
-            frame++;
-            updateBgParticles(titleParticles, CANVAS_W, CANVAS_H);
+            now = now || performance.now();
+            if (!titleLoopLastTime) titleLoopLastTime = now;
+            var delta = now - titleLoopLastTime;
+            titleLoopLastTime = now;
+            if (delta > 250) delta = 250;
+            titleLoopAccum += delta;
+            var steps = 0;
+            while (titleLoopAccum >= LOOP_STEP_MS && steps < LOOP_MAX_STEPS_PER_FRAME) {
+                frame++;
+                updateBgParticles(titleParticles, CANVAS_W, CANVAS_H);
+                titleLoopAccum -= LOOP_STEP_MS;
+                steps++;
+            }
+            if (titleLoopAccum > LOOP_STEP_MS * LOOP_MAX_STEPS_PER_FRAME) titleLoopAccum = 0;
             drawTitleBackground();
             titleAnimId = requestAnimationFrame(titleFrame);
         }
