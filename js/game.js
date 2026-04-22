@@ -46,12 +46,32 @@
     loadSprite('bulletS', 'assets/game/bullet_small.png');
     loadSprite('bulletM', 'assets/game/bullet_medium.png');
     loadSprite('bulletL', 'assets/game/bullet_large.png');
+    loadSprite('bulletWedge', 'assets/game/bullet_wedge.png');
+    loadSprite('bulletIce', 'assets/game/bullet_ice.png');
+    loadSprite('bulletSeal', 'assets/game/bullet_seal.png');
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
-    // Sprite layout: small=16x16 x9, medium=64x32 x8, large=128x64 x8
+    // Sprite layout: small=16x16 x9, medium=64x32 x8, large=128x64 x8, wedge/ice/seal=16x16 x9
     // Colors: 0=red,1=orange,2=yellow,3=green,4=cyan,5=blue,6=purple,7=gray (8=white for 9-sprites)
     var BULLET_COLORS = { red: 0, orange: 1, yellow: 2, green: 3, cyan: 4, blue: 5, purple: 6, gray: 7 };
+
+    // ===== Sound Effects =====
+    var seAudio = {};
+    function loadSE(key, src) {
+        try {
+            var a = new Audio(src);
+            a.preload = 'auto';
+            a.volume = 0.4;
+            seAudio[key] = a;
+        } catch (e) {}
+    }
+    loadSE('decide', 'assets/game/se_decide.mp3');
+    loadSE('select', 'assets/game/se_select.mp3');
+    function playSE(key) {
+        var a = seAudio[key]; if (!a) return;
+        try { a.currentTime = 0; a.play().catch(function(){}); } catch (e) {}
+    }
 
     // ===== Constants =====
     var PLAYER_SPEED = 4;
@@ -937,7 +957,7 @@
         var copy = pool.slice();
         while (copy.length > 0) shuffled.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
 
-        var eventCount = Math.min(14, 8 + stage);
+        var eventCount = Math.min(22, 14 + stage);
         for (var i = 0; i < eventCount; i++) {
             // 最大3パターン同時出現
             var simultaneous = 1 + Math.floor(Math.random() * 3); // 1~3
@@ -946,9 +966,9 @@
                 waveScript.push({ time: t, pattern: pat });
             }
             i += simultaneous - 1;
-            t += Math.max(120, Math.floor(300 / stageScale));
+            t += Math.max(150, Math.floor(360 / stageScale));
         }
-        bossInterval = t + 180;
+        bossInterval = t + 300;
     }
 
     function executeWaveEvent(pat) {
@@ -1001,22 +1021,47 @@
         }
     }
 
+    // ボス種類: 星弾/楔弾/氷弾/札弾
+    var BOSS_KINDS = ['star', 'wedge', 'ice', 'seal'];
+    var BOSS_BODY_COLORS = {
+        star:  { main: '#cc2222', dark: '#991111', halo: '#ffaa88' },
+        wedge: { main: '#6644cc', dark: '#3322aa', halo: '#aa88ff' },
+        ice:   { main: '#3399dd', dark: '#1166aa', halo: '#aaddff' },
+        seal:  { main: '#dd9922', dark: '#aa6600', halo: '#ffd888' }
+    };
+    var BOSS_ACCENT_COL = { star: 6, wedge: 5, ice: 4, seal: 2 };
+
     function spawnBoss() {
         bossActive = true;
+        var kind = BOSS_KINDS[((waveIndex - 1) % BOSS_KINDS.length + BOSS_KINDS.length) % BOSS_KINDS.length];
         boss = {
             x: W / 2, y: -40,
             hp: Math.floor(600 * diff.bossHp),
             maxHp: Math.floor(600 * diff.bossHp),
             size: 30, phase: 0, phaseTimer: 0,
             fireTimer: 0, age: 0, entering: true, firing: false,
+            // ボス種類
+            bulletKind: kind,
             // 大技（スペルカード）
             spellActive: false, spellsUsed: [], spellIdx: -1,
             spellTimer: 0, spellDuration: 0, spellFlash: 0,
             // 移動モード
             moveMode: 'sine', moveTimer: 0,
             targetX: W / 2, targetY: 70,
-            dashTargetX: W / 2, dashTargetY: 70
+            dashTargetX: W / 2, dashTargetY: 70,
+            // スポナー召喚タイマー（最初の召喚までの時間）
+            spawnerTimer: 540
         };
+    }
+
+    // ボスの弾属性を弾オブジェクト用の {bulletType, size, color, spin} に変換
+    function bossBulletShape(sizeHint) {
+        var k = (boss && boss.bulletKind) || 'star';
+        if (k === 'star')  return { bulletType: 'star',  size: sizeHint + 2, color: 5 + Math.floor(Math.random() * 2), spin: Math.random() * Math.PI * 2 };
+        if (k === 'wedge') return { bulletType: 'wedge', size: sizeHint, color: BOSS_ACCENT_COL.wedge };
+        if (k === 'ice')   return { bulletType: 'ice',   size: sizeHint, color: BOSS_ACCENT_COL.ice };
+        if (k === 'seal')  return { bulletType: 'seal',  size: sizeHint, color: BOSS_ACCENT_COL.seal };
+        return { bulletType: 'medium', size: sizeHint, color: 0 };
     }
 
     function moveEnemy(e) {
@@ -1072,10 +1117,28 @@
                 if (e.x > W - 20) e.x = W - 20;
             }
         }
+        else if (e.pattern === 'spawnerHover') {
+            if (e.y < e.targetSy) e.y += e.speed;
+            else e.x += Math.sin(e.age * 0.03) * 0.4;
+        }
     }
 
     function updateEnemies() {
-        if (bossActive) { updateBoss(); return; }
+        if (bossActive) {
+            updateBoss();
+            // ボス戦中もスポナーは個別に更新（enemies配列に同居）
+            for (var i = enemies.length - 1; i >= 0; i--) {
+                var e = enemies[i];
+                if (e.type !== 'spawner') { enemies.splice(i, 1); continue; }
+                e.age++;
+                moveEnemy(e);
+                e.fireTimer++;
+                if (e.fireTimer >= e.fireRate && e.y > 0) { e.fireTimer = 0; fireEnemyBullet(e); }
+                if (e.lifetime !== undefined) { e.lifetime--; if (e.lifetime <= 0) e.hp = 0; }
+                if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
+            }
+            return;
+        }
         waveTimer++;
 
         if (preBoss) {
@@ -1240,6 +1303,29 @@
                 eBullets.push({ x: e.x, y: e.y, vx: 0, vy: spd, size: sz, grazed: false, color: col, bulletType: bt });
                 break;
             }
+            case 'spawnerRing': {
+                // スポナー: 全方位リング（ボスの弾種で） + 自機狙い3発
+                var kind = e.spawnerKind || 'star';
+                var bulletMap = {
+                    star:  { bulletType: 'star',  size: 5, color: 5 },
+                    wedge: { bulletType: 'wedge', size: 4, color: 5 },
+                    ice:   { bulletType: 'ice',   size: 4, color: 4 },
+                    seal:  { bulletType: 'seal',  size: 4, color: 2 }
+                };
+                var sh = bulletMap[kind] || bulletMap.star;
+                var ringSpd = spd * 0.8;
+                var n = Math.max(6, Math.floor(7 * diff.bullets));
+                var rot = e.age * 0.06;
+                for (var i = 0; i < n; i++) {
+                    var a = (Math.PI * 2 / n) * i + rot;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * ringSpd, vy: Math.sin(a) * ringSpd, size: sh.size, grazed: false, color: sh.color, bulletType: sh.bulletType, spin: Math.random() * Math.PI * 2 });
+                }
+                for (var i = -1; i <= 1; i++) {
+                    var a2 = angle + i * 0.22;
+                    eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a2) * spd, vy: Math.sin(a2) * spd, size: sh.size, grazed: false, color: 0, bulletType: sh.bulletType, spin: Math.random() * Math.PI * 2 });
+                }
+                break;
+            }
             case 'turretDual': {
                 // 自機狙い全方位（中弾）
                 var aimedN = Math.floor(6 * diff.bullets);
@@ -1264,6 +1350,13 @@
 
     function enemyDestroyed(e) {
         spawnExplosion(e.x, e.y, '#ff4444', e.size > 14 ? 12 : 6);
+        if (e.type === 'spawner') {
+            spawnExplosion(e.x, e.y, '#ffffff', 16);
+            score += 1500;
+            spawnItems(e.x, e.y, 'score', 2); spawnItems(e.x, e.y, 'scoreS', 4);
+            spawnItems(e.x, e.y, 'power', 1); spawnItems(e.x, e.y, 'powerS', 1);
+            return;
+        }
         score += e.type === 'small' ? 100 : e.type === 'medium' ? 500 : 2000;
         if (e.type === 'small') {
             if (Math.random() < 0.2) spawnItems(e.x, e.y, 'powerS', 1);
@@ -1282,9 +1375,43 @@
     }
 
     function drawEnemies() {
+        var useSpriteL = isSpriteReady('bulletL');
+        var useMagic = isSpriteReady('magicCircle');
         for (var i = 0; i < enemies.length; i++) {
             var e = enemies[i];
             ctx.save(); ctx.translate(e.x, e.y);
+
+            if (e.type === 'spawner') {
+                // スポナー: 小さい魔法陣 + 白い大弾スプライト
+                if (useMagic) {
+                    ctx.save();
+                    ctx.rotate(e.age * 0.04);
+                    ctx.globalAlpha = 0.55;
+                    var mcSize = e.size * 4.2;
+                    ctx.drawImage(sprites.magicCircle, -mcSize / 2, -mcSize / 2, mcSize, mcSize);
+                    ctx.restore();
+                }
+                if (useSpriteL) {
+                    // col=7 (gray/white) の大弾を使用
+                    var bs = e.size * 2.2;
+                    ctx.drawImage(sprites.bulletL, 7 * 128, 0, 128, 64, -bs / 2, -bs / 4, bs, bs / 2);
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(0, 0, e.size, 0, Math.PI * 2); ctx.fill();
+                }
+                // HP残量インジケータ（小さい弧）
+                if (e.hp < e.maxHp) {
+                    var ratio = e.hp / e.maxHp;
+                    ctx.strokeStyle = ratio > 0.5 ? '#ffff66' : '#ff6644';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, e.size + 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                continue;
+            }
+
             ctx.fillStyle = e.type === 'large' ? '#ff3333' : e.type === 'medium' ? '#cc4444' : '#aa3333';
             ctx.beginPath();
             ctx.moveTo(0, e.size); ctx.lineTo(-e.size, -e.size * 0.3);
@@ -1316,11 +1443,58 @@
             var fireRate = Math.floor(30 / diff.bullets);
             if (boss.fireTimer >= fireRate) { boss.fireTimer = 0; fireBossBullets(); }
             if (boss.phaseTimer > 360) { boss.phase++; boss.phaseTimer = 0; boss.moveTimer = 0; onBossPhaseChange(); }
+
+            // 定期的にスポナーを召喚
+            if (boss.spawnerTimer !== undefined) {
+                boss.spawnerTimer--;
+                if (boss.spawnerTimer <= 0 && countActiveSpawners() < 3) {
+                    summonBossSpawners();
+                    boss.spawnerTimer = 900 + Math.floor(Math.random() * 180); // 次の召喚まで15-18秒
+                }
+            }
         }
 
         boss.firing = true;
         if (boss.spellFlash > 0) boss.spellFlash--;
         if (boss.hp <= 0) bossDefeated();
+    }
+
+    function countActiveSpawners() {
+        var c = 0;
+        for (var i = 0; i < enemies.length; i++) if (enemies[i].type === 'spawner') c++;
+        return c;
+    }
+
+    function summonBossSpawners() {
+        var positions = [
+            { x: 80, y: 120 },
+            { x: W - 80, y: 120 },
+            { x: W / 2, y: 170 }
+        ];
+        // 2体ランダム選択
+        var indices = [0, 1, 2];
+        for (var j = indices.length - 1; j > 0; j--) {
+            var k = Math.floor(Math.random() * (j + 1));
+            var tmp = indices[j]; indices[j] = indices[k]; indices[k] = tmp;
+        }
+        var count = 2;
+        for (var i = 0; i < count; i++) {
+            var p = positions[indices[i]];
+            enemies.push({
+                x: p.x, y: -20,
+                targetSx: p.x, targetSy: p.y,
+                hp: 30, maxHp: 30, speed: 1.5,
+                type: 'spawner',
+                pattern: 'spawnerHover',
+                fireRate: Math.floor(55 / diff.bullets),
+                fireTimer: Math.floor(Math.random() * 40),
+                size: 14, age: 0, baseX: 0, dir: 1,
+                bulletPattern: 'spawnerRing',
+                spawnerKind: (boss && boss.bulletKind) || 'star',
+                lifetime: 720
+            });
+        }
+        spawnExplosion(boss.x, boss.y, '#ffffff', 12);
     }
 
     function onBossPhaseChange() {
@@ -1359,6 +1533,12 @@
         if (boss.y > 160) boss.y = 160;
     }
 
+    function pushBossBullet(x, y, vx, vy, shapeOverride) {
+        var sh = shapeOverride || bossBulletShape(5);
+        var spinVal = sh.spin !== undefined ? sh.spin : Math.random() * Math.PI * 2;
+        eBullets.push({ x: x, y: y, vx: vx, vy: vy, size: sh.size, grazed: false, color: sh.color, bulletType: sh.bulletType, spin: spinVal });
+    }
+
     function fireBossBullets() {
         var spd = 2 * diff.speed, phase = boss.phase % 4;
         if (phase === 0) {
@@ -1367,41 +1547,41 @@
             var n = Math.max(5, Math.floor(5 * diff.bullets)), spread = 0.5;
             for (var i = 0; i < n; i++) {
                 var a = angle - spread + (spread * 2 / (n - 1)) * i;
-                eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd, Math.sin(a) * spd);
             }
         } else if (phase === 1) {
-            // 全方位回転（星弾）2層逆回転：弾を大きめに
+            // 全方位回転2層逆回転：大きめ
             var n = Math.max(6, Math.floor(7 * diff.bullets));
             for (var i = 0; i < n; i++) {
                 var a = (Math.PI * 2 / n) * i + boss.age * 0.05;
-                eBullets.push({ x: boss.x, y: boss.y + boss.size * 0.5, vx: Math.cos(a) * spd * 0.9, vy: Math.sin(a) * spd * 0.9, size: 9, grazed: false, color: 5, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                pushBossBullet(boss.x, boss.y + boss.size * 0.5, Math.cos(a) * spd * 0.9, Math.sin(a) * spd * 0.9, bossBulletShape(7));
             }
             if ((boss.phaseTimer / 18) % 2 < 1) {
                 var n2 = Math.max(5, Math.floor(5 * diff.bullets));
                 for (var i = 0; i < n2; i++) {
                     var a = (Math.PI * 2 / n2) * i - boss.age * 0.05;
-                    eBullets.push({ x: boss.x, y: boss.y + boss.size * 0.5, vx: Math.cos(a) * spd * 1.1, vy: Math.sin(a) * spd * 1.1, size: 8, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                    pushBossBullet(boss.x, boss.y + boss.size * 0.5, Math.cos(a) * spd * 1.1, Math.sin(a) * spd * 1.1, bossBulletShape(6));
                 }
             }
         } else if (phase === 2) {
-            // ランダム散らし（星弾）
+            // ランダム散らし
             var n = Math.max(5, Math.floor(8 * diff.bullets));
             for (var i = 0; i < n; i++) {
                 var a = Math.random() * Math.PI * 0.8 + Math.PI * 0.1;
                 var s = spd * (0.7 + Math.random() * 0.6);
-                eBullets.push({ x: boss.x + (Math.random() - 0.5) * 30, y: boss.y + boss.size, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                pushBossBullet(boss.x + (Math.random() - 0.5) * 30, boss.y + boss.size, Math.cos(a) * s, Math.sin(a) * s);
             }
         } else {
             // way5 + 自機狙い3発
             var base = Math.PI / 2;
             for (var i = -2; i <= 2; i++) {
                 var a = base + i * 0.25;
-                eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, size: 5, grazed: false, color: 3, bulletType: 'medium' });
+                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd, Math.sin(a) * spd);
             }
             var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
             for (var i = -1; i <= 1; i++) {
                 var a = angle + i * 0.2;
-                eBullets.push({ x: boss.x, y: boss.y + boss.size, vx: Math.cos(a) * spd * 1.2, vy: Math.sin(a) * spd * 1.2, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd * 1.2, Math.sin(a) * spd * 1.2);
             }
         }
     }
@@ -1427,7 +1607,7 @@
     function updateSpellcard() {
         boss.spellTimer++;
         if (boss.spellIdx === 0) {
-            // 大技1「紅蓮双輪」: 中央固定で逆回転する2層の星弾リング＋周期的な自機狙い
+            // 大技1: 中央固定で逆回転する2層リング＋周期的な自機狙い
             boss.x += (W / 2 - boss.x) * 0.05;
             boss.y += (80 - boss.y) * 0.05;
             var t = boss.spellTimer;
@@ -1438,7 +1618,7 @@
                 var s = 1.8 * diff.speed;
                 for (var i = 0; i < n; i++) {
                     var a = (Math.PI * 2 / n) * i + rot;
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: i % 7, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * s, Math.sin(a) * s);
                 }
             }
             if (t % 14 === 4) {
@@ -1447,18 +1627,18 @@
                 var s = 2.3 * diff.speed;
                 for (var i = 0; i < n; i++) {
                     var a = (Math.PI * 2 / n) * i + rot;
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 5, grazed: false, color: 6, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * s, Math.sin(a) * s, bossBulletShape(6));
                 }
             }
             if (t % 100 === 80) {
                 var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
                 for (var i = -2; i <= 2; i++) {
                     var a = angle + i * 0.16;
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * 2.8 * diff.speed, vy: Math.sin(a) * 2.8 * diff.speed, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * 2.8 * diff.speed, Math.sin(a) * 2.8 * diff.speed);
                 }
             }
         } else if (boss.spellIdx === 1) {
-            // 大技2「朱紅爆裂」: ワープ移動＋放射爆発＋回転リング
+            // 大技2: ワープ移動＋放射爆発＋回転リング
             var dashInterval = 110;
             if (boss.spellTimer % dashInterval === 1) {
                 boss.dashTargetX = 70 + Math.random() * (W - 140);
@@ -1474,7 +1654,7 @@
                 var s = 1.6 * diff.speed;
                 for (var i = 0; i < n; i++) {
                     var a = (Math.PI * 2 / n) * i + rot;
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: 4, grazed: false, color: (i + Math.floor(t / 30)) % 7, bulletType: 'star', spin: Math.random() * Math.PI * 2 });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * s, Math.sin(a) * s, bossBulletShape(5));
                 }
             }
             if (t % dashInterval === dashInterval - 10) {
@@ -1483,7 +1663,7 @@
                 for (var i = 0; i < n; i++) {
                     var a = (Math.PI * 2 / n) * i + Math.random() * 0.08;
                     var ss = s * (0.75 + Math.random() * 0.5);
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * ss, vy: Math.sin(a) * ss, size: 5, grazed: false, color: 1, bulletType: 'medium' });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * ss, Math.sin(a) * ss);
                 }
                 spawnExplosion(boss.x, boss.y, '#ffaa44', 18);
             }
@@ -1491,7 +1671,7 @@
                 var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
                 for (var i = -1; i <= 1; i++) {
                     var a = angle + i * 0.22;
-                    eBullets.push({ x: boss.x, y: boss.y, vx: Math.cos(a) * 3 * diff.speed, vy: Math.sin(a) * 3 * diff.speed, size: 5, grazed: false, color: 0, bulletType: 'medium' });
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * 3 * diff.speed, Math.sin(a) * 3 * diff.speed);
                 }
             }
         }
@@ -1518,12 +1698,20 @@
         else spawnItems(boss.x, boss.y, 'bomb', 1);
         for (var i = 0; i < eBullets.length; i++) spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
         eBullets = []; boss = null; bossActive = false;
+        // 残存スポナーも消去
+        for (var j = enemies.length - 1; j >= 0; j--) {
+            if (enemies[j].type === 'spawner') {
+                spawnExplosion(enemies[j].x, enemies[j].y, '#ffffff', 8);
+                enemies.splice(j, 1);
+            }
+        }
         waveTimer = 0;
         buildWaveScript();
     }
 
     function drawBoss() {
         if (!boss) return;
+        var colors = BOSS_BODY_COLORS[boss.bulletKind] || BOSS_BODY_COLORS.star;
         ctx.save(); ctx.translate(boss.x, boss.y);
 
         // 大技発動フラッシュ（発動直後の光の波紋）
@@ -1540,59 +1728,88 @@
             ctx.restore();
         }
 
-        // 魔法陣（射撃中のみ、時計回り回転）大技中は拡大＋逆回転の二重
+        // 魔法陣（射撃中のみ）拡大
         if (boss.firing && !boss.entering && isSpriteReady('magicCircle')) {
             var mc = sprites.magicCircle;
-            var baseSize = boss.size * (boss.spellActive ? 4.5 : 3.5);
+            var baseSize = boss.size * (boss.spellActive ? 5.8 : 4.8);
             ctx.save();
             ctx.rotate(boss.age * 0.03);
-            ctx.globalAlpha = boss.spellActive ? 0.65 : 0.5;
+            ctx.globalAlpha = boss.spellActive ? 0.65 : 0.55;
             ctx.drawImage(mc, -baseSize / 2, -baseSize / 2, baseSize, baseSize);
             ctx.restore();
             if (boss.spellActive) {
-                // 逆回転の外周
                 ctx.save();
                 ctx.rotate(-boss.age * 0.02);
                 ctx.globalAlpha = 0.35;
-                var outerSize = baseSize * 1.45;
+                var outerSize = baseSize * 1.5;
                 ctx.drawImage(mc, -outerSize / 2, -outerSize / 2, outerSize, outerSize);
                 ctx.restore();
             }
             ctx.globalAlpha = 1;
         }
 
-        // ボス本体
-        ctx.fillStyle = '#cc2222'; ctx.beginPath(); ctx.arc(0, 0, boss.size, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#991111';
+        // ボス本体（種類ごとに色替え）
+        ctx.fillStyle = colors.main; ctx.beginPath(); ctx.arc(0, 0, boss.size, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = colors.dark;
         ctx.beginPath(); ctx.moveTo(-boss.size, 0); ctx.lineTo(-boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(-boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
         ctx.beginPath(); ctx.moveTo(boss.size, 0); ctx.lineTo(boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, boss.size * 0.25, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = colors.halo; ctx.beginPath(); ctx.arc(0, 0, boss.size * 0.25, 0, Math.PI * 2); ctx.fill();
 
-        // 円形HPバー（画像ベース、12時始まり、ダメージで時計回りに削れる）
+        // HPバー: 画像ベース、12時からCW方向に削れる（画像クリップ方式）
         var hpRatio = Math.max(0, boss.hp / boss.maxHp);
-        var hpRadius = boss.size + 10;
-        var startAngle = -Math.PI / 2; // 12時
-        // 方向反転: 12時から反時計回りに残HPを描く → ダメージで12時から時計回りに欠ける
-        var endAngle = startAngle - Math.PI * 2 * hpRatio;
-
-        // HPリング塗りつぶし（画像の下地として）
-        if (hpRatio > 0) {
-            ctx.strokeStyle = hpRatio > 0.5 ? '#ff2222' : hpRatio > 0.25 ? '#ff8800' : '#ffff00';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(0, 0, hpRadius, startAngle, endAngle, true);
-            ctx.stroke();
-        }
-
-        // HPバー画像（二重リング装飾）を上から重ねる
+        var hpRadius = boss.size + 14;
         if (isSpriteReady('bossHpBar')) {
             var hb = sprites.bossHpBar;
-            var hbSize = (hpRadius + 6) * 2;
-            ctx.save();
-            ctx.rotate(boss.age * 0.01); // ゆっくり回転
-            ctx.globalAlpha = 0.9;
-            ctx.drawImage(hb, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
-            ctx.restore();
+            var hbSize = (hpRadius + 8) * 2;
+
+            // 欠けている部分: 暗く薄いリングを下地として描画
+            if (hpRatio < 1) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                var s2 = -Math.PI / 2 - Math.PI * 2 * hpRatio;
+                var e2 = -Math.PI / 2;
+                ctx.arc(0, 0, hbSize, s2, e2, true);
+                ctx.closePath();
+                ctx.clip();
+                ctx.rotate(boss.age * 0.01);
+                ctx.globalAlpha = 0.12;
+                ctx.drawImage(hb, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
+                ctx.restore();
+            }
+
+            // 残HP部分: 通常表示
+            if (hpRatio > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                var s1 = -Math.PI / 2;
+                var e1 = -Math.PI / 2 - Math.PI * 2 * hpRatio;
+                ctx.arc(0, 0, hbSize, s1, e1, true);
+                ctx.closePath();
+                ctx.clip();
+                ctx.rotate(boss.age * 0.01);
+                // HPで色を変える（低いほど赤→橙→黄）
+                var tintColor = hpRatio > 0.5 ? null : hpRatio > 0.25 ? '#ffaa44' : '#ffee66';
+                ctx.globalAlpha = 0.95;
+                ctx.drawImage(hb, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
+                if (tintColor) {
+                    ctx.globalAlpha = 0.5;
+                    ctx.globalCompositeOperation = 'source-atop';
+                    ctx.fillStyle = tintColor;
+                    ctx.fillRect(-hbSize / 2, -hbSize / 2, hbSize, hbSize);
+                }
+                ctx.restore();
+            }
+        } else {
+            // 画像が無い場合のフォールバック
+            if (hpRatio > 0) {
+                ctx.strokeStyle = hpRatio > 0.5 ? '#ff2222' : hpRatio > 0.25 ? '#ff8800' : '#ffff00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(0, 0, hpRadius, -Math.PI / 2, -Math.PI / 2 - Math.PI * 2 * hpRatio, true);
+                ctx.stroke();
+            }
         }
 
         ctx.restore();
@@ -1631,6 +1848,9 @@
         var useSpriteS = isSpriteReady('bulletS');
         var useSpriteM = isSpriteReady('bulletM');
         var useSpriteL = isSpriteReady('bulletL');
+        var useSpriteW = isSpriteReady('bulletWedge');
+        var useSpriteI = isSpriteReady('bulletIce');
+        var useSpriteSeal = isSpriteReady('bulletSeal');
         var imgS = sprites.bulletS;
         var imgM = sprites.bulletM;
         var imgL = sprites.bulletL;
@@ -1644,6 +1864,21 @@
                 // 星ごとに固有のスピン + フレーム依存の共通回転で常時回転
                 var spin = (b.spin !== undefined) ? b.spin : 0;
                 drawBulletStar(b.x, b.y, b.size * 2, starColor, col, frame * 0.12 + spin);
+            } else if (bt === 'wedge' && useSpriteW) {
+                // 楔弾: 進行方向に回転、144x16 の 9 コマ
+                var drawSize = b.size * 4;
+                var rot = Math.atan2(b.vy, b.vx) + Math.PI / 2;
+                ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(rot);
+                ctx.drawImage(sprites.bulletWedge, col * 16, 0, 16, 16, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                ctx.restore();
+            } else if (bt === 'ice' && useSpriteI) {
+                // 氷弾
+                var drawSize = b.size * 4;
+                ctx.drawImage(sprites.bulletIce, col * 16, 0, 16, 16, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
+            } else if (bt === 'seal' && useSpriteSeal) {
+                // 札弾
+                var drawSize = b.size * 4;
+                ctx.drawImage(sprites.bulletSeal, col * 16, 0, 16, 16, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
             } else if (bt === 'large' && useSpriteL) {
                 // Large bullet sprite: 1024x64, 8 sprites of 128x64
                 var drawSize = b.size * 5;
@@ -1947,18 +2182,21 @@
             var retryB = document.createElement('button');
             retryB.className = 'game-btn';
             retryB.textContent = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Retry' : '\u30EA\u30C8\u30E9\u30A4';
-            retryB.addEventListener('click', function () { startGame(); });
+            retryB.addEventListener('click', function () { playSE('decide'); startGame(); });
+            retryB.addEventListener('mouseenter', function () { playSE('select'); });
             var titleB = document.createElement('button');
             titleB.className = 'game-btn';
             titleB.textContent = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Title' : '\u30BF\u30A4\u30C8\u30EB\u3078';
-            titleB.addEventListener('click', function () { goToTitle(); });
+            titleB.addEventListener('click', function () { playSE('decide'); goToTitle(); });
+            titleB.addEventListener('mouseenter', function () { playSE('select'); });
             rankingBtns.appendChild(retryB);
             rankingBtns.appendChild(titleB);
         } else {
             var backB = document.createElement('button');
             backB.className = 'game-btn';
             backB.textContent = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Back' : '\u623B\u308B';
-            backB.addEventListener('click', function () { goToTitle(); });
+            backB.addEventListener('click', function () { playSE('decide'); goToTitle(); });
+            backB.addEventListener('mouseenter', function () { playSE('select'); });
             rankingBtns.appendChild(backB);
         }
         menuIndex = 0;
@@ -2081,16 +2319,17 @@
 
     function handleMenuKey(code) {
         if (state === 'GAMEOVER') {
-            if (code === 'Enter') submitBtn.click();
-            else if (code === 'KeyX' || code === 'Escape') skipBtn.click();
+            if (code === 'Enter') { playSE('decide'); submitBtn.click(); }
+            else if (code === 'KeyX' || code === 'Escape') { playSE('decide'); skipBtn.click(); }
             return;
         }
         var items = getMenuItems();
         if (!items || items.length === 0) return;
-        if (code === 'ArrowUp') { menuIndex = (menuIndex - 1 + items.length) % items.length; updateMenuHighlight(); }
-        else if (code === 'ArrowDown') { menuIndex = (menuIndex + 1) % items.length; updateMenuHighlight(); }
-        else if (code === 'KeyZ' || code === 'Enter') { if (menuIndex >= 0 && menuIndex < items.length) items[menuIndex].click(); }
+        if (code === 'ArrowUp') { menuIndex = (menuIndex - 1 + items.length) % items.length; updateMenuHighlight(); playSE('select'); }
+        else if (code === 'ArrowDown') { menuIndex = (menuIndex + 1) % items.length; updateMenuHighlight(); playSE('select'); }
+        else if (code === 'KeyZ' || code === 'Enter') { if (menuIndex >= 0 && menuIndex < items.length) { playSE('decide'); items[menuIndex].click(); } }
         else if (code === 'KeyX' || code === 'Escape') {
+            playSE('decide');
             if (state === 'DIFFICULTY') goToTitle();
             else if (state === 'RANKING') goToTitle();
             else if (state === 'TITLE') closeGameModal();
@@ -2147,31 +2386,43 @@
     modalClose.addEventListener('click', closeGameModal);
     modalBackdrop.addEventListener('click', closeGameModal);
 
+    // マウスホバー時の選択SE（直前と同じidxなら鳴らさない）
+    var lastHoverIdx = -1;
+    function hoverSelect(idx) {
+        if (idx !== lastHoverIdx) { lastHoverIdx = idx; playSE('select'); }
+        menuIndex = idx; updateMenuHighlight();
+    }
+
     modal.querySelectorAll('.title-menu-item').forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
+            playSE('decide');
             var action = btn.dataset.action;
             if (action === 'start') {
                 state = 'DIFFICULTY'; menuIndex = 0;
                 titleScreen.hidden = true; diffScreen.hidden = false;
                 updateMenuHighlight();
+                lastHoverIdx = -1;
             } else if (action === 'ranking') {
                 showRanking('title', 'normal');
                 drawTitleBg();
+                lastHoverIdx = -1;
             } else if (action === 'exit') {
                 closeGameModal();
             }
         });
-        btn.addEventListener('mouseenter', function () { menuIndex = idx; updateMenuHighlight(); });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
     });
 
     modal.querySelectorAll('.difficulty-btn').forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
+            playSE('decide');
             diffKey = btn.dataset.diff; diff = DIFF[diffKey]; startGame();
         });
-        btn.addEventListener('mouseenter', function () { menuIndex = idx; updateMenuHighlight(); });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
     });
 
     submitBtn.addEventListener('click', function () {
+        playSE('decide');
         var name = nameInput.value.trim() || 'AAA';
         submitBtn.disabled = true; submitBtn.textContent = '...';
         GameRanking.submitScore(name, score, diffKey).then(function () {
@@ -2187,14 +2438,17 @@
     });
 
     skipBtn.addEventListener('click', function () {
+        playSE('decide');
         showRanking('gameover', diffKey);
     });
 
     rankingTabs.querySelectorAll('.ranking-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
+            playSE('decide');
             rankingTabs.querySelectorAll('.ranking-tab').forEach(function (t) { t.classList.remove('active'); });
             tab.classList.add('active'); loadRanking(tab.dataset.diff);
         });
+        tab.addEventListener('mouseenter', function () { playSE('select'); });
     });
 
     GameRanking.init();
