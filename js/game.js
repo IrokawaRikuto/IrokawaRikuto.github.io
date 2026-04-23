@@ -960,12 +960,11 @@
         var stage = waveIndex;
         var stageScale = 1 + stage * 0.15;
 
-        // 基本パターンプール
-        var pool = ['streamL', 'streamR', 'formation', 'sCurve', 'zCurve'];
+        // 基本パターンプール（1面から中型・大型も混ぜる）
+        var pool = ['streamL', 'streamR', 'formation', 'sCurve', 'zCurve', 'mediumEscort', 'largeTank'];
         if (stage >= 1) { pool.push('crossStream', 'topAimed', 'massRush', 'invertedU'); }
-        if (stage >= 2) { pool.push('sineWave', 'mediumEscort', 'sCurve', 'zCurve'); }
-        if (stage >= 2) { pool.push('dualTurret'); }
-        if (stage >= 3) { pool.push('largeTank', 'topAimedHeavy', 'invertedU'); }
+        if (stage >= 2) { pool.push('sineWave', 'sCurve', 'zCurve', 'dualTurret'); }
+        if (stage >= 3) { pool.push('topAimedHeavy', 'invertedU'); }
 
         // シャッフル
         var shuffled = [];
@@ -1373,15 +1372,18 @@
         }
         score += e.type === 'small' ? 100 : e.type === 'medium' ? 500 : 2000;
         if (e.type === 'small') {
-            if (Math.random() < 0.2) spawnItems(e.x, e.y, 'powerS', 1);
+            var r = Math.random();
+            if (r < 0.35) spawnItems(e.x, e.y, 'powerS', 1);
+            else if (r < 0.45) { spawnItems(e.x, e.y, 'powerS', 1); spawnItems(e.x, e.y, 'scoreS', 1); }
             else spawnItems(e.x, e.y, 'scoreS', 1);
         } else if (e.type === 'medium') {
             spawnItems(e.x, e.y, 'score', 1);
-            if (Math.random() < 0.25) spawnItems(e.x, e.y, 'power', 1);
+            spawnItems(e.x, e.y, 'powerS', 2);
+            if (Math.random() < 0.5) spawnItems(e.x, e.y, 'power', 1);
             else spawnItems(e.x, e.y, 'scoreS', 2);
         } else if (e.type === 'large') {
             spawnItems(e.x, e.y, 'score', 3); spawnItems(e.x, e.y, 'scoreS', 5);
-            spawnItems(e.x, e.y, 'power', 1); spawnItems(e.x, e.y, 'powerS', 2);
+            spawnItems(e.x, e.y, 'power', 2); spawnItems(e.x, e.y, 'powerS', 4);
             var rng = Math.random();
             if (rng < 0.15) spawnItems(e.x, e.y, 'life', 1);
             else if (rng < 0.35) spawnItems(e.x, e.y, 'bomb', 1);
