@@ -1871,7 +1871,7 @@
                 if (useSpriteStar) {
                     var drawSize = b.size * 3;
                     ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(starRot);
-                    ctx.drawImage(sprites.bulletStar, col * 16, 0, 16, 16, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                    ctx.drawImage(sprites.bulletStar, col * 32, 0, 32, 32, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
                     ctx.restore();
                 } else {
                     var starColor = BULLET_TYPE_COLORS[col] || '#ff4444';
