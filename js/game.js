@@ -33,6 +33,8 @@
 
     // ===== Sprites =====
     var sprites = {};
+    // HPバー着色用オフスクリーンキャンバス（source-atop が他描画に波及しないよう隔離）
+    var hpTintCanvas = null;
     function loadSprite(key, src) {
         var img = new Image();
         img.src = src;
@@ -1072,7 +1074,7 @@
         var k = (boss && boss.bulletKind) || 'star';
         if (k === 'star')  return { bulletType: 'star',  size: sizeHint + 2, color: 5 + Math.floor(Math.random() * 2), spin: Math.random() * Math.PI * 2 };
         if (k === 'wedge') return { bulletType: 'wedge', size: sizeHint, color: BOSS_ACCENT_COL.wedge };
-        if (k === 'ice')   return { bulletType: 'ice',   size: sizeHint, color: BOSS_ACCENT_COL.ice };
+        if (k === 'ice')   return { bulletType: 'ice',   size: sizeHint, color: Math.floor(Math.random() * 9) };
         if (k === 'seal')  return { bulletType: 'seal',  size: sizeHint, color: BOSS_ACCENT_COL.seal };
         return { bulletType: 'medium', size: sizeHint, color: 0 };
     }
@@ -1404,9 +1406,10 @@
                     ctx.restore();
                 }
                 if (useSpriteL) {
-                    // col=7 (gray/white) の大弾を使用
+                    // col=7 (gray/white) の大弾を使用。ボールは 128x64 セルの中央にあるので
+                    // 中央 64x64 を切り抜いて正方形で描画し、魔法陣と中心を合わせる
                     var bs = e.size * 2.2;
-                    ctx.drawImage(sprites.bulletL, 7 * 128, 0, 128, 64, -bs / 2, -bs / 4, bs, bs / 2);
+                    ctx.drawImage(sprites.bulletL, 7 * 128 + 32, 0, 64, 64, -bs / 2, -bs / 2, bs, bs);
                 } else {
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath(); ctx.arc(0, 0, e.size, 0, Math.PI * 2); ctx.fill();
@@ -1786,6 +1789,26 @@
 
             // 残HP部分: 通常表示
             if (hpRatio > 0) {
+                // HPで色を変える（低いほど赤→橙→黄）
+                var tintColor = hpRatio > 0.5 ? null : hpRatio > 0.25 ? '#ffaa44' : '#ffee66';
+                // 着色する場合はオフスクリーンで事前合成（source-atop が他描画に波及しないため）
+                var srcImg = hb;
+                if (tintColor) {
+                    if (!hpTintCanvas) hpTintCanvas = document.createElement('canvas');
+                    if (hpTintCanvas.width !== hbSize || hpTintCanvas.height !== hbSize) {
+                        hpTintCanvas.width = hbSize; hpTintCanvas.height = hbSize;
+                    }
+                    var tctx = hpTintCanvas.getContext('2d');
+                    tctx.globalCompositeOperation = 'source-over';
+                    tctx.globalAlpha = 1;
+                    tctx.clearRect(0, 0, hbSize, hbSize);
+                    tctx.drawImage(hb, 0, 0, hbSize, hbSize);
+                    tctx.globalCompositeOperation = 'source-atop';
+                    tctx.globalAlpha = 0.5;
+                    tctx.fillStyle = tintColor;
+                    tctx.fillRect(0, 0, hbSize, hbSize);
+                    srcImg = hpTintCanvas;
+                }
                 ctx.save();
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
@@ -1795,16 +1818,8 @@
                 ctx.closePath();
                 ctx.clip();
                 ctx.rotate(boss.age * 0.01);
-                // HPで色を変える（低いほど赤→橙→黄）
-                var tintColor = hpRatio > 0.5 ? null : hpRatio > 0.25 ? '#ffaa44' : '#ffee66';
                 ctx.globalAlpha = 0.95;
-                ctx.drawImage(hb, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
-                if (tintColor) {
-                    ctx.globalAlpha = 0.5;
-                    ctx.globalCompositeOperation = 'source-atop';
-                    ctx.fillStyle = tintColor;
-                    ctx.fillRect(-hbSize / 2, -hbSize / 2, hbSize, hbSize);
-                }
+                ctx.drawImage(srcImg, -hbSize / 2, -hbSize / 2, hbSize, hbSize);
                 ctx.restore();
             }
         } else {
@@ -1887,9 +1902,12 @@
                 ctx.drawImage(sprites.bulletWedge, col * 16, 0, 16, 16, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
                 ctx.restore();
             } else if (bt === 'ice' && useSpriteI) {
-                // 氷弾
+                // 氷弾: 進行方向に回転
                 var drawSize = b.size * 4;
-                ctx.drawImage(sprites.bulletIce, col * 16, 0, 16, 16, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
+                var rot = Math.atan2(b.vy, b.vx) + Math.PI / 2;
+                ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(rot);
+                ctx.drawImage(sprites.bulletIce, col * 16, 0, 16, 16, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                ctx.restore();
             } else if (bt === 'seal' && useSpriteSeal) {
                 // 札弾
                 var drawSize = b.size * 4;
