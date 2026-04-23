@@ -1046,7 +1046,7 @@
 
     function spawnBoss() {
         bossActive = true;
-        var kind = BOSS_KINDS[((waveIndex - 1) % BOSS_KINDS.length + BOSS_KINDS.length) % BOSS_KINDS.length];
+        var kind = BOSS_KINDS[Math.floor(Math.random() * BOSS_KINDS.length)];
         boss = {
             x: W / 2, y: -40,
             hp: Math.floor(600 * diff.bossHp),
@@ -1540,6 +1540,8 @@
     function pushBossBullet(x, y, vx, vy, shapeOverride) {
         var sh = shapeOverride || bossBulletShape(5);
         var spinVal = sh.spin !== undefined ? sh.spin : Math.random() * Math.PI * 2;
+        // 星弾は少しゆっくりに
+        if (sh.bulletType === 'star') { vx *= 0.8; vy *= 0.8; }
         eBullets.push({ x: x, y: y, vx: vx, vy: vy, size: sh.size, grazed: false, color: sh.color, bulletType: sh.bulletType, spin: spinVal });
     }
 
