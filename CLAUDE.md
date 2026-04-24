@@ -47,6 +47,7 @@
 - 作品カードのscroll-margin-top: 80px（ナビバーに隠れない）
 - ダウンロード用ファイルを`games/`フォルダに格納（SandTetris.exe）
 - Sand Tetrisの説明文を技術詳細込みの長文に刷新（セルオートマトン物理、最適化手法、AI協業方針）
+- コンソールシューティングの説明文を刷新（制作経緯・ASCII描画方針・WriteConsoleOutputAダブルバッファ・ゲーム構成・AI協業方針）
 - モーダル説明文の改行対応（white-space: pre-line）
 - CIRCLESTRIKERのロゴをスクリーンショットとして追加
 
