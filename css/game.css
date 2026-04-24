@@ -212,14 +212,14 @@
     border-color: var(--accent);
     color: var(--accent);
 }
-.difficulty-btn.easy { color: #44aaff; border-color: #44aaff33; }
-.difficulty-btn.easy:hover, .difficulty-btn.easy.selected { border-color: #44aaff; background: #44aaff11; }
-.difficulty-btn.normal { color: #44ff44; border-color: #44ff4433; }
-.difficulty-btn.normal:hover, .difficulty-btn.normal.selected { border-color: #44ff44; background: #44ff4411; }
-.difficulty-btn.hard { color: #ffaa44; border-color: #ffaa4433; }
-.difficulty-btn.hard:hover, .difficulty-btn.hard.selected { border-color: #ffaa44; background: #ffaa4411; }
-.difficulty-btn.lunatic { color: #ff4444; border-color: #ff444433; }
-.difficulty-btn.lunatic:hover, .difficulty-btn.lunatic.selected { border-color: #ff4444; background: #ff444411; }
+.difficulty-btn.easy { color: #44ff44; border-color: #44ff4433; }
+.difficulty-btn.easy:hover, .difficulty-btn.easy.selected { border-color: #44ff44; background: #44ff4411; }
+.difficulty-btn.normal { color: #44aaff; border-color: #44aaff33; }
+.difficulty-btn.normal:hover, .difficulty-btn.normal.selected { border-color: #44aaff; background: #44aaff11; }
+.difficulty-btn.hard { color: #ff4444; border-color: #ff444433; }
+.difficulty-btn.hard:hover, .difficulty-btn.hard.selected { border-color: #ff4444; background: #ff444411; }
+.difficulty-btn.lunatic { color: #c466ff; border-color: #c466ff33; }
+.difficulty-btn.lunatic:hover, .difficulty-btn.lunatic.selected { border-color: #c466ff; background: #c466ff11; }
 
 /* ===== Buttons ===== */
 .game-btn {
@@ -275,22 +275,33 @@
 }
 
 /* ===== Ranking ===== */
+.ranking-body {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    margin: 16px auto 0;
+    max-width: 360px;
+    text-align: left;
+}
 .ranking-tabs {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 4px;
-    margin-bottom: 12px;
+    flex-shrink: 0;
+    width: 84px;
 }
 .ranking-tab {
-    padding: 4px 10px;
+    padding: 6px 8px;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-muted);
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     letter-spacing: 0.05em;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: border-color 0.3s, color 0.3s;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+    width: 100%;
+    text-align: center;
 }
 .ranking-tab:hover {
     border-color: var(--accent);
@@ -301,15 +312,23 @@
     color: var(--accent);
     background: rgba(255, 68, 68, 0.1);
 }
+/* 難易度ごとの色（difficulty-btn と同じ配色：緑・青・赤・紫） */
+.ranking-tab.easy { color: #44ff44; border-color: #44ff4433; }
+.ranking-tab.easy:hover, .ranking-tab.easy.active { border-color: #44ff44; background: rgba(68, 255, 68, 0.1); color: #44ff44; }
+.ranking-tab.normal { color: #44aaff; border-color: #44aaff33; }
+.ranking-tab.normal:hover, .ranking-tab.normal.active { border-color: #44aaff; background: rgba(68, 170, 255, 0.1); color: #44aaff; }
+.ranking-tab.hard { color: #ff4444; border-color: #ff444433; }
+.ranking-tab.hard:hover, .ranking-tab.hard.active { border-color: #ff4444; background: rgba(255, 68, 68, 0.1); color: #ff4444; }
+.ranking-tab.lunatic { color: #c466ff; border-color: #c466ff33; }
+.ranking-tab.lunatic:hover, .ranking-tab.lunatic.active { border-color: #c466ff; background: rgba(196, 102, 255, 0.1); color: #c466ff; }
 
 #game-ranking-list {
     list-style: none;
     padding: 0;
-    margin: 16px 0;
+    margin: 0;
     text-align: left;
-    max-width: 260px;
-    margin-left: auto;
-    margin-right: auto;
+    flex: 1;
+    min-width: 0;
 }
 #game-ranking-list li {
     display: flex;
@@ -325,7 +344,9 @@
 #game-ranking-list li .score { text-align: right; min-width: 70px; }
 
 #game-ranking-btns {
-    margin-top: 12px;
+    margin: 16px auto 0;
+    max-width: 360px;
+    text-align: right;
 }
 
 /* ===== Mobile Controls ===== */

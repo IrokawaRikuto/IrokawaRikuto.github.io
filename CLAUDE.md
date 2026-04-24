@@ -72,6 +72,8 @@
   - 取得: `where('difficulty','==',x)` のみでFirestoreから取得し、score降順ソート・件数制限はクライアント側で実施（複合インデックス不要）。結果にlocal側の直近送信分を name+score キーで重複除去マージ
   - Firebase読込/書込失敗は `console.error('[Ranking] ...')` で可視化
 - 4難易度（Easy/Normal/Hard/Lunatic）。ボスHPは固定600（難易度非依存）、変化するのは弾幕密度（bullets）と速度（speed）のみ
+- 難易度配色: Easy=緑 #44ff44 / Normal=青 #44aaff / Hard=赤 #ff4444 / Lunatic=紫 #c466ff。難易度選択ボタン・ランキングタブ・HUDのSTAGE表示すべてで共通（JS側 `DIFF_COLORS` も同値）
+- ランキング画面レイアウト: 難易度タブを左に縦並び（`.ranking-body` flex 内、tabs幅84px）、右にスコアリストを表示。Back/Retry/Title などのボタンは `.ranking-body` の下に `text-align: right` で右下配置
 - モバイル対応（スライドパッド + BOMB/SLOWボタン、自動発射、キャンバス直下・詳細情報の上に配置）。表示条件は `@media (hover: none) and (pointer: coarse)` のタッチ端末のみ（PCで窓を狭めても出ない）
 - HUD英語表記: HI SCORE, SCORE, PLAYER, BOMB, POWER, GRAZE, STAGE
 - ゲーム情報レイアウト（2カラム grid）:

@@ -512,13 +512,15 @@
                         </div>
                         <div id="game-ranking-screen" hidden>
                             <h3 data-ja="ランキング" data-en="Ranking">ランキング</h3>
-                            <div class="ranking-tabs" id="game-ranking-tabs">
-                                <button class="ranking-tab" data-diff="easy">Easy</button>
-                                <button class="ranking-tab active" data-diff="normal">Normal</button>
-                                <button class="ranking-tab" data-diff="hard">Hard</button>
-                                <button class="ranking-tab" data-diff="lunatic">Lunatic</button>
+                            <div class="ranking-body">
+                                <div class="ranking-tabs" id="game-ranking-tabs">
+                                    <button class="ranking-tab easy" data-diff="easy">Easy</button>
+                                    <button class="ranking-tab normal active" data-diff="normal">Normal</button>
+                                    <button class="ranking-tab hard" data-diff="hard">Hard</button>
+                                    <button class="ranking-tab lunatic" data-diff="lunatic">Lunatic</button>
+                                </div>
+                                <ol id="game-ranking-list"></ol>
                             </div>
-                            <ol id="game-ranking-list"></ol>
                             <div id="game-ranking-btns"></div>
                         </div>
                     </div>

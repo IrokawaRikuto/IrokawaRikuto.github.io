@@ -2024,7 +2024,7 @@
     }
 
     // ===== Right-side HUD Panel (東方スタイル) =====
-    var DIFF_COLORS = { easy: '#44aaff', normal: '#44ff44', hard: '#ffaa44', lunatic: '#ff4444' };
+    var DIFF_COLORS = { easy: '#44ff44', normal: '#44aaff', hard: '#ff4444', lunatic: '#c466ff' };
 
     function drawStar(cx, cy, r, color) {
         ctx.fillStyle = color;
