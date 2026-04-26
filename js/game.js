@@ -2597,6 +2597,38 @@
     function updateMenuHighlight() {
         var items = getMenuItems();
         for (var i = 0; i < items.length; i++) items[i].classList.toggle('selected', i === menuIndex);
+        if (items[menuIndex] && typeof items[menuIndex].scrollIntoView === 'function') {
+            items[menuIndex].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+    }
+
+    // 2Dグリッドの方向キー移動: 現在のボタン中心から指定方向に最も近いボタンへ
+    function navigate2D(dir, items) {
+        if (menuIndex < 0 || menuIndex >= items.length) menuIndex = 0;
+        var cur = items[menuIndex].getBoundingClientRect();
+        var cx = cur.left + cur.width / 2;
+        var cy = cur.top + cur.height / 2;
+        var best = -1;
+        var bestScore = Infinity;
+        for (var i = 0; i < items.length; i++) {
+            if (i === menuIndex) continue;
+            var r = items[i].getBoundingClientRect();
+            var ix = r.left + r.width / 2;
+            var iy = r.top + r.height / 2;
+            var dx = ix - cx, dy = iy - cy;
+            var score;
+            if (dir === 'up' && dy < -2) score = Math.abs(dx) * 3 + (-dy);
+            else if (dir === 'down' && dy > 2) score = Math.abs(dx) * 3 + dy;
+            else if (dir === 'left' && dx < -2) score = Math.abs(dy) * 3 + (-dx);
+            else if (dir === 'right' && dx > 2) score = Math.abs(dy) * 3 + dx;
+            else continue;
+            if (score < bestScore) { bestScore = score; best = i; }
+        }
+        if (best >= 0) {
+            menuIndex = best;
+            updateMenuHighlight();
+            playSE('select');
+        }
     }
 
     function handleMenuKey(code) {
@@ -2607,6 +2639,12 @@
         }
         var items = getMenuItems();
         if (!items || items.length === 0) return;
+        // PRACTICE_SELECT は2Dグリッドナビゲーション
+        if (state === 'PRACTICE_SELECT' && (code === 'ArrowUp' || code === 'ArrowDown' || code === 'ArrowLeft' || code === 'ArrowRight')) {
+            var dir = code === 'ArrowUp' ? 'up' : code === 'ArrowDown' ? 'down' : code === 'ArrowLeft' ? 'left' : 'right';
+            navigate2D(dir, items);
+            return;
+        }
         if (code === 'ArrowUp') { menuIndex = (menuIndex - 1 + items.length) % items.length; updateMenuHighlight(); playSE('select'); }
         else if (code === 'ArrowDown') { menuIndex = (menuIndex + 1) % items.length; updateMenuHighlight(); playSE('select'); }
         else if (code === 'KeyZ' || code === 'Enter') { if (menuIndex >= 0 && menuIndex < items.length) { playSE('decide'); items[menuIndex].click(); } }
