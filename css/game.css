@@ -137,7 +137,9 @@
 #game-title-screen,
 #game-difficulty-screen,
 #game-over-screen,
-#game-ranking-screen {
+#game-ranking-screen,
+#game-practice-screen,
+#game-practice-result-screen {
     text-align: center;
     color: #fff;
     padding: 20px;
@@ -148,8 +150,15 @@
 #game-title-screen[hidden],
 #game-difficulty-screen[hidden],
 #game-over-screen[hidden],
-#game-ranking-screen[hidden] {
+#game-ranking-screen[hidden],
+#game-practice-screen[hidden],
+#game-practice-result-screen[hidden] {
     display: none;
+}
+#game-practice-screen {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 #game-instructions {
@@ -184,6 +193,109 @@
 .title-menu-item.selected {
     border-color: var(--accent);
     color: var(--accent);
+}
+
+/* ===== Practice Select ===== */
+#game-practice-screen {
+    padding: 16px 20px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+#game-practice-screen h3 {
+    margin: 0 0 8px;
+}
+.practice-diff-select {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.practice-diff-btn {
+    padding: 4px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+.practice-diff-btn.easy { color: #44ff44; border-color: #44ff4433; }
+.practice-diff-btn.easy:hover, .practice-diff-btn.easy.active { border-color: #44ff44; background: rgba(68, 255, 68, 0.12); color: #44ff44; }
+.practice-diff-btn.normal { color: #44aaff; border-color: #44aaff33; }
+.practice-diff-btn.normal:hover, .practice-diff-btn.normal.active { border-color: #44aaff; background: rgba(68, 170, 255, 0.12); color: #44aaff; }
+.practice-diff-btn.hard { color: #ff4444; border-color: #ff444433; }
+.practice-diff-btn.hard:hover, .practice-diff-btn.hard.active { border-color: #ff4444; background: rgba(255, 68, 68, 0.12); color: #ff4444; }
+.practice-diff-btn.lunatic { color: #c466ff; border-color: #c466ff33; }
+.practice-diff-btn.lunatic:hover, .practice-diff-btn.lunatic.active { border-color: #c466ff; background: rgba(196, 102, 255, 0.12); color: #c466ff; }
+
+.practice-list {
+    text-align: left;
+    overflow-y: auto;
+    flex: 1;
+    padding: 0 4px 4px;
+    min-height: 0;
+}
+.practice-section {
+    margin-bottom: 10px;
+}
+.practice-section-title {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: bold;
+    margin: 0 0 4px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.05em;
+}
+.practice-section.boss-star .practice-section-title { color: #ff7777; border-bottom-color: rgba(255, 119, 119, 0.25); }
+.practice-section.boss-wedge .practice-section-title { color: #b599ff; border-bottom-color: rgba(181, 153, 255, 0.25); }
+.practice-section.boss-ice .practice-section-title { color: #77ccff; border-bottom-color: rgba(119, 204, 255, 0.25); }
+.practice-section.boss-seal .practice-section-title { color: #ffcc66; border-bottom-color: rgba(255, 204, 102, 0.25); }
+.practice-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.practice-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius);
+    cursor: pointer;
+    min-width: 60px;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.practice-btn:hover, .practice-btn.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.practice-section.boss-star .practice-btn:hover, .practice-section.boss-star .practice-btn.selected { border-color: #ff7777; color: #ff7777; }
+.practice-section.boss-wedge .practice-btn:hover, .practice-section.boss-wedge .practice-btn.selected { border-color: #b599ff; color: #b599ff; }
+.practice-section.boss-ice .practice-btn:hover, .practice-section.boss-ice .practice-btn.selected { border-color: #77ccff; color: #77ccff; }
+.practice-section.boss-seal .practice-btn:hover, .practice-section.boss-seal .practice-btn.selected { border-color: #ffcc66; color: #ffcc66; }
+.practice-back {
+    margin-top: 6px;
+    text-align: center;
+}
+
+/* ===== Practice Result ===== */
+#practice-result-title {
+    font-family: "Courier New", monospace;
+    font-size: 1.6rem;
+    margin: 24px 0 18px;
+    letter-spacing: 0.15em;
+}
+.practice-result-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
 /* ===== Difficulty Select ===== */

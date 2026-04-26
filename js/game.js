@@ -21,6 +21,11 @@
     var rankingList = document.getElementById('game-ranking-list');
     var rankingBtns = document.getElementById('game-ranking-btns');
     var rankingTabs = document.getElementById('game-ranking-tabs');
+    var practiceScreen = document.getElementById('game-practice-screen');
+    var practiceResultScreen = document.getElementById('game-practice-result-screen');
+    var practiceDiffSelect = document.getElementById('practice-diff-select');
+    var practiceResultTitle = document.getElementById('practice-result-title');
+    var practiceBackBtn = document.getElementById('practice-back-btn');
 
     // Canvas & Field size (東方スタイル: 左にフィールド、右にHUD)
     var CANVAS_W = 640, CANVAS_H = 480;
@@ -124,6 +129,8 @@
     var preBoss = false;
     var rankingFrom = 'title';
     var menuIndex = 0;
+    var practiceMode = false;
+    var practicePatternKey = null;
 
     var player = { x: W / 2, y: H - 60 };
     var pBullets = [];
@@ -1152,6 +1159,20 @@
         }
         waveTimer++;
 
+        // プラクティス（道中パターン）: 既存敵が全滅したら成功
+        if (practiceMode) {
+            for (var i = enemies.length - 1; i >= 0; i--) {
+                var e = enemies[i]; e.age++;
+                moveEnemy(e);
+                e.fireTimer++;
+                if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) { e.fireTimer = 0; fireEnemyBullet(e); }
+                if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
+                if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
+            }
+            if (waveTimer > 5 && enemies.length === 0) practiceEnd('cleared');
+            return;
+        }
+
         if (preBoss) {
             // 新しい敵は出さない。既存の敵は通常移動のまま
             for (var i = enemies.length - 1; i >= 0; i--) {
@@ -1401,6 +1422,7 @@
             return;
         }
         score += e.type === 'small' ? 100 : e.type === 'medium' ? 500 : 2000;
+        if (practiceMode) return; // プラクティス中はアイテムを落とさない
         if (e.type === 'small') {
             var r = Math.random();
             if (r < 0.35) spawnItems(e.x, e.y, 'powerS', 1);
@@ -1467,9 +1489,9 @@
         if (!boss) return; boss.age++;
         if (boss.entering) { boss.y += 1; if (boss.y >= 70) boss.entering = false; return; }
 
-        // 大技（スペルカード）発動判定
+        // 大技（スペルカード）発動判定（プラクティス中はHP連動スイッチを行わない）
         var hpRatio = boss.hp / boss.maxHp;
-        if (!boss.spellActive) {
+        if (!boss.spellActive && !practiceMode) {
             if (hpRatio <= 0.7 && boss.spellsUsed.indexOf(0) === -1) startSpellcard(0);
             else if (hpRatio <= 0.35 && boss.spellsUsed.indexOf(1) === -1) startSpellcard(1);
         }
@@ -1481,10 +1503,17 @@
             boss.phaseTimer++; boss.fireTimer++;
             var fireRate = Math.floor(30 / diff.bullets);
             if (boss.fireTimer >= fireRate) { boss.fireTimer = 0; fireBossBullets(); }
-            if (boss.phaseTimer > 360) { boss.phase++; boss.phaseTimer = 0; boss.moveTimer = 0; onBossPhaseChange(); }
+            if (boss.phaseTimer > 360) {
+                if (practiceMode) {
+                    // プラクティスはフェーズ固定。タイマーだけリセット
+                    boss.phaseTimer = 0; boss.moveTimer = 0;
+                } else {
+                    boss.phase++; boss.phaseTimer = 0; boss.moveTimer = 0; onBossPhaseChange();
+                }
+            }
 
-            // 定期的にスポナーを召喚
-            if (boss.spawnerTimer !== undefined) {
+            // 定期的にスポナーを召喚（プラクティスでは無効）
+            if (!practiceMode && boss.spawnerTimer !== undefined) {
                 boss.spawnerTimer--;
                 if (boss.spawnerTimer <= 0 && countActiveSpawners() < 3) {
                     summonBossSpawners();
@@ -1747,6 +1776,11 @@
     }
 
     function endSpellcard() {
+        if (practiceMode) {
+            // プラクティスは大技を繰り返しループさせる
+            boss.spellTimer = 0;
+            return;
+        }
         boss.spellActive = false;
         for (var i = 0; i < eBullets.length; i++) spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
         eBullets = [];
@@ -1759,6 +1793,15 @@
     function bossDefeated() {
         score += 10000;
         spawnExplosion(boss.x, boss.y, '#ffdd44', 20);
+        if (practiceMode) {
+            for (var i = 0; i < eBullets.length; i++) spawnDeleteEffect(eBullets[i].x, eBullets[i].y);
+            eBullets = []; boss = null; bossActive = false;
+            for (var j = enemies.length - 1; j >= 0; j--) {
+                if (enemies[j].type === 'spawner') enemies.splice(j, 1);
+            }
+            practiceEnd('cleared');
+            return;
+        }
         spawnItems(boss.x, boss.y, 'score', 5); spawnItems(boss.x, boss.y, 'scoreS', 10);
         spawnItems(boss.x, boss.y, 'power', 3);
         if (Math.random() > 0.5) spawnItems(boss.x, boss.y, 'life', 1);
@@ -2061,6 +2104,12 @@
     }
 
     function playerHit() {
+        if (practiceMode) {
+            spawnExplosion(player.x, player.y, '#ffffff', 12);
+            eBullets = [];
+            practiceEnd('miss');
+            return;
+        }
         lives--;
         bombs = MAX_BOMBS; // 残機減少時ボム初期化
         invTimer = INVINCIBLE_FRAMES;
@@ -2238,6 +2287,7 @@
     function startGame() {
         if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
         if (animId) { cancelAnimationFrame(animId); animId = null; }
+        practiceMode = false;
         resetGame();
         state = 'PLAYING';
         overlay.hidden = true;
@@ -2313,10 +2363,109 @@
 
     function goToTitle() {
         if (animId) { cancelAnimationFrame(animId); animId = null; }
+        practiceMode = false;
         state = 'TITLE'; menuIndex = 0;
         overlay.hidden = false;
         titleScreen.hidden = false; diffScreen.hidden = true;
         overScreen.hidden = true; rankingScreen.hidden = true;
+        if (practiceScreen) practiceScreen.hidden = true;
+        if (practiceResultScreen) practiceResultScreen.hidden = true;
+        updateMenuHighlight();
+        initTitleParticles();
+        drawTitleBg();
+    }
+
+    function showPracticeSelect() {
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        practiceMode = false;
+        state = 'PRACTICE_SELECT'; menuIndex = 0;
+        overlay.hidden = false;
+        titleScreen.hidden = true; diffScreen.hidden = true;
+        overScreen.hidden = true; rankingScreen.hidden = true;
+        practiceScreen.hidden = false; practiceResultScreen.hidden = true;
+        // 難易度ボタンの active を現在の diffKey に同期
+        practiceDiffSelect.querySelectorAll('.practice-diff-btn').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.diff === diffKey);
+        });
+        updateMenuHighlight();
+        initTitleParticles();
+        drawTitleBg();
+    }
+
+    function startPractice(patternKey) {
+        if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        practiceMode = true;
+        practicePatternKey = patternKey;
+
+        frame = 0; score = 0; graze = 0; lives = 1; bombs = 0;
+        power = MAX_POWER; invTimer = 0; fireTimer = 0; bombTimer = 0;
+        waveTimer = 0; waveIndex = 0; bossActive = false; boss = null;
+        bossInterval = Number.POSITIVE_INFINITY; preBoss = false;
+        waveScript = []; waveScriptIdx = 0;
+        player.x = W / 2; player.y = H - 60;
+        pBullets = []; enemies = []; eBullets = []; items = []; particles = [];
+        deleteEffects = []; bombOrbs = [];
+        initBgParticles();
+
+        if (!diff) { diff = DIFF.normal; diffKey = 'normal'; }
+
+        if (patternKey.indexOf('wave_') === 0) {
+            var pat = patternKey.substring(5);
+            try { executeWaveEvent(pat); } catch (e) { console.error('practice wave error', e); }
+        } else if (patternKey.indexOf('boss_') === 0) {
+            var parts = patternKey.split('_');
+            spawnPracticeBoss(parts[1], parts[2]);
+        }
+
+        state = 'PLAYING';
+        overlay.hidden = true;
+        practiceScreen.hidden = true; practiceResultScreen.hidden = true;
+        loopLastTime = 0; loopAccum = 0;
+        animId = requestAnimationFrame(gameLoop);
+    }
+
+    function spawnPracticeBoss(kind, attackId) {
+        bossActive = true;
+        boss = {
+            x: W / 2, y: -40,
+            hp: 600, maxHp: 600,
+            size: 30, phase: 0, phaseTimer: 0,
+            fireTimer: 0, age: 0, entering: true, firing: false,
+            bulletKind: kind,
+            spellActive: false, spellsUsed: [0, 1], spellIdx: -1,
+            spellTimer: 0, spellDuration: 0, spellFlash: 0,
+            moveMode: 'sine', moveTimer: 0,
+            targetX: W / 2, targetY: 70,
+            dashTargetX: W / 2, dashTargetY: 70
+            // spawnerTimer 未設定 = スポナー召喚なし
+        };
+        if (attackId.charAt(0) === 'p') {
+            boss.phase = parseInt(attackId.substring(1), 10) || 0;
+            onBossPhaseChange();
+        } else if (attackId.charAt(0) === 's') {
+            var spellIdx = parseInt(attackId.substring(1), 10) || 0;
+            boss.spellsUsed = [];
+            startSpellcard(spellIdx);
+            boss.spellsUsed = [0, 1];
+        }
+    }
+
+    function practiceEnd(result) {
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        state = 'PRACTICE_RESULT'; menuIndex = 0;
+        overlay.hidden = false;
+        titleScreen.hidden = true; diffScreen.hidden = true;
+        overScreen.hidden = true; rankingScreen.hidden = true;
+        practiceScreen.hidden = true; practiceResultScreen.hidden = false;
+        var en = (typeof currentLang !== 'undefined' && currentLang === 'en');
+        if (result === 'cleared') {
+            practiceResultTitle.textContent = en ? 'CLEAR' : 'CLEAR';
+            practiceResultTitle.style.color = '#44ff44';
+        } else {
+            practiceResultTitle.textContent = en ? 'MISS' : 'MISS';
+            practiceResultTitle.style.color = '#ff4444';
+        }
         updateMenuHighlight();
         initTitleParticles();
         drawTitleBg();
@@ -2411,7 +2560,7 @@
         if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
         titleLoopLastTime = 0; titleLoopAccum = 0;
         function titleFrame(now) {
-            if (state !== 'TITLE' && state !== 'DIFFICULTY' && state !== 'RANKING') { titleAnimId = null; return; }
+            if (state !== 'TITLE' && state !== 'DIFFICULTY' && state !== 'RANKING' && state !== 'PRACTICE_SELECT' && state !== 'PRACTICE_RESULT') { titleAnimId = null; return; }
             now = now || performance.now();
             if (!titleLoopLastTime) titleLoopLastTime = now;
             var delta = now - titleLoopLastTime;
@@ -2437,6 +2586,8 @@
         if (state === 'TITLE') return titleScreen.querySelectorAll('.title-menu-item');
         if (state === 'DIFFICULTY') return diffScreen.querySelectorAll('.difficulty-btn');
         if (state === 'RANKING') return rankingBtns.querySelectorAll('.game-btn');
+        if (state === 'PRACTICE_SELECT') return practiceScreen.querySelectorAll('.practice-btn');
+        if (state === 'PRACTICE_RESULT') return practiceResultScreen.querySelectorAll('.game-btn');
         return [];
     }
 
@@ -2460,6 +2611,8 @@
             playSE('decide');
             if (state === 'DIFFICULTY') goToTitle();
             else if (state === 'RANKING') goToTitle();
+            else if (state === 'PRACTICE_SELECT') goToTitle();
+            else if (state === 'PRACTICE_RESULT') showPracticeSelect();
             else if (state === 'TITLE') closeGameModal();
         }
     }
@@ -2596,9 +2749,54 @@
                 showRanking('title', 'normal');
                 drawTitleBg();
                 lastHoverIdx = -1;
+            } else if (action === 'practice') {
+                showPracticeSelect();
+                lastHoverIdx = -1;
             } else if (action === 'exit') {
                 closeGameModal();
             }
+        });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
+    });
+
+    // プラクティス: 難易度ボタン
+    practiceDiffSelect.querySelectorAll('.practice-diff-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            playSE('decide');
+            diffKey = btn.dataset.diff;
+            diff = DIFF[diffKey];
+            practiceDiffSelect.querySelectorAll('.practice-diff-btn').forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+        });
+        btn.addEventListener('mouseenter', function () { playSE('select'); });
+    });
+
+    // プラクティス: パターン選択ボタン
+    practiceScreen.querySelectorAll('.practice-btn').forEach(function (btn, idx) {
+        btn.addEventListener('click', function () {
+            playSE('decide');
+            startPractice(btn.dataset.pattern);
+        });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
+    });
+
+    // プラクティス: 戻るボタン
+    if (practiceBackBtn) {
+        practiceBackBtn.addEventListener('click', function () {
+            playSE('decide'); goToTitle();
+        });
+        practiceBackBtn.addEventListener('mouseenter', function () { playSE('select'); });
+    }
+
+    // プラクティス結果: リトライ／パターン選択／タイトル
+    practiceResultScreen.querySelectorAll('.game-btn').forEach(function (btn, idx) {
+        btn.addEventListener('click', function () {
+            playSE('decide');
+            var act = btn.dataset.action;
+            if (act === 'retry') startPractice(practicePatternKey);
+            else if (act === 'select') showPracticeSelect();
+            else if (act === 'title') goToTitle();
         });
         btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
     });

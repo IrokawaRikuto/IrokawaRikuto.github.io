@@ -488,7 +488,92 @@
                             <div class="title-menu">
                                 <button class="title-menu-item selected" data-action="start" data-ja="ゲームスタート" data-en="Game Start">ゲームスタート</button>
                                 <button class="title-menu-item" data-action="ranking" data-ja="ランキング" data-en="Ranking">ランキング</button>
+                                <button class="title-menu-item" data-action="practice" data-ja="プラクティス" data-en="Practice">プラクティス</button>
                                 <button class="title-menu-item" data-action="exit" data-ja="ゲームを終了する" data-en="Exit Game">ゲームを終了する</button>
+                            </div>
+                        </div>
+                        <div id="game-practice-screen" hidden>
+                            <h3 data-ja="プラクティス" data-en="Practice">プラクティス</h3>
+                            <div class="practice-diff-select" id="practice-diff-select">
+                                <button class="practice-diff-btn easy" data-diff="easy">Easy</button>
+                                <button class="practice-diff-btn normal active" data-diff="normal">Normal</button>
+                                <button class="practice-diff-btn hard" data-diff="hard">Hard</button>
+                                <button class="practice-diff-btn lunatic" data-diff="lunatic">Lunatic</button>
+                            </div>
+                            <div class="practice-list">
+                                <div class="practice-section">
+                                    <h4 class="practice-section-title" data-ja="道中" data-en="Wave">道中</h4>
+                                    <div class="practice-btns">
+                                        <button class="practice-btn" data-pattern="wave_streamL">列1</button>
+                                        <button class="practice-btn" data-pattern="wave_streamR">列2</button>
+                                        <button class="practice-btn" data-pattern="wave_crossStream">列3</button>
+                                        <button class="practice-btn" data-pattern="wave_topAimed">列4</button>
+                                        <button class="practice-btn" data-pattern="wave_topAimedHeavy">列5</button>
+                                        <button class="practice-btn" data-pattern="wave_sineWave">列6</button>
+                                        <button class="practice-btn" data-pattern="wave_mediumEscort">列7</button>
+                                        <button class="practice-btn" data-pattern="wave_largeTank">列8</button>
+                                        <button class="practice-btn" data-pattern="wave_dualTurret">列9</button>
+                                        <button class="practice-btn" data-pattern="wave_massRush">列10</button>
+                                        <button class="practice-btn" data-pattern="wave_invertedU">列11</button>
+                                        <button class="practice-btn" data-pattern="wave_sCurve">列12</button>
+                                        <button class="practice-btn" data-pattern="wave_zCurve">列13</button>
+                                    </div>
+                                </div>
+                                <div class="practice-section boss-star">
+                                    <h4 class="practice-section-title" data-ja="ボスA（星弾）" data-en="Boss A (Star)">ボスA（星弾）</h4>
+                                    <div class="practice-btns">
+                                        <button class="practice-btn" data-pattern="boss_star_p0" data-ja="攻撃1" data-en="Atk1">攻撃1</button>
+                                        <button class="practice-btn" data-pattern="boss_star_p1" data-ja="攻撃2" data-en="Atk2">攻撃2</button>
+                                        <button class="practice-btn" data-pattern="boss_star_p2" data-ja="攻撃3" data-en="Atk3">攻撃3</button>
+                                        <button class="practice-btn" data-pattern="boss_star_p3" data-ja="攻撃4" data-en="Atk4">攻撃4</button>
+                                        <button class="practice-btn" data-pattern="boss_star_s0" data-ja="大技1" data-en="Spell1">大技1</button>
+                                        <button class="practice-btn" data-pattern="boss_star_s1" data-ja="大技2" data-en="Spell2">大技2</button>
+                                    </div>
+                                </div>
+                                <div class="practice-section boss-wedge">
+                                    <h4 class="practice-section-title" data-ja="ボスB（楔弾）" data-en="Boss B (Wedge)">ボスB（楔弾）</h4>
+                                    <div class="practice-btns">
+                                        <button class="practice-btn" data-pattern="boss_wedge_p0" data-ja="攻撃1" data-en="Atk1">攻撃1</button>
+                                        <button class="practice-btn" data-pattern="boss_wedge_p1" data-ja="攻撃2" data-en="Atk2">攻撃2</button>
+                                        <button class="practice-btn" data-pattern="boss_wedge_p2" data-ja="攻撃3" data-en="Atk3">攻撃3</button>
+                                        <button class="practice-btn" data-pattern="boss_wedge_p3" data-ja="攻撃4" data-en="Atk4">攻撃4</button>
+                                        <button class="practice-btn" data-pattern="boss_wedge_s0" data-ja="大技1" data-en="Spell1">大技1</button>
+                                        <button class="practice-btn" data-pattern="boss_wedge_s1" data-ja="大技2" data-en="Spell2">大技2</button>
+                                    </div>
+                                </div>
+                                <div class="practice-section boss-ice">
+                                    <h4 class="practice-section-title" data-ja="ボスC（氷弾）" data-en="Boss C (Ice)">ボスC（氷弾）</h4>
+                                    <div class="practice-btns">
+                                        <button class="practice-btn" data-pattern="boss_ice_p0" data-ja="攻撃1" data-en="Atk1">攻撃1</button>
+                                        <button class="practice-btn" data-pattern="boss_ice_p1" data-ja="攻撃2" data-en="Atk2">攻撃2</button>
+                                        <button class="practice-btn" data-pattern="boss_ice_p2" data-ja="攻撃3" data-en="Atk3">攻撃3</button>
+                                        <button class="practice-btn" data-pattern="boss_ice_p3" data-ja="攻撃4" data-en="Atk4">攻撃4</button>
+                                        <button class="practice-btn" data-pattern="boss_ice_s0" data-ja="大技1" data-en="Spell1">大技1</button>
+                                        <button class="practice-btn" data-pattern="boss_ice_s1" data-ja="大技2" data-en="Spell2">大技2</button>
+                                    </div>
+                                </div>
+                                <div class="practice-section boss-seal">
+                                    <h4 class="practice-section-title" data-ja="ボスD（札弾）" data-en="Boss D (Seal)">ボスD（札弾）</h4>
+                                    <div class="practice-btns">
+                                        <button class="practice-btn" data-pattern="boss_seal_p0" data-ja="攻撃1" data-en="Atk1">攻撃1</button>
+                                        <button class="practice-btn" data-pattern="boss_seal_p1" data-ja="攻撃2" data-en="Atk2">攻撃2</button>
+                                        <button class="practice-btn" data-pattern="boss_seal_p2" data-ja="攻撃3" data-en="Atk3">攻撃3</button>
+                                        <button class="practice-btn" data-pattern="boss_seal_p3" data-ja="攻撃4" data-en="Atk4">攻撃4</button>
+                                        <button class="practice-btn" data-pattern="boss_seal_s0" data-ja="大技1" data-en="Spell1">大技1</button>
+                                        <button class="practice-btn" data-pattern="boss_seal_s1" data-ja="大技2" data-en="Spell2">大技2</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="practice-back">
+                                <button class="game-btn" id="practice-back-btn" data-ja="戻る" data-en="Back">戻る</button>
+                            </div>
+                        </div>
+                        <div id="game-practice-result-screen" hidden>
+                            <h3 id="practice-result-title">CLEAR</h3>
+                            <div class="practice-result-btns">
+                                <button class="game-btn" data-action="retry" data-ja="リトライ" data-en="Retry">リトライ</button>
+                                <button class="game-btn" data-action="select" data-ja="パターン選択へ" data-en="Pattern Select">パターン選択へ</button>
+                                <button class="game-btn" data-action="title" data-ja="タイトルへ" data-en="Title">タイトルへ</button>
                             </div>
                         </div>
                         <div id="game-difficulty-screen" hidden>

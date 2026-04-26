@@ -1177,7 +1177,7 @@ footer {
         padding-left: 0;
     }
     .hero-title {
-        font-size: 2rem;
+        font-size: clamp(2.2rem, 8.5vw, 3.6rem);
     }
 
     .about-grid {
