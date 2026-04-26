@@ -139,7 +139,8 @@
 #game-over-screen,
 #game-ranking-screen,
 #game-practice-screen,
-#game-practice-result-screen {
+#game-practice-result-screen,
+#game-pause-screen {
     text-align: center;
     color: #fff;
     padding: 20px;
@@ -152,7 +153,8 @@
 #game-over-screen[hidden],
 #game-ranking-screen[hidden],
 #game-practice-screen[hidden],
-#game-practice-result-screen[hidden] {
+#game-practice-result-screen[hidden],
+#game-pause-screen[hidden] {
     display: none;
 }
 #game-practice-screen {
@@ -292,6 +294,20 @@
     letter-spacing: 0.15em;
 }
 .practice-result-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ===== Pause ===== */
+#game-pause-screen h3 {
+    font-family: "Courier New", monospace;
+    font-size: 1.6rem;
+    letter-spacing: 0.2em;
+    margin: 36px 0 20px;
+}
+.pause-btns {
     display: flex;
     flex-direction: column;
     align-items: center;

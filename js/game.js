@@ -26,6 +26,7 @@
     var practiceDiffSelect = document.getElementById('practice-diff-select');
     var practiceResultTitle = document.getElementById('practice-result-title');
     var practiceBackBtn = document.getElementById('practice-back-btn');
+    var pauseScreen = document.getElementById('game-pause-screen');
 
     // Canvas & Field size (東方スタイル: 左にフィールド、右にHUD)
     var CANVAS_W = 640, CANVAS_H = 480;
@@ -2370,6 +2371,7 @@
         overScreen.hidden = true; rankingScreen.hidden = true;
         if (practiceScreen) practiceScreen.hidden = true;
         if (practiceResultScreen) practiceResultScreen.hidden = true;
+        if (pauseScreen) pauseScreen.hidden = true;
         updateMenuHighlight();
         initTitleParticles();
         drawTitleBg();
@@ -2451,6 +2453,38 @@
             boss.spellsUsed = [];
             startSpellcard(spellIdx);
             boss.spellsUsed = [0, 1];
+        }
+    }
+
+    function pauseGame() {
+        if (state !== 'PLAYING') return;
+        state = 'PAUSED'; menuIndex = 0;
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+        overlay.hidden = false;
+        titleScreen.hidden = true; diffScreen.hidden = true;
+        overScreen.hidden = true; rankingScreen.hidden = true;
+        practiceScreen.hidden = true; practiceResultScreen.hidden = true;
+        pauseScreen.hidden = false;
+        // 復帰時に押しっぱなしでの暴走（自機移動・連射）を防ぐ
+        keys = {}; resetMobileKeys();
+        updateMenuHighlight();
+    }
+
+    function resumeGame() {
+        if (state !== 'PAUSED') return;
+        pauseScreen.hidden = true;
+        overlay.hidden = true;
+        state = 'PLAYING';
+        loopLastTime = 0; loopAccum = 0;
+        if (!animId) animId = requestAnimationFrame(gameLoop);
+    }
+
+    function restartFromPause() {
+        pauseScreen.hidden = true;
+        if (practiceMode && practicePatternKey) {
+            startPractice(practicePatternKey);
+        } else {
+            startGame();
         }
     }
 
@@ -2553,6 +2587,8 @@
         // Always keep the loop running while in game states
         if (state === 'PLAYING' || state === 'GAMEOVER') {
             animId = requestAnimationFrame(gameLoop);
+        } else {
+            animId = null;
         }
     }
 
@@ -2591,6 +2627,7 @@
         if (state === 'RANKING') return rankingBtns.querySelectorAll('.game-btn');
         if (state === 'PRACTICE_SELECT') return practiceScreen.querySelectorAll('.practice-btn');
         if (state === 'PRACTICE_RESULT') return practiceResultScreen.querySelectorAll('.game-btn');
+        if (state === 'PAUSED') return pauseScreen.querySelectorAll('.game-btn');
         return [];
     }
 
@@ -2654,6 +2691,7 @@
             else if (state === 'RANKING') goToTitle();
             else if (state === 'PRACTICE_SELECT') goToTitle();
             else if (state === 'PRACTICE_RESULT') showPracticeSelect();
+            else if (state === 'PAUSED') resumeGame();
             else if (state === 'TITLE') closeGameModal();
         }
     }
@@ -2685,6 +2723,10 @@
             if (state !== 'GAMEOVER') e.preventDefault();
         }
         keys[e.code] = true;
+        // PLAYING中の Escape はポーズ起動
+        if (state === 'PLAYING' && e.code === 'Escape' && !e.repeat) {
+            playSE('decide'); pauseGame(); return;
+        }
         // 自動リピート（長押し）ではメニュー決定を発火しない。
         // PLAYING中に押していたZ/Enter等が画面遷移直後に決定を誤発火するのを防ぐ
         if (state !== 'PLAYING' && !e.repeat) handleMenuKey(e.code);
@@ -2839,6 +2881,18 @@
             var act = btn.dataset.action;
             if (act === 'retry') startPractice(practicePatternKey);
             else if (act === 'select') showPracticeSelect();
+            else if (act === 'title') goToTitle();
+        });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
+    });
+
+    // ポーズメニュー: ゲームに戻る／リスタート／タイトルへ
+    pauseScreen.querySelectorAll('.game-btn').forEach(function (btn, idx) {
+        btn.addEventListener('click', function () {
+            playSE('decide');
+            var act = btn.dataset.action;
+            if (act === 'resume') resumeGame();
+            else if (act === 'restart') restartFromPause();
             else if (act === 'title') goToTitle();
         });
         btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
