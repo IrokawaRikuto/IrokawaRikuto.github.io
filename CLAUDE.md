@@ -160,7 +160,8 @@
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
 - 道中パターン13種（列1〜13、`executeWaveEvent` のキー: streamL/streamR/crossStream/topAimed/topAimedHeavy/sineWave/mediumEscort/largeTank/dualTurret/massRush/invertedU/sCurve/zCurve）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
-- 仕様: ライフ1・ボム0・初期Power=MAX、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
+- 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
+- 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
 - 終了条件: 道中=敵が全消滅（撃破 or 画面外退場） / ボス=HP0で撃破 / 共通=1ミスで失敗
 - 結果画面: CLEAR（緑）/ MISS（赤）＋ 「リトライ」「パターン選択へ」「タイトルへ」
 - 命名は仮（パターン名や本ボス名は今後決定）
