@@ -127,13 +127,13 @@
 - 最大3パターン同時出現
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed/topAimedHeavy: 上部停止→自機狙い一斉射撃→退場
-- mediumEscort: 中型1+小型5の護衛編成
-- largeTank: 大型1+小型3
-- dualTurret: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
-- invertedU_L / invertedU_R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
-- sCurve_L / sCurve_R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
-- zCurve_L / zCurve_R: 片側の上からジグザグZ字で降下（7-9体、下向き、L=左から / R=右から）
+- topAimed=降下狙撃 / topAimedHeavy=重降下狙撃: 上部停止→自機狙い一斉射撃→退場
+- mediumEscort=護衛編隊: 中型1+小型5の護衛編成
+- largeTank=重戦車隊: 大型1+小型3
+- dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
+- invertedUL/UR=弧月L/R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
+- sCurveL/R=蛇行L/R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
+- zCurveL/R=稲妻L/R: 片側の上からジグザグZ字で降下（7-9体、下向き、L=左から / R=右から）
 - 被弾時Power扇状ばらまき（画面内に収まる）、敵撃破アイテム真上→自由落下
 - 回収エリア（画面上部）のアイテム引き寄せ速度=12
 - Powerアイテム出率: 小型 powerS 35%（稀に powerS+scoreS 両方）、中型 powerS×2 必ず＋power 50%、大型 power×2 + powerS×4 を必ずドロップ
@@ -166,7 +166,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン11種（列1〜11、`executeWaveEvent` のキー: topAimed/topAimedHeavy/mediumEscort/largeTank/dualTurret/invertedUL/invertedUR/sCurveL/sCurveR/zCurveL/zCurveR）
+- 道中パターン11種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=降下狙撃/topAimedHeavy=重降下狙撃/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurveL=稲妻L/zCurveR=稲妻R）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
