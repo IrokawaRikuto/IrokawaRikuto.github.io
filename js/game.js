@@ -58,6 +58,7 @@
     loadSprite('bulletIce', 'assets/game/bullet_ice.png');
     loadSprite('bulletSeal', 'assets/game/bullet_seal.png');
     loadSprite('bulletStar', 'assets/game/bullet_star.png');
+    loadSprite('bulletStarSmall', 'assets/game/bullet_small_star.png');
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
@@ -962,7 +963,10 @@
         ice:   { main: '#3399dd', dark: '#1166aa', halo: '#aaddff' },
         seal:  { main: '#dd9922', dark: '#aa6600', halo: '#ffd888' }
     };
-    var BOSS_ACCENT_COL = { star: 6, wedge: 5, ice: 4, seal: 2 };
+    // 新スプライト準拠の色 index
+    //  Sheet1 (16色, 16x16, wedge/ice/seal/小弾/小星弾): 0=灰 1=赤橙 2=赤 3=桃 4=紫 5=青紫 6=青 7=水 8=淡水 9=緑 10=淡緑 11=黄緑 12=黄 13=黃橙 14=橙 15=灰
+    //  Sheet2/3 (8色, 32x32, star/large/medium): 0=灰 1=赤 2=紫 3=青 4=水 5=緑 6=黃 7=白
+    var BOSS_ACCENT_COL = { star: 1, wedge: 4, ice: 8, seal: 12 };
 
     function spawnBoss() {
         bossActive = true;
@@ -990,9 +994,9 @@
     // ボスの弾属性を弾オブジェクト用の {bulletType, size, color, spin} に変換
     function bossBulletShape(sizeHint) {
         var k = (boss && boss.bulletKind) || 'star';
-        if (k === 'star')  return { bulletType: 'star',  size: sizeHint + 2, color: 5 + Math.floor(Math.random() * 2), spin: Math.random() * Math.PI * 2 };
+        if (k === 'star')  return { bulletType: 'star',  size: sizeHint + 2, color: BOSS_ACCENT_COL.star, spin: Math.random() * Math.PI * 2 };
         if (k === 'wedge') return { bulletType: 'wedge', size: sizeHint, color: BOSS_ACCENT_COL.wedge };
-        if (k === 'ice')   return { bulletType: 'ice',   size: sizeHint, color: Math.floor(Math.random() * 9) };
+        if (k === 'ice')   return { bulletType: 'ice',   size: sizeHint, color: Math.floor(Math.random() * 16) };
         if (k === 'seal')  return { bulletType: 'seal',  size: sizeHint, color: BOSS_ACCENT_COL.seal };
         return { bulletType: 'medium', size: sizeHint, color: 0 };
     }
@@ -1277,10 +1281,10 @@
                 // スポナー: 全方位リング（ボスの弾種で） + 自機狙い3発
                 var kind = e.spawnerKind || 'star';
                 var bulletMap = {
-                    star:  { bulletType: 'star',  size: 5, color: 5 },
-                    wedge: { bulletType: 'wedge', size: 4, color: 5 },
-                    ice:   { bulletType: 'ice',   size: 4, color: 4 },
-                    seal:  { bulletType: 'seal',  size: 4, color: 2 }
+                    star:  { bulletType: 'star',  size: 5, color: BOSS_ACCENT_COL.star },
+                    wedge: { bulletType: 'wedge', size: 4, color: BOSS_ACCENT_COL.wedge },
+                    ice:   { bulletType: 'ice',   size: 4, color: BOSS_ACCENT_COL.ice },
+                    seal:  { bulletType: 'seal',  size: 4, color: BOSS_ACCENT_COL.seal }
                 };
                 var sh = bulletMap[kind] || bulletMap.star;
                 var ringSpd = spd * 0.8;
@@ -1375,10 +1379,9 @@
                     ctx.restore();
                 }
                 if (useSpriteL) {
-                    // col=7 (gray/white) の大弾を使用。ボールは 128x64 セルの中央にあるので
-                    // 中央 64x64 を切り抜いて正方形で描画し、魔法陣と中心を合わせる
+                    // col=7 (白) の大弾を 32x32 で正方形描画（魔法陣と中心を合わせる）
                     var bs = e.size * 2.2;
-                    ctx.drawImage(sprites.bulletL, 7 * 128 + 32, 0, 64, 64, -bs / 2, -bs / 2, bs, bs);
+                    ctx.drawImage(sprites.bulletL, 7 * 32, 0, 32, 32, -bs / 2, -bs / 2, bs, bs);
                 } else {
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath(); ctx.arc(0, 0, e.size, 0, Math.PI * 2); ctx.fill();
@@ -1929,13 +1932,13 @@
                 var drawSize = b.size * 4;
                 ctx.drawImage(sprites.bulletSeal, col * 16, 0, 16, 16, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
             } else if (bt === 'large' && useSpriteL) {
-                // Large bullet sprite: 1024x64, 8 sprites of 128x64
+                // Large bullet sprite: 256x32, 8 cells of 32x32
                 var drawSize = b.size * 5;
-                ctx.drawImage(imgL, col * 128, 0, 128, 64, b.x - drawSize / 2, b.y - drawSize / 4, drawSize, drawSize / 2);
+                ctx.drawImage(imgL, col * 32, 0, 32, 32, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
             } else if (bt === 'medium' && useSpriteM) {
-                // Medium bullet sprite: 512x32, 8 sprites of 64x32
+                // Medium bullet sprite: 256x32, 8 cells of 32x32
                 var drawSize = b.size * 4;
-                ctx.drawImage(imgM, col * 64, 0, 64, 32, b.x - drawSize / 2, b.y - drawSize / 4, drawSize, drawSize / 2);
+                ctx.drawImage(imgM, col * 32, 0, 32, 32, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
             } else if (useSpriteS) {
                 var drawSize = b.size * 4;
                 ctx.drawImage(imgS, col * 16, 0, 16, 16, b.x - drawSize / 2, b.y - drawSize / 2, drawSize, drawSize);
@@ -2379,6 +2382,9 @@
         overScreen.hidden = true; rankingScreen.hidden = true;
         practiceScreen.hidden = true; practiceResultScreen.hidden = true;
         pauseScreen.hidden = false;
+        // プラクティス中のみ「パターン選択へ戻る」ボタンを表示
+        var practiceOnlyBtn = pauseScreen.querySelector('.pause-practice-only');
+        if (practiceOnlyBtn) practiceOnlyBtn.hidden = !practiceMode;
         // 復帰時に押しっぱなしでの暴走（自機移動・連射）を防ぐ
         keys = {}; resetMobileKeys();
         updateMenuHighlight();
@@ -2541,7 +2547,7 @@
         if (state === 'RANKING') return rankingBtns.querySelectorAll('.game-btn');
         if (state === 'PRACTICE_SELECT') return practiceScreen.querySelectorAll('.practice-btn');
         if (state === 'PRACTICE_RESULT') return practiceResultScreen.querySelectorAll('.game-btn');
-        if (state === 'PAUSED') return pauseScreen.querySelectorAll('.game-btn');
+        if (state === 'PAUSED') return pauseScreen.querySelectorAll('.game-btn:not([hidden])');
         return [];
     }
 
@@ -2800,13 +2806,17 @@
         btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
     });
 
-    // ポーズメニュー: ゲームに戻る／リスタート／タイトルへ
+    // ポーズメニュー: ゲームに戻る／リスタート／(プラクティスのみ)パターン選択へ戻る／タイトルへ
     pauseScreen.querySelectorAll('.game-btn').forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
             playSE('decide');
             var act = btn.dataset.action;
             if (act === 'resume') resumeGame();
             else if (act === 'restart') restartFromPause();
+            else if (act === 'practice-select') {
+                pauseScreen.hidden = true;
+                showPracticeSelect();
+            }
             else if (act === 'title') goToTitle();
         });
         btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
