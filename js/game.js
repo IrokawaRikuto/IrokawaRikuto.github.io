@@ -787,34 +787,31 @@
         }
     }
 
-    // 左右の下から出現し逆U字（∩）で反対側へ抜ける編隊
-    function spawnInvertedU() {
-        var countPerSide = 6 + Math.floor(Math.random() * 2); // 6-7/side = 12-14体
+    // 片側の下から出現し逆U字（∩）で反対側へ抜ける編隊。side=0 が左→右、side=1 が右→左
+    function spawnInvertedU(side) {
+        var countPerSide = 6 + Math.floor(Math.random() * 2); // 6-7体
         var peakY = 45 + Math.random() * 20;
         var duration = 180; // ∩を描ききるフレーム数
-        for (var side = 0; side < 2; side++) {
-            var startX = side === 0 ? 40 : W - 40;
-            var endX = side === 0 ? W - 40 : 40;
-            for (var i = 0; i < countPerSide; i++) {
-                enemies.push({
-                    x: startX, y: H + 30,
-                    hp: 1, maxHp: 1, speed: 1, type: 'small',
-                    pattern: 'arcPath',
-                    pathT: -i * 0.10,
-                    pathSpeed: 1 / duration,
-                    pathStartX: startX, pathEndX: endX, pathPeakY: peakY,
-                    fireRate: Math.floor(70 / diff.bullets),
-                    fireTimer: Math.floor(Math.random() * 30),
-                    size: 8, age: 0, baseX: 0, dir: side === 0 ? 1 : -1,
-                    bulletPattern: 'down'
-                });
-            }
+        var startX = side === 0 ? 40 : W - 40;
+        var endX = side === 0 ? W - 40 : 40;
+        for (var i = 0; i < countPerSide; i++) {
+            enemies.push({
+                x: startX, y: H + 30,
+                hp: 1, maxHp: 1, speed: 1, type: 'small',
+                pattern: 'arcPath',
+                pathT: -i * 0.10,
+                pathSpeed: 1 / duration,
+                pathStartX: startX, pathEndX: endX, pathPeakY: peakY,
+                fireRate: Math.floor(70 / diff.bullets),
+                fireTimer: Math.floor(Math.random() * 30),
+                size: 8, age: 0, baseX: 0, dir: side === 0 ? 1 : -1,
+                bulletPattern: 'down'
+            });
         }
     }
 
-    // 左右の上からS字を描いて降下する編隊
-    function spawnSCurveFormation() {
-        var side = Math.random() > 0.5 ? 1 : -1;
+    // 片側の上からS字を描いて降下する編隊。side=1 が左から、side=-1 が右から
+    function spawnSCurveFormation(side) {
         var count = 7 + Math.floor(Math.random() * 3); // 7-9
         var startX = side > 0 ? 40 : W - 40;
         for (var i = 0; i < count; i++) {
@@ -831,9 +828,8 @@
         }
     }
 
-    // 左右の上からZ字（ジグザグ）で降下する編隊
-    function spawnZCurveFormation() {
-        var side = Math.random() > 0.5 ? 1 : -1;
+    // 片側の上からZ字（ジグザグ）で降下する編隊。side=1 が左から、side=-1 が右から
+    function spawnZCurveFormation(side) {
         var count = 7 + Math.floor(Math.random() * 3); // 7-9
         var startX = side > 0 ? 30 : W - 30;
         for (var i = 0; i < count; i++) {
@@ -897,10 +893,10 @@
         var stageScale = 1 + stage * 0.15;
 
         // 基本パターンプール（1面から中型・大型も混ぜる）
-        var pool = ['formation', 'sCurve', 'zCurve', 'mediumEscort', 'largeTank'];
-        if (stage >= 1) { pool.push('topAimed', 'invertedU'); }
-        if (stage >= 2) { pool.push('sCurve', 'zCurve', 'dualTurret'); }
-        if (stage >= 3) { pool.push('topAimedHeavy', 'invertedU'); }
+        var pool = ['formation', 'sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'mediumEscort', 'largeTank'];
+        if (stage >= 1) { pool.push('topAimed', 'invertedUL', 'invertedUR'); }
+        if (stage >= 2) { pool.push('sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'dualTurret'); }
+        if (stage >= 3) { pool.push('topAimedHeavy', 'invertedUL', 'invertedUR'); }
 
         // シャッフル
         var shuffled = [];
@@ -937,14 +933,23 @@
             case 'dualTurret':
                 spawnDualTurrets();
                 break;
-            case 'invertedU':
-                spawnInvertedU();
+            case 'invertedUL':
+                spawnInvertedU(0);
                 break;
-            case 'sCurve':
-                spawnSCurveFormation();
+            case 'invertedUR':
+                spawnInvertedU(1);
                 break;
-            case 'zCurve':
-                spawnZCurveFormation();
+            case 'sCurveL':
+                spawnSCurveFormation(1);
+                break;
+            case 'sCurveR':
+                spawnSCurveFormation(-1);
+                break;
+            case 'zCurveL':
+                spawnZCurveFormation(1);
+                break;
+            case 'zCurveR':
+                spawnZCurveFormation(-1);
                 break;
         }
     }

@@ -131,9 +131,9 @@
 - mediumEscort: 中型1+小型5の護衛編成
 - largeTank: 大型1+小型3
 - dualTurret: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
-- invertedU: 左右の下から∩を描いて反対側へ抜ける（各4-5体×2 = 8-10体、小弾）
-- sCurve: 左右の上から正弦波S字で降下（6-8体、自機狙い）
-- zCurve: 左右の上からジグザグZ字で降下（6-8体、下向き）
+- invertedU_L / invertedU_R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
+- sCurve_L / sCurve_R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
+- zCurve_L / zCurve_R: 片側の上からジグザグZ字で降下（7-9体、下向き、L=左から / R=右から）
 - 被弾時Power扇状ばらまき（画面内に収まる）、敵撃破アイテム真上→自由落下
 - 回収エリア（画面上部）のアイテム引き寄せ速度=12
 - Powerアイテム出率: 小型 powerS 35%（稀に powerS+scoreS 両方）、中型 powerS×2 必ず＋power 50%、大型 power×2 + powerS×4 を必ずドロップ
@@ -166,7 +166,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン8種（列1〜8、`executeWaveEvent` のキー: topAimed/topAimedHeavy/mediumEscort/largeTank/dualTurret/invertedU/sCurve/zCurve）
+- 道中パターン11種（列1〜11、`executeWaveEvent` のキー: topAimed/topAimedHeavy/mediumEscort/largeTank/dualTurret/invertedUL/invertedUR/sCurveL/sCurveR/zCurveL/zCurveR）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
