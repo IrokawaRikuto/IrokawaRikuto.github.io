@@ -60,6 +60,7 @@
     loadSprite('bulletStar', 'assets/game/bullet_star.png');
     loadSprite('bulletStarSmall', 'assets/game/bullet_small_star.png');
     loadSprite('bulletPlayer', 'assets/game/bullet_player_main.png');
+    loadSprite('items', 'assets/game/items.png');
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
@@ -421,18 +422,19 @@
         }
     }
 
-    // 被弾時パワーばらまき: プレイヤーから扇状に真上へ飛ばす（画面内に収める）
+    // 被弾時パワーばらまき: 斜め扇状に飛ばす → 垂直浮上 → 落下 の3段階挙動
     function spawnDeathPowerItems(x, y, type, count) {
-        var fanAngle = Math.PI * 0.4; // 扇の角度（狭めて画面内に収める）
-        var baseAngle = -Math.PI / 2; // 真上
+        var fanAngle = Math.PI * 0.66; // 約120°（斜めに飛ばす）
+        var baseAngle = -Math.PI / 2;  // 真上
+        var ix = Math.max(10, Math.min(W - 10, x));
         for (var i = 0; i < count; i++) {
             var a = baseAngle - fanAngle / 2 + (count > 1 ? fanAngle * (i / (count - 1)) : 0);
-            var spd = 3 + Math.random() * 1.5;
-            var ix = Math.max(10, Math.min(W - 10, x));
+            var spd = 3 + Math.random() * 1;
             items.push({
                 x: ix, y: y,
                 vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
-                type: type, age: 0, attracted: false
+                type: type, age: 0, attracted: false,
+                deathPhase: 'fan', deathTimer: 60
             });
         }
     }
@@ -461,8 +463,33 @@
         for (var i = items.length - 1; i >= 0; i--) {
             var it = items[i];
             it.age++;
-            if (!it.attracted) { it.vy += 0.03; if (it.vy > 1.5) it.vy = 1.5; }
-            it.x += it.vx; it.y += it.vy;
+            if (it.attracted) {
+                // 引き寄せ時は attractItems が毎フレーム vx/vy を更新するのでそれに従う
+                it.x += it.vx; it.y += it.vy;
+            } else if (it.deathPhase) {
+                // 被弾ばらまき: fan(60F斜め) → rise(60F垂直浮上) → fall(垂直落下)
+                if (it.deathPhase === 'fan') {
+                    it.x += it.vx; it.y += it.vy;
+                    it.deathTimer--;
+                    if (it.deathTimer <= 0) {
+                        it.deathPhase = 'rise'; it.deathTimer = 60;
+                        it.vx = 0; it.vy = -1.5;
+                    }
+                } else if (it.deathPhase === 'rise') {
+                    it.x += it.vx; it.y += it.vy;
+                    it.deathTimer--;
+                    if (it.deathTimer <= 0) {
+                        it.deathPhase = 'fall'; it.vx = 0; it.vy = 0;
+                    }
+                } else { // fall
+                    it.vy += 0.1; if (it.vy > 3) it.vy = 3;
+                    it.x += it.vx; it.y += it.vy;
+                }
+            } else {
+                // 通常落下（敵撃破ドロップなど）
+                it.vy += 0.03; if (it.vy > 1.5) it.vy = 1.5;
+                it.x += it.vx; it.y += it.vy;
+            }
             // 画面内に収める（左右の壁で跳ね返り）
             if (it.x < 6) { it.x = 6; it.vx = Math.abs(it.vx) * 0.5; }
             if (it.x > W - 6) { it.x = W - 6; it.vx = -Math.abs(it.vx) * 0.5; }
@@ -484,12 +511,26 @@
         }
     }
 
+    // アイテム種 → items.png の col index (16x16セル)
+    //   col 0=P(powerS), 1=点(scoreS), 2=大P(power), 3=大点(score), 4=黒星✕, 5=1UP(life), 6=S星✕, 7=フルパワー
+    var ITEM_SPRITE_COL = {
+        powerS: 0, scoreS: 1, power: 2, score: 3, life: 5, fullpower: 7
+    };
+
     function drawItems() {
+        var useSprite = isSpriteReady('items');
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         for (var i = 0; i < items.length; i++) {
             var it = items[i];
-            var big = (it.type === 'score' || it.type === 'power' || it.type === 'bomb' || it.type === 'life');
+            var col = ITEM_SPRITE_COL[it.type];
+            if (useSprite && col !== undefined) {
+                var spriteSize = 16;
+                ctx.drawImage(sprites.items, col * 16, 0, 16, 16, it.x - spriteSize / 2, it.y - spriteSize / 2, spriteSize, spriteSize);
+                continue;
+            }
+            // フォールバック（bomb 等のスプライト未対応分）
+            var big = (it.type === 'score' || it.type === 'power' || it.type === 'bomb' || it.type === 'life' || it.type === 'fullpower');
             var sz = big ? 10 : 6;
             var color, label;
             switch (it.type) {
@@ -497,6 +538,7 @@
                 case 'powerS': case 'power': color = '#ff4444'; label = 'P'; break;
                 case 'bomb': color = '#44ff44'; label = 'B'; break;
                 case 'life': color = '#aa44ff'; label = '1UP'; break;
+                case 'fullpower': color = '#ffcc44'; label = 'F'; break;
             }
             ctx.fillStyle = color;
             ctx.fillRect(it.x - sz, it.y - sz, sz * 2, sz * 2);
@@ -775,13 +817,13 @@
             e.bulletPattern = pickBulletPattern('small');
             if (patRoll > 0.7) { e.pattern = 'sine'; e.baseX = Math.max(50, Math.min(W - 50, e.x)); }
         } else if (type === 'medium') {
-            e.hp = 15; e.maxHp = 15; e.size = 14;
+            e.hp = 30; e.maxHp = 30; e.size = 14;
             e.speed = 1 + Math.random() * 0.5;
             e.fireRate = Math.floor(70 / diff.bullets);
             e.bulletPattern = pickBulletPattern('medium');
             if (patRoll > 0.5) { e.pattern = 'sine'; e.baseX = Math.max(55, Math.min(W - 55, e.x)); }
         } else if (type === 'large') {
-            e.hp = 50; e.maxHp = 50; e.size = 20; e.speed = 0.4;
+            e.hp = 100; e.maxHp = 100; e.size = 20; e.speed = 0.4;
             e.fireRate = Math.floor(45 / diff.bullets);
             e.bulletPattern = pickBulletPattern('large');
             e.pattern = 'hover'; e.targetY = 60 + Math.random() * 60;
@@ -892,7 +934,7 @@
         for (var i = 0; i < 2; i++) {
             enemies.push({
                 x: positions[i].x, y: -20,
-                hp: 40, maxHp: 40, speed: 0.8, type: 'large',
+                hp: 80, maxHp: 80, speed: 0.8, type: 'large',
                 pattern: 'hover', fireRate: Math.floor(35 / diff.bullets),
                 fireTimer: Math.floor(Math.random() * 20),
                 size: 20, age: 0, baseX: positions[i].x, dir: 1,
