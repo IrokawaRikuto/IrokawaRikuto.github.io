@@ -126,14 +126,11 @@
 ### 敵出現パターン（Wave Script）
 - 最大3パターン同時出現
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
-- streamL/streamR: 横断隊列（6-11体）
-- crossStream: 左右同時横断（各14-17体、合計28-34体規模）
+- formation: 横断隊列（7-11体、`spawnDriftFormation`）
 - topAimed/topAimedHeavy: 上部停止→自機狙い一斉射撃→退場
-- sineWave: サインウェーブ編隊（7-11体）
 - mediumEscort: 中型1+小型5の護衛編成
 - largeTank: 大型1+小型3
 - dualTurret: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
-- massRush: 40体が5列で左右からランダム横断、全員自機狙い
 - invertedU: 左右の下から∩を描いて反対側へ抜ける（各4-5体×2 = 8-10体、小弾）
 - sCurve: 左右の上から正弦波S字で降下（6-8体、自機狙い）
 - zCurve: 左右の上からジグザグZ字で降下（6-8体、下向き）
@@ -169,7 +166,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン13種（列1〜13、`executeWaveEvent` のキー: streamL/streamR/crossStream/topAimed/topAimedHeavy/sineWave/mediumEscort/largeTank/dualTurret/massRush/invertedU/sCurve/zCurve）
+- 道中パターン8種（列1〜8、`executeWaveEvent` のキー: topAimed/topAimedHeavy/mediumEscort/largeTank/dualTurret/invertedU/sCurve/zCurve）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）

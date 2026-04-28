@@ -787,30 +787,6 @@
         }
     }
 
-    // 左右から大量の小型が水平移動（Cross Stream）：30体規模
-    function spawnCrossStream(countPerSide) {
-        countPerSide = countPerSide || (14 + Math.floor(Math.random() * 4)); // 14-17/side ≈ 28-34
-        var yL = 28 + Math.random() * 30;
-        var yR = 52 + Math.random() * 30;
-        var spd = 1.8 + Math.random() * 0.5;
-        for (var i = 0; i < countPerSide; i++) {
-            var jitterL = (Math.random() - 0.5) * 10;
-            var jitterR = (Math.random() - 0.5) * 10;
-            enemies.push({
-                x: -15 - i * 22, y: yL + jitterL, hp: 1, maxHp: 1, speed: spd, type: 'small',
-                pattern: 'drift', fireRate: Math.floor(130 / diff.bullets),
-                fireTimer: 30 + Math.floor(Math.random() * 40),
-                size: 8, age: 0, baseX: 0, dir: 1, bulletPattern: 'aimed'
-            });
-            enemies.push({
-                x: W + 15 + i * 22, y: yR + jitterR, hp: 1, maxHp: 1, speed: spd, type: 'small',
-                pattern: 'drift', fireRate: Math.floor(130 / diff.bullets),
-                fireTimer: 30 + Math.floor(Math.random() * 40),
-                size: 8, age: 0, baseX: 0, dir: -1, bulletPattern: 'aimed'
-            });
-        }
-    }
-
     // 左右の下から出現し逆U字（∩）で反対側へ抜ける編隊
     function spawnInvertedU() {
         var countPerSide = 6 + Math.floor(Math.random() * 2); // 6-7/side = 12-14体
@@ -892,24 +868,6 @@
         }
     }
 
-    // サインウェーブ編隊（横移動＋縦の揺れ）
-    function spawnSineFormation(count) {
-        count = count || (7 + Math.floor(Math.random() * 5));
-        var dir = Math.random() > 0.5 ? 1 : -1;
-        var startX = dir > 0 ? -15 : W + 15;
-        var baseY = 50 + Math.random() * 40;
-        var spd = 1.5 + Math.random() * 0.5;
-        for (var i = 0; i < count; i++) {
-            enemies.push({
-                x: startX - dir * 22 * i, y: baseY, hp: 1, maxHp: 1, speed: spd, type: 'small',
-                pattern: 'sineDrift', fireRate: Math.floor(140 / diff.bullets),
-                fireTimer: Math.floor(Math.random() * 60),
-                size: 8, age: 0, baseX: 0, baseY: baseY, dir: dir,
-                bulletPattern: 'down'
-            });
-        }
-    }
-
     // 画面上部左右に大型2体が固定して弾幕を放つ
     function spawnDualTurrets() {
         var positions = [{ x: 60, y: 50, spin: 1 }, { x: W - 60, y: 50, spin: -1 }];
@@ -927,33 +885,6 @@
         }
     }
 
-    // 画面上部で左右から合計40体が5列でランダムに横断、全員自機狙い
-    function spawnMassRush() {
-        var totalCount = 40;
-        var rows = 5;
-        var rowSpacing = 20;
-        var baseY = 25;
-        for (var r = 0; r < rows; r++) {
-            var rowY = baseY + r * rowSpacing;
-            var perRow = Math.floor(totalCount / rows);
-            for (var i = 0; i < perRow; i++) {
-                var dir = Math.random() > 0.5 ? 1 : -1;
-                var startX = dir > 0 ? -10 - Math.random() * 80 : W + 10 + Math.random() * 80;
-                var spd = 1.8 + Math.random() * 1.2;
-                var delay = Math.floor(Math.random() * 60); // 出現タイミングをばらす
-                enemies.push({
-                    x: startX - dir * spd * delay,
-                    y: rowY + (Math.random() - 0.5) * 8,
-                    hp: 1, maxHp: 1, speed: spd, type: 'small',
-                    pattern: 'drift', fireRate: Math.floor(90 / diff.bullets),
-                    fireTimer: Math.floor(Math.random() * 40),
-                    size: 8, age: 0, baseX: 0, dir: dir,
-                    bulletPattern: 'aimed'
-                });
-            }
-        }
-    }
-
     // ===== Wave Script System =====
     var waveScript = [];
     var waveScriptIdx = 0;
@@ -966,9 +897,9 @@
         var stageScale = 1 + stage * 0.15;
 
         // 基本パターンプール（1面から中型・大型も混ぜる）
-        var pool = ['streamL', 'streamR', 'formation', 'sCurve', 'zCurve', 'mediumEscort', 'largeTank'];
-        if (stage >= 1) { pool.push('crossStream', 'topAimed', 'massRush', 'invertedU'); }
-        if (stage >= 2) { pool.push('sineWave', 'sCurve', 'zCurve', 'dualTurret'); }
+        var pool = ['formation', 'sCurve', 'zCurve', 'mediumEscort', 'largeTank'];
+        if (stage >= 1) { pool.push('topAimed', 'invertedU'); }
+        if (stage >= 2) { pool.push('sCurve', 'zCurve', 'dualTurret'); }
         if (stage >= 3) { pool.push('topAimedHeavy', 'invertedU'); }
 
         // シャッフル
@@ -992,28 +923,9 @@
 
     function executeWaveEvent(pat) {
         switch (pat) {
-            case 'streamL': spawnDriftFormation(); break;
-            case 'streamR':
-                var count = 7 + Math.floor(Math.random() * 5);
-                var dir = Math.random() > 0.5 ? 1 : -1;
-                var baseY = 30 + Math.random() * 40;
-                var startX = dir > 0 ? -15 : W + 15;
-                for (var i = 0; i < count; i++) {
-                    enemies.push({
-                        x: startX - dir * 18 * i, y: baseY,
-                        hp: 1, maxHp: 1, speed: 1.5 + Math.random(), type: 'small',
-                        pattern: 'drift', fireRate: Math.floor(110 / diff.bullets),
-                        fireTimer: Math.floor(Math.random() * 60),
-                        size: 8, age: 0, baseX: 0, dir: dir,
-                        bulletPattern: 'way3'
-                    });
-                }
-                break;
             case 'formation': spawnDriftFormation(); break;
-            case 'crossStream': spawnCrossStream(); break;
             case 'topAimed': spawnTopAimedWave(); break;
             case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3)); break;
-            case 'sineWave': spawnSineFormation(); break;
             case 'mediumEscort':
                 spawnEnemy('medium');
                 for (var j = 0; j < 5; j++) spawnEnemy('small');
@@ -1024,9 +936,6 @@
                 break;
             case 'dualTurret':
                 spawnDualTurrets();
-                break;
-            case 'massRush':
-                spawnMassRush();
                 break;
             case 'invertedU':
                 spawnInvertedU();
