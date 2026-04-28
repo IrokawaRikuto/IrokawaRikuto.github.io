@@ -133,6 +133,28 @@
   - 16x16 系（`bullet_small/wedge/ice/seal/small_star`）: 256x16, 16色（0=灰, 1=赤橙, 2=赤, 3=桃, 4=紫, 5=青紫, 6=青, 7=水, 8=淡水, 9=緑, 10=淡緑, 11=黄緑, 12=黄, 13=黃橙, 14=橙, 15=灰）
   - 32x32 系（`bullet_star/large/medium`）: 256x32, 8色（0=灰, 1=赤, 2=紫, 3=青, 4=水, 5=緑, 6=黃, 7=白）
   - `BOSS_ACCENT_COL` = { star: 1, wedge: 4, ice: 8, seal: 12 }
+- 切り抜き済みだが未実装の弾種（`assets/game/` に配置、使用時に `loadSprite` + `drawEBullets` 分岐を追加）：
+  | ファイル | 元シート行 | サイズ | 色/フレーム数 | 用途メモ |
+  |----------|-----------|--------|--------------|----------|
+  | `bullet_laser.png` | ①row 0 | 256x16 | 16色 | レーザー本体。先端と末尾を `bullet_small.png` (小弾2 同色) で塞いで尖らせる |
+  | `bullet_small1.png` | ①row 2 | 256x16 | 16色 | 小弾1（小弾2より太め） |
+  | `bullet_rice_white.png` | ①row 4 | 256x16 | 16色 | 米弾（白縁） |
+  | `bullet_kunai.png` | ①row 5 | 256x16 | 16色 | クナイ弾。進行方向回転推奨 |
+  | `bullet_shot.png` | ①row 8 | 256x16 | 16色 | ショット弾 |
+  | `bullet_rice_black.png` | ①row 9 | 256x16 | 16色 | 米弾（黒縁） |
+  | `bullet_small3.png` | ①row 11 | 256x16 | 16色 | 小弾3 |
+  | `bullet_mini_mix.png` | ①row 12 | 256x16 | 混在 | 胞子弾／ミニ弾／銭弾（同行内に種類混在、8x8系） |
+  | `bullet_medium1.png` | ①rows 13-14 | 256x32 | 8色 | 中弾1（②row 5 と同等） |
+  | `bullet_butterfly.png` | ②row 2 | 256x32 | 8色 | 蝶弾 |
+  | `bullet_knife.png` | ②row 3 | 256x32 | 8色 | ナイフ弾 |
+  | `bullet_rice_large.png` | ②row 4 | 256x32 | 8色 | 大米弾（白） |
+  | `bullet_huge.png` | ②rows 6-7 | 256x64 | 4色 | 特大弾（64x64セル）。爆発系の大技などに |
+  | `bullet_heart.png` | ③row 0 | 256x32 | 8色 | ハート弾 |
+  | `bullet_arrow.png` | ③row 1 | 256x32 | 8色 | 矢弾 |
+  | `bullet_fire_red_pink.png` | ③row 4 | 256x32 | 4F赤+4Fピンク | 炎弾アニメ。仮 6F/コマ で使用予定 |
+  | `bullet_fire_purple_yellow.png` | ③row 5 | 256x32 | 4F紫+4F黃 | 炎弾アニメ |
+  - 未使用: ①row 15（使わない弾）、③ items行の col 4(黒星)/6(S星)、③row 4(UFO)、③rows 6-7(ダイヤ/ぎざぎざ)
+- その他切り抜き予備: `nc402378_霊夢の陰陽玉2.png`（自機オプション用、240x840）、`nc10263_警告音.wav`（警告音）も `シューティング素材/` 内に保管。実装時に移動
 - 氷弾・楔弾・札弾は進行方向に回転（`Math.atan2(vy, vx) + π/2`）。氷弾はランダム16色で発射
 - プレイヤー弾はプレイヤースプライト（中段一番左の小さな札型）を `bullet_player_main.png` として切り出して使用
 - アイテムスプライトは `assets/game/items.png` (256x16, 16x16セル) を使用。`ITEM_SPRITE_COL`: powerS=0(P), scoreS=1(点), power=2(大P), score=3(大点), life=5(1UP), fullpower=7(F)。col 4(黒星) / 6(S星) / 右の▲・UFOは未使用
