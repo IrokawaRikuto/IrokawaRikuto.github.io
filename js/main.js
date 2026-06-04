@@ -225,6 +225,20 @@ const workData = {
         screenshots: [],
         download: '',
     },
+    'pettan-maker': {
+        title: { ja: 'ぺったんメイカー', en: 'Pettan Maker' },
+        year: '2026',
+        tags: ['Unity', 'C#', { ja: '課題制作：チーム', en: 'Assignment: Team' }],
+        award: null,
+        env: 'Unity / Visual Studio',
+        desc: {
+            ja: '準備中…',
+            en: 'Coming soon...'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+    },
     'sand-tetris': {
         title: { ja: 'Sand Tetris', en: 'Sand Tetris' },
         year: '2026',
