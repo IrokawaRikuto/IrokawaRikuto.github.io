@@ -73,7 +73,7 @@
 ## 作品一覧（workData）表示順：新しい順
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
 |----|---------|-----|------|----------|------|----|----|
-| pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム | Unity / VS | - | - | - |
+| pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム | Unity / VS | ✅ | ✅ | - |
 | sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅（games/） |
 | console-shooter | コンソールシューティング | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
 | regamma | RE:GAMMA | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |

@@ -232,11 +232,18 @@ const workData = {
         award: null,
         env: 'Unity / Visual Studio',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: '敵をつぶしてシールにし、そのシールをからだに貼ることで効果を発動してボスを倒していく3Dアクションゲーム。HAL東京の3年次チーム制作（NullPointerGames）として現在開発中。',
+            en: 'A 3D action game where you defeat enemies, turn them into stickers, and stick them onto your body to activate their effects and take down bosses. Currently in development as a 3rd-year team project at HAL Tokyo (NullPointerGames).'
         },
-        video: { type: 'placeholder', src: '' },
-        screenshots: [],
+        video: { type: 'video', src: 'videos/PettanMaker_PV.mp4' },
+        screenshots: [
+            'images/PettanMaker_Title.webp',
+            'images/PettanMaker_ConceptArt.png',
+            'images/PettanMaker_Logo.png',
+            'images/PettanMaker_GamePlay.webp',
+            'images/PettanMaker_Sticker.webp',
+            'images/PettanMaker_Clear.webp'
+        ],
         download: '',
     },
     'sand-tetris': {
