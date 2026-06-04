@@ -731,6 +731,12 @@ section {
     letter-spacing: 0.03em;
 }
 
+.tag-wip {
+    background: rgba(255, 184, 0, 0.18);
+    color: #ffb800;
+    border: 1px solid rgba(255, 184, 0, 0.5);
+}
+
 .work-desc {
     display: none;
 }

@@ -228,7 +228,7 @@ const workData = {
     'pettan-maker': {
         title: { ja: 'ぺったんメイカー', en: 'Pettan Maker' },
         year: '2026',
-        tags: ['Unity', 'C#', { ja: '課題制作：チーム', en: 'Assignment: Team' }],
+        tags: ['Unity', 'C#', { ja: '課題制作：チーム', en: 'Assignment: Team' }, { ja: '制作中', en: 'In Development' }],
         award: null,
         env: 'Unity / Visual Studio',
         desc: {
@@ -313,7 +313,8 @@ function openModal(workId) {
     const tagsEl = modal.querySelector('.work-detail-tags');
     tagsEl.innerHTML = data.tags.map(t => {
         const text = typeof t === 'object' ? t[lang] : t;
-        return '<span class="tag">' + text + '</span>';
+        const isWip = typeof t === 'object' && t.ja === '制作中';
+        return '<span class="tag' + (isWip ? ' tag-wip' : '') + '">' + text + '</span>';
     }).join('');
 
     // 作品情報：年号
