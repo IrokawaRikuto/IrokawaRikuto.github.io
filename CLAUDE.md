@@ -26,7 +26,6 @@
 - 背景アニメは `window.bgAnimation = { start, stop }` API経由で制御。デフォルトON
 - About〜Contactリンクはスマホ含め常時バナー表示（画面幅に応じて gap/font-size を段階的に縮小）
 - apple-touch-icon: `IRファビコン（白背景）.jpg` をルートに配置、`<link rel="apple-touch-icon">` で参照済み
-- Aboutに履歴書ダウンロードボタン（`pdf/resume.pdf` を参照、PDF本体は未配置）
 - 画像には loading="lazy" 付加済み（スキルアイコン・ワークカードサムネイル・スクリーンショット）
 - Skillsカテゴリのホバーエフェクト削除済み（クリック不可のため）
 - About: 学校、志望職種、受賞歴、資格、自己紹介文
@@ -235,7 +234,6 @@
 
 ## 未完了・予定
 - プロフィール写真（現在プレースホルダー）
-- 履歴書PDF本体の配置（`pdf/resume.pdf`）
 - 各作品のPV動画追加
 - 各作品のダウンロードURL追加
 - ミニゲーム使用素材クレジット（現在 Coming Soon）

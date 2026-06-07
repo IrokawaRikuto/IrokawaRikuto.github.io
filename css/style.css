@@ -434,29 +434,6 @@ section {
     color: var(--text-muted);
 }
 
-.about-resume-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 20px;
-    padding: 10px 22px;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    color: var(--accent);
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-    transition: background 0.3s, color 0.3s, box-shadow 0.3s;
-}
-.about-resume-btn:hover {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 0 20px var(--accent-glow);
-    opacity: 1;
-}
-.about-resume-btn svg {
-    flex-shrink: 0;
-}
-
 /* ===== Skills ===== */
 .skills-grid {
     display: grid;
