@@ -70,6 +70,9 @@
 - ミニゲーム: 弾の当たり判定を本家準拠に調整（`bulletHitRadius` で type 別、丸弾 size×0.7／星・楔・氷・札 size×0.55／敵接触 size×0.5／ボス接触 size×0.55）
 - ミニゲーム: 未実装弾種 17種（laser/small1/rice_w/kunai/shot/rice_b/small3/mini_mix/medium1/butterfly/knife/rice_large/huge/heart/arrow/fire_red_pink/fire_purple_yellow）を切り抜き、`assets/game/` に保存・座標表をCLAUDE.md に記録
 - スマホ／狭い画面（max-width: 768px）でのヒーロー名前を `clamp(2.2rem, 8.5vw, 3.6rem)` で拡大
+- About: 履歴書ダウンロードボタン削除（PDF配置の予定もキャンセル）
+- Works: GAMMA+（2026, C++/DirectX/リメイク/個人制作）と RM Engine（2026, C++/DirectX/個人制作）を追加。両方とも開発環境は VS/DX11/Claude Code Pro、説明文は「準備中…」、スクリーンショット・動画なし
+- ミニゲーム: ランキングのセキュリティ強化（`firestore.rules` でスキーマ・型・値域を縛り update/delete 禁止、`game-firebase.js` の `submitScore` でクライアント側にも値域バリデーション、`index.html` に Firebase App Check 用 SDK と `APP_CHECK_SITE_KEY` ゲート組込み）。Firebase Console 側の Rules 公開・App Check Site Key 設定はユーザ作業として残（未完了・予定セクションに記載）
 
 ## 作品一覧（workData）表示順：新しい順
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -240,5 +243,9 @@
 - プロフィール写真（現在プレースホルダー）
 - 各作品のPV動画追加
 - 各作品のダウンロードURL追加
+- GAMMA+ / RM Engine の本文（説明・スクリーンショット・動画）
 - ミニゲーム使用素材クレジット（現在 Coming Soon）
 - ミニゲームの敵キャラ動作（途中）：出現パターン・移動挙動・弾幕密度などの調整継続中
+- Firebase Console 側の手動作業:
+  - Firestore Database → ルール画面に `firestore.rules` の内容を貼り付けて公開
+  - App Check 設定（reCAPTCHA v3 サイトキー取得 → `index.html` の `APP_CHECK_SITE_KEY` に設定 → Firebase Console で reCAPTCHA シークレット登録 → APIs タブで Cloud Firestore を Monitor → 問題なければ Enforce）
