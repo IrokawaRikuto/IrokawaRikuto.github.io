@@ -225,6 +225,34 @@ const workData = {
         screenshots: [],
         download: '',
     },
+    'gamma-plus': {
+        title: { ja: 'GAMMA+', en: 'GAMMA+' },
+        year: '2026',
+        tags: ['C++', 'DirectX', { ja: 'リメイク', en: 'Remake' }, { ja: '個人制作', en: 'Personal' }],
+        award: null,
+        env: 'Visual Studio / DirectX11 / Claude Code Pro',
+        desc: {
+            ja: '準備中…',
+            en: 'Coming soon...'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+    },
+    'rm-engine': {
+        title: { ja: 'RM Engine', en: 'RM Engine' },
+        year: '2026',
+        tags: ['C++', 'DirectX', { ja: '個人制作', en: 'Personal' }],
+        award: null,
+        env: 'Visual Studio / DirectX11 / Claude Code Pro',
+        desc: {
+            ja: '準備中…',
+            en: 'Coming soon...'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+    },
     'pettan-maker': {
         title: { ja: 'ぺったんメイカー', en: 'Pettan Maker' },
         year: '2026',

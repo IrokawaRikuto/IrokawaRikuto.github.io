@@ -77,12 +77,14 @@
 | pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム, 制作中 | Unity / VS | ✅ | ✅ | - |
 | sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅（games/） |
 | console-shooter | コンソールシューティング | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
+| gamma-plus | GAMMA+ | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
+| rm-engine | RM Engine | 2026 | C++, DirectX, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | regamma | RE:GAMMA | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | gamma | GAMMA | 2025 | C++, DirectX, 課題制作：チーム | VS / DX11 | ✅ | ✅ | - |
 | circlestriker | CIRCLESTRIKER | 2024 | Unity, C#, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
 | touhou | 東方春三校 | 2024 | Unity, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
 
-※ RE:GAMMAは製作中のため非表示（HTMLコメントアウト）
+※ RE:GAMMAは製作中のため非表示（HTMLコメントアウト）。GAMMA+ / RM Engine は説明文「準備中…」で表示中
 
 ## 隠しミニゲーム（東方風シューティング）
 - フッターの START ボタンから起動
