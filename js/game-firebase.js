@@ -11,11 +11,20 @@ const GameRanking = (function () {
         }
     }
 
+    const ALLOWED_DIFFS = ['easy', 'normal', 'hard', 'lunatic'];
+    const SCORE_MAX = 99999999;
+    const NAME_MAX = 12;
+
     async function submitScore(name, score, difficulty) {
+        // クライアント側でも値域を整える（最終的な防御は Firestore Rules 側）
+        var safeName = (typeof name === 'string' ? name : 'AAA').trim().slice(0, NAME_MAX) || 'AAA';
+        var safeScore = (typeof score === 'number' && isFinite(score)) ? Math.max(0, Math.min(SCORE_MAX, Math.floor(score))) : 0;
+        var safeDiff = ALLOWED_DIFFS.indexOf(difficulty) >= 0 ? difficulty : 'normal';
+
         const entry = {
-            name: name || 'AAA',
-            score: score,
-            difficulty: difficulty || 'normal',
+            name: safeName,
+            score: safeScore,
+            difficulty: safeDiff,
             date: new Date().toISOString()
         };
 

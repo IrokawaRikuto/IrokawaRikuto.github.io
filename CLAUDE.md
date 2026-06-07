@@ -94,6 +94,8 @@
   - 送信: Firebase成否に関わらず常にlocalStorageにもミラー保存
   - 取得: `where('difficulty','==',x)` のみでFirestoreから取得し、score降順ソート・件数制限はクライアント側で実施（複合インデックス不要）。結果にlocal側の直近送信分を name+score キーで重複除去マージ
   - Firebase読込/書込失敗は `console.error('[Ranking] ...')` で可視化
+  - セキュリティ: `firestore.rules` でスキーマ・型・値域（name 1-12文字 / score 0-99999999 int / difficulty ∈ {easy,normal,hard,lunatic} / date == request.time）を縛り、update/delete は全面禁止。クライアント側でも `submitScore` で同じ値域に丸める二重防御。Firebase App Check (reCAPTCHA v3) を index.html に組み込み済み（`APP_CHECK_SITE_KEY` が空の間は無効、Site Key を入れると自動有効化）
+  - Firebase Web SDK の apiKey は Firebase の設計上「公開前提」（プロジェクト識別子であって認可キーではない）。隠すのではなく Security Rules + App Check で防御する方針
 - 4難易度（Easy/Normal/Hard/Lunatic）。ボスHPは固定600（難易度非依存）、変化するのは弾幕密度（bullets）、速度（speed）、自機狙い弾数（aimedCount: 1/3/5/7）、連射弾数（wayCount: 3/5/7/9）
 - 難易度配色: Easy=緑 #44ff44 / Normal=青 #44aaff / Hard=赤 #ff4444 / Lunatic=紫 #c466ff。難易度選択ボタン・ランキングタブ・HUDのSTAGE表示すべてで共通（JS側 `DIFF_COLORS` も同値）
 - ランキング画面レイアウト: 難易度タブを左に縦並び（`.ranking-body` flex 内、tabs幅84px）、右にスコアリストを表示。Back/Retry/Title などのボタンは `.ranking-body` の下に `text-align: right` で右下配置
