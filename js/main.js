@@ -176,8 +176,8 @@ const workData = {
         award: { ja: 'おもしろゲームづくり学内コンテスト 意欲賞 受賞', en: 'Fun Game Making In-School Contest — Enthusiasm Award' },
         env: 'Unity',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: 'プログラマーとして本格的に取り組んだ、記念すべき1作目。元々東方Projectのファンだったことから、ジャンルは迷わずシューティングを選んだ。プレイヤーへの自機狙い、敵の挙動パターン、残機システムなど、シューティングに必要な基本要素を一通り実装。Unityのビジュアルスクリプティングで構築したため作業効率は決して高くなく、調べながらの試行錯誤が続いたが、当時の自分なりに「できることを全部詰め込もう」と取り組んだ意欲が評価され、初出展のコンテストで賞を頂くことができた。\n\n工夫した点は、画面の比率・解像度を東方Project原作に合わせて4:3で構成したこと、フリー素材を集めて見た目の雰囲気を原作寄りに統一したこと、自機の移動速度を調整して操作感まで原作に寄せたこと。プログラマーとしてのスタート地点であり、「ゲームを最後まで作りきる」体験を初めて得た作品。',
+            en: 'My very first complete project as a programmer. Being a fan of the Touhou Project series, I naturally settled on a shoot \'em up. The build covers the genre fundamentals — aimed shots toward the player, enemy behavior patterns, and a lives system — all implemented through Unity\'s Visual Scripting. The workflow leaned heavily on visual scripting and constant lookups, so iteration was slow, but the determination to "cram in everything I could do at the time" came through, and the project earned an award at the very first contest I ever submitted to.\n\nThe areas I focused on were authenticity to the source material. The screen aspect ratio and resolution were tuned to Touhou Project\'s 4:3 layout, free assets were curated to align the look with the original, and even the player ship\'s movement speed was adjusted so the feel matched the source. This was my starting line as a programmer — and the first time I experienced "finishing a game all the way through."'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/東方春三校_Title.png', 'images/東方春三校_GamePlay.png'],
@@ -190,8 +190,8 @@ const workData = {
         award: { ja: 'オリジナルTPS学内コンペ 構成力賞 受賞', en: 'Original TPS In-School Competition — Composition Award' },
         env: 'Unity / Visual Studio Code',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: '2作目はUnity / C#でフルスクラッチした3Dアクションゲーム。当初は剣で敵をなぎ倒す無双系を構想していたが、開発過程で方向転換し、筒状の巨大ステージを進んでゴールを目指すコース型アクションゲームへと作り直した。\n\n本作の特徴はカメラとプレイヤーの位置関係。プレイヤー自身は左右に動かず、ステージ全体が回転することで疑似的に横移動を再現している。プレイヤーの左右には透明な壁を配置して進行ラインを固定し、視点をそのままにステージ側がスクロールする操作感が成立する設計にした。キャラクターには Unity-chan アセットを採用し、それに合わせて公式ボイス素材も組み込むことで、世界観の統一感を出している。\n\n敵キャラクターやエフェクトの追加までは手が回らず実装を断念したが、3D空間における移動・カメラ制御・ステージ構成を実装し切った経験が、その後の作品に繋がる土台となった作品。',
+            en: 'My second project, built from scratch in Unity / C#. The original concept was a hack-and-slash where you mow down enemies with a sword, but partway through development I pivoted to a course-based 3D action game where the player advances through a giant cylindrical stage toward a goal.\n\nThe defining design feature is the camera-and-player relationship. The player character does not move sideways at all — instead, the entire stage rotates around them, reproducing horizontal movement in a pseudo way. Invisible walls placed to the player\'s left and right lock the lane of travel, so visually the stage scrolls past while the camera stays put. The character uses the Unity-chan asset, paired with official voice clips to keep the world consistent.\n\nI had wanted to add enemy characters and combat effects but ran out of bandwidth, leaving it as a pure course-style game. Even so, fully implementing 3D movement, camera control, and stage construction laid the foundation that carried into my later projects.'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/CircleStrikerLogo.png'],
@@ -326,7 +326,16 @@ function openModal(workId) {
     videoArea.innerHTML = '';
     const vid = data.video;
     if (!vid || vid.type === 'placeholder' || !vid.src) {
-        videoArea.innerHTML = '<div class="media-placeholder">' + (currentLang === 'ja' ? '準備中…' : 'Coming soon...') + '</div>';
+        // 動画が無い作品は、1枚目のサムネ画像をそのまま動画欄に表示（無ければ「準備中…」）
+        if (data.screenshots && data.screenshots.length > 0) {
+            const img = document.createElement('img');
+            img.src = data.screenshots[0];
+            img.alt = workId;
+            img.className = 'work-detail-video-thumb';
+            videoArea.appendChild(img);
+        } else {
+            videoArea.innerHTML = '<div class="media-placeholder">' + (currentLang === 'ja' ? '準備中…' : 'Coming soon...') + '</div>';
+        }
     } else if (vid.type === 'video') {
         const v = document.createElement('video');
         v.src = vid.src; v.controls = true; v.autoplay = true;

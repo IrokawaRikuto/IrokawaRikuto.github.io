@@ -838,6 +838,11 @@ section {
     border-radius: 4px;
     object-fit: cover;
 }
+/* 動画が無い作品のサムネ画像はトリミングせず全体を表示（背景は黒で letterbox） */
+.work-detail-video img.work-detail-video-thumb {
+    object-fit: contain;
+    background: #000;
+}
 .work-detail-video .media-placeholder {
     display: flex;
     align-items: center;
