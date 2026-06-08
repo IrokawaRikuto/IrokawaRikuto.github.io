@@ -2904,7 +2904,7 @@
     });
 
     // プラクティス: 難易度ボタン
-    practiceDiffSelect.querySelectorAll('.practice-diff-btn').forEach(function (btn) {
+    practiceDiffSelect.querySelectorAll('.practice-diff-btn').forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
             playSE('decide');
             diffKey = btn.dataset.diff;
@@ -2913,16 +2913,17 @@
                 b.classList.toggle('active', b === btn);
             });
         });
-        btn.addEventListener('mouseenter', function () { playSE('select'); });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
     });
 
-    // プラクティス: パターン選択ボタン
+    // プラクティス: パターン選択ボタン（getMenuItems の並び順に合わせて diffCount 分オフセット）
+    var practiceDiffCount = practiceDiffSelect.querySelectorAll('.practice-diff-btn').length;
     practiceScreen.querySelectorAll('.practice-btn').forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
             playSE('decide');
             startPractice(btn.dataset.pattern);
         });
-        btn.addEventListener('mouseenter', function () { hoverSelect(idx); });
+        btn.addEventListener('mouseenter', function () { hoverSelect(idx + practiceDiffCount); });
     });
 
     // プラクティス: 戻るボタン
