@@ -308,7 +308,7 @@ const workData = {
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/ConsoleSTG_Title.webp', 'images/ConsoleSTG_StageSelect.webp', 'images/ConsoleSTG_GamePlay.webp'],
-        download: '',
+        download: 'games/ConsoleSTG.zip',
     },
 };
 
