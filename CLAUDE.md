@@ -73,21 +73,39 @@
 - About: 履歴書ダウンロードボタン削除（PDF配置の予定もキャンセル）
 - Works: GAMMA+（2026, C++/DirectX/リメイク/個人制作）と RM Engine（2026, C++/DirectX/個人制作）を追加。両方とも開発環境は VS/DX11/Claude Code Pro、説明文は「準備中…」、スクリーンショット・動画なし
 - ミニゲーム: ランキングのセキュリティ強化（`firestore.rules` でスキーマ・型・値域を縛り update/delete 禁止、`game-firebase.js` の `submitScore` でクライアント側にも値域バリデーション、`index.html` に Firebase App Check 用 SDK と `APP_CHECK_SITE_KEY` ゲート組込み）。Firebase Console 側の Rules 公開・App Check Site Key 設定はユーザ作業として残（未完了・予定セクションに記載）
+- About: プロフィール写真追加（`images/profile.webp`、200×260枠、`object-fit: cover` + `object-position: center top` で上寄せクロップ、STARTボタン同等の `1px solid var(--accent)` 赤細枠付き）
+- About: 志望職種に「ゲームシナリオライター」「エンジニア」を追記（表記: 「ゲームプログラマー、ゲームシナリオライター、エンジニア」）
+- About: 資格欄の表記整理（J検 → 「情報検定（J検）」と正式名称＋通称併記、ビジネス文書実務検定試験 1級から「（文書部門・速度部門）」のカッコ削除）
+- 全ファイル名を英字に統一（日本語ファイル名を完全廃止）: `IRファビコン.png` → `IR_favicon.png`、`IRファビコン（白背景）.jpg` → `IR_favicon_white.jpg`、`images/東方春三校_*.png` → `Touhou_*.webp`、`images/コンソールシューティング_*.png` → `ConsoleSTG_*.webp`。SNS/クローラのURLエンコード失敗リスクを排除
+- 重い画像7枚をwebp化（合計約10.5MB → 約955KB、9割削減）: profile / PettanMaker_ConceptArt / CircleStrikerLogo / PettanMaker_Logo / Touhou_GamePlay / Touhou_Title / gamma_screenshot。profile.png は 400×520 にリサイズしてから webp 化
+- OGPメタタグ強化: `og:image` を英字ファイル名 `IR_favicon.png` に差し替え、`twitter:card` を `summary` → `summary_large_image` に変更
+- モーダル動画欄: 動画なし作品（`video.type === 'placeholder'`）でも `screenshots[0]` を `object-fit: contain` + 黒letterbox で表示（クラス `.work-detail-video-thumb`）。screenshots も無いときのみ「準備中…」表示
+- ライトボックスの alt を動的生成: `buildSSAlt(idx)` で `作品名 - N枚目` (ja) / `作品名 - N/M` (en) を生成。`openModal` / `openLightbox` / `changeScreenshot` / `lightboxNav` 全経路で同期、`currentWorkTitle` を保持
+- ミニゲーム: プラクティス選択画面で `.practice-btn` ホバー時に4個ぶん左の難易度ボタンが選択判定になっていたバグを修正。`getMenuItems()` は `.practice-diff-btn`(4個) + `.practice-btn` 結合順で返るのに `.practice-btn` 内ローカル idx をそのまま `hoverSelect` に渡していたのが原因。`hoverSelect(idx + diffCount)` に修正＋難易度ボタン側も `hoverSelect` でハイライト連動
+- RM Engine: アイコン（赤丸ロゴ）/ ロゴ / エディタ4スクショ（Launcher / SceneView / UIView / GameView）追加。サムネはロゴ表示、`制作中` タグ付与
+- RM Engine 紹介文を追加（コンセプト「このソフトひとつで何でも作れる」/ プラグイン拡張型 / ECS / 起動の軽さ / 自作物理 / 3D&2D両対応 / エディタタブ構成 / ImGui→独自GUI移行方針 / 周辺ツールのプラグイン化方針）
+- GAMMA+ 紹介文を追加（2年次GAMMAの個人ブラッシュアップ、操作感改善・各種バグ修正・攻撃/被弾/演出エフェクト追加・STAGE/UI全面刷新）
+- GAMMA 紹介文を追加（初のチーム制作、肺気胸からの復帰、リーダー補佐のTA（テクニカルアーティスト）役、デザイナー素材取り決め・UI制作・ストーリー構成、プログラマーとしてプレイヤー操作実装＋全体バグ修正、未受賞だが完走経験が以後のチーム制作観の土台に）
+- 東方春三校 紹介文を追加（記念すべき1作目、東方Projectファン由来のジャンル選定、Unityビジュアルスクリプティング、原作準拠の比率/解像度/自機速度、意欲賞受賞）
+- CIRCLESTRIKER 紹介文を追加（2作目、無双系から方向転換、ステージ全体回転による疑似横移動・透明壁による進行ライン固定、Unity-chan+公式ボイスでの世界観統一、構成力賞受賞経緯）
+- ConsoleSTG（旧コンソールシューティング）に改名（日英共通）。新スクショ3枚（Title / StageSelect / GamePlay）に差し替え（webp化済み）、配布用 `games/ConsoleSTG.zip`（約89KB）追加。カード desc の「遊びごたえのある作品に仕上がった」を「全3ステージ構成のミニゲームとして1日で完成させた」に統合し自己評価表現を事実ベースに調整
+- Sand Tetris: 配布形式を `SandTetris.exe` → `SandTetris.zip` に変更（`games/SandTetris.zip` 約20KB）。カード desc に「同色の砂がフィールド左壁から右壁まで連結したときにライン消去となる独自の消去ルールを持つ」の一文を追記（data-ja 属性と表示テキストの不整合を解消）
+- RE:GAMMA を完全削除（GAMMA+ に統合済み）: `workData.regamma` 削除、HTML側のコメントアウト版 RE:GAMMA カード削除
+- Works 並び順を更新: ぺったんメイカー / RM Engine / GAMMA+ / Sand Tetris / ConsoleSTG / GAMMA / CIRCLESTRIKER / 東方春三校（年表tooltipも同順）
 
-## 作品一覧（workData）表示順：新しい順
+## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
 |----|---------|-----|------|----------|------|----|----|
-| pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム, 制作中 | Unity / VS | ✅ | ✅ | - |
-| sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅（games/） |
-| console-shooter | ConsoleSTG | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
+| pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム, 制作中 | Unity / VS | ✅ PV | ✅ 6枚 | - |
+| rm-engine | RM Engine | 2026 | C++, DirectX, 個人制作, 制作中 | VS / DX11 / Claude Code Pro | - | ✅ 6枚 | - |
 | gamma-plus | GAMMA+ | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
-| rm-engine | RM Engine | 2026 | C++, DirectX, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
-| regamma | RE:GAMMA | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
-| gamma | GAMMA | 2025 | C++, DirectX, 課題制作：チーム | VS / DX11 | ✅ | ✅ | - |
-| circlestriker | CIRCLESTRIKER | 2024 | Unity, C#, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
-| touhou | 東方春三校 | 2024 | Unity, 課題制作：個人 | Unity / VS Code | - | ✅ | - |
+| sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ 2枚 | ✅ SandTetris.zip |
+| console-shooter | ConsoleSTG | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ 3枚 | ✅ ConsoleSTG.zip |
+| gamma | GAMMA | 2025 | C++, DirectX, 課題制作：チーム | VS / DX11 | ✅ PV | ✅ 1枚 | - |
+| circlestriker | CIRCLESTRIKER | 2024 | Unity, C#, 課題制作：個人 | Unity / VS Code | - | ✅ ロゴ | - |
+| touhou | 東方春三校 | 2024 | Unity, 課題制作：個人 | Unity | - | ✅ 2枚 | - |
 
-※ RE:GAMMAは製作中のため非表示（HTMLコメントアウト）。GAMMA+ / RM Engine は説明文「準備中…」で表示中
+※ GAMMA+ はモーダル動画欄が「準備中…」になる（screenshots / video 未追加）。RM Engine は screenshots[0]=Logo がモーダル動画欄にも自動表示される
 
 ## 隠しミニゲーム（東方風シューティング）
 - フッターの START ボタンから起動
@@ -240,10 +258,9 @@
 - キャンセルSE未対応（未用意）
 
 ## 未完了・予定
-- プロフィール写真（現在プレースホルダー）
-- 各作品のPV動画追加
-- 各作品のダウンロードURL追加
-- GAMMA+ / RM Engine の本文（説明・スクリーンショット・動画）
+- PV動画追加: RM Engine / GAMMA+ / Sand Tetris / ConsoleSTG / CIRCLESTRIKER / 東方春三校（現状は静止画のみ。ぺったんメイカー・GAMMA は追加済み）
+- 配布物追加: ぺったんメイカー / GAMMA+ / RM Engine（Sand Tetris と ConsoleSTG は zip 配布済み）
+- GAMMA+ のスクリーンショット追加（紹介文は完了、現状はモーダル動画欄が「準備中…」表示）
 - ミニゲーム使用素材クレジット（現在 Coming Soon）
 - ミニゲームの敵キャラ動作（途中）：出現パターン・移動挙動・弾幕密度などの調整継続中
 - Firebase Console 側の手動作業:
