@@ -20,12 +20,12 @@
 - ハンバーガーメニュー（モバイル）
 - トップに戻るボタン（右下、48px、スクロールで出現）
 - スクロールバー非表示（ガタつき防止）
-- ファビコン（IRファビコン.png）、ナビバーロゴ（IRファビコン.png）
+- ファビコン（IR_favicon.png）、ナビバーロゴ（IR_favicon.png）
 - Skills: C++, C#, DirectX, JavaScript, HTML, Unity, Unreal Engine, Visual Studio, VS Code, Blender, Maya, MMD, PMXEditor, AviUtl, YMM4, Studio One 6（ゲームプログラマー重要度順ソート済み）
 - ナビバーメニュー：常時表示ドロップダウン（右上ハンバーガー）。内部「オプション」に背景モーションON/OFFトグル（localStorage保存）
 - 背景アニメは `window.bgAnimation = { start, stop }` API経由で制御。デフォルトON
 - About〜Contactリンクはスマホ含め常時バナー表示（画面幅に応じて gap/font-size を段階的に縮小）
-- apple-touch-icon: `IRファビコン（白背景）.jpg` をルートに配置、`<link rel="apple-touch-icon">` で参照済み
+- apple-touch-icon: `IR_favicon_white.jpg` をルートに配置、`<link rel="apple-touch-icon">` で参照済み
 - 画像には loading="lazy" 付加済み（スキルアイコン・ワークカードサムネイル・スクリーンショット）
 - Skillsカテゴリのホバーエフェクト削除済み（クリック不可のため）
 - About: 学校、志望職種、受賞歴、資格、自己紹介文

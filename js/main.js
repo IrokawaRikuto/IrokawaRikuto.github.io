@@ -180,7 +180,7 @@ const workData = {
             en: 'My very first complete project as a programmer. Being a fan of the Touhou Project series, I naturally settled on a shoot \'em up. The build covers the genre fundamentals — aimed shots toward the player, enemy behavior patterns, and a lives system — all implemented through Unity\'s Visual Scripting. The workflow leaned heavily on visual scripting and constant lookups, so iteration was slow, but the determination to "cram in everything I could do at the time" came through, and the project earned an award at the very first contest I ever submitted to.\n\nThe areas I focused on were authenticity to the source material. The screen aspect ratio and resolution were tuned to Touhou Project\'s 4:3 layout, free assets were curated to align the look with the original, and even the player ship\'s movement speed was adjusted so the feel matched the source. This was my starting line as a programmer — and the first time I experienced "finishing a game all the way through."'
         },
         video: { type: 'placeholder', src: '' },
-        screenshots: ['images/東方春三校_Title.png', 'images/東方春三校_GamePlay.png'],
+        screenshots: ['images/Touhou_Title.png', 'images/Touhou_GamePlay.png'],
         download: '',
     },
     'circlestriker': {
@@ -306,7 +306,7 @@ const workData = {
             en: 'A side-scrolling shooter inspired by "Gradius," built entirely inside a Windows console window in C++. The project began at an in-school showcase where the theme assigned to first-year students was "console games," prompting me to revisit an assignment from my own first year and rebuild it with everything I had learned since. The guiding theme was: "How far can a game be taken using only the console window, with no image assets at all?" — so the player ship, enemies, bullets, explosion effects, and even the background stars are all expressed using ASCII characters and color information alone.\n\nRendering is built on the Windows API call WriteConsoleOutputA, transferring the entire screen as a single CHAR_INFO buffer per frame in a double-buffered approach. This eliminates the flicker inherent to printf-based output and produces smooth scrolling even at 80×25 character resolution. The font size is also raised to 36px and the window is maximized via SW_MAXIMIZE, dispelling the impression of a "small console window."\n\nThe game flow runs as a single loop: title → stage select (3 stages) → play → result. Three enemy archetypes are implemented — straight-line, vertical-strafing, and weaving — and each stage ends with a boss equipped with an HP gauge. The player ship features up to three power-up tiers that increase shot count, post-hit invincibility, a lives system, and a presentational touch where the ship faces backward while charging a shot — details added so that nothing about the controls feels rough.\n\nDevelopment combined the AI-assisted tool Claude Code with hand-written code, weaving the two together. Reading, modifying, and integrating the generated code line by line deepened my understanding of Windows API console control and rendering optimization.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshots: ['images/コンソールシューティング_Title.png', 'images/コンソールシューティング_GamePlay.png'],
+        screenshots: ['images/ConsoleShooter_Title.png', 'images/ConsoleShooter_GamePlay.png'],
         download: '',
     },
 };
