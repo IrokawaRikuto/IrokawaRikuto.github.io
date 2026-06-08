@@ -232,8 +232,8 @@ const workData = {
         award: null,
         env: 'Visual Studio / DirectX11 / Claude Code Pro',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: '2年次のチーム制作『GAMMA』を、当時の心残りを踏まえて個人でブラッシュアップしたリメイク作品。ゲームコンセプトはそのままに、操作感の改善、各種バグの修正、攻撃・被弾・演出系のエフェクト追加、STAGE構成とUIの全面刷新を行い、ゲームとしての完成度を一段引き上げた。「当時もっとこうしたかった」を一つずつ潰し、見た目と触り心地の両面から仕上げ直した一作。',
+            en: 'A solo remake of GAMMA, the team project I worked on in my 2nd year, revisited and brushed up with everything I had learned since. The core game concept is unchanged, but controls have been refined, bugs squashed, attack/hit/presentation effects added, and the stage layout and UI fully redesigned — addressing the issues I could not resolve back then and pushing the overall polish another step forward.'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: [],
@@ -242,17 +242,17 @@ const workData = {
     'rm-engine': {
         title: { ja: 'RM Engine', en: 'RM Engine' },
         year: '2026',
-        tags: ['C++', 'DirectX', { ja: '個人制作', en: 'Personal' }],
+        tags: ['C++', 'DirectX', { ja: '個人制作', en: 'Personal' }, { ja: '制作中', en: 'In Development' }],
         award: null,
         env: 'Visual Studio / DirectX11 / Claude Code Pro',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: '「このソフトひとつで何でも作れる」をコンセプトに開発を進めている、プラグイン拡張型のゲームエンジン。既存のゲームエンジンは起動やデバッグ実行に時間がかかるという課題を解消するため、ECS（Entity Component System）アーキテクチャを採用して処理を軽量化し、エディタ起動からゲーム実行までを数秒で完結できる軽快さを目標にしている。\n\n物理挙動は外部ライブラリに頼らず C++ ですべて自作しており、3D物理シミュレーションはもちろん2Dゲームも同一エンジンで開発できる構成にしている。エディタは「シーンビュー / ゲームビュー / UIビュー / アニメーター」のタブ切替式で、ヒエラルキー・インスペクター・アセットブラウザを備え、Position / Rotation / Scale / Color / Texture などをスライダーや数値入力からリアルタイムに編集できる。GUIは現在 ImGui をベースにしているが、最終的には自前のGUIフレームワークへ置き換える方針。UIビューでは独自実装のUIウィンドウを通じてHPバーや各種ゲージなどのレイアウトを直感的に配置でき、解像度に合わせた比率調整や透明度などの細かい調整もインスペクターから行える。\n\n加えて、ゲーム開発に必要な周辺ツールもすべてエンジン内で完結させるべく、作曲ツール・画像編集・3Dモデリング・ストーリープロット・シェーダー作成・ペイントツールなどをプラグイン形式で順次搭載していく予定。外部依存をできる限り減らし、コアからツール群まで一貫して自前で組み上げていくことを開発方針としている。',
+            en: 'A plugin-extensible game engine in development under the concept of "a single tool that can build anything." Built around an Entity Component System (ECS) architecture to keep runtime processing light, the engine aims to solve a long-standing pain point with existing engines — slow startup and debug iteration — by reaching from editor launch to in-game playback in just a few seconds.\n\nPhysics is implemented from scratch in C++ without relying on external libraries, and the same engine handles both 3D physics simulation and 2D games. The editor uses a tab-switched layout — Scene View / Game View / UI View / Animator — with hierarchy, inspector, and asset browser panels that let Position / Rotation / Scale / Color / Texture and more be edited in real time via sliders and numeric input. The GUI is currently built on ImGui but will be replaced with a custom in-house GUI framework. The UI View uses an original UI window implementation, letting HUD elements like HP bars and gauges be placed intuitively, with fine-grained control over aspect-ratio fitting and opacity from the inspector.\n\nOn top of that, all the peripheral tools normally required for game development — music composition, image editing, 3D modeling, story plotting, shader authoring, paint tools — are planned to be folded into the engine as plugins. The development policy is to minimize external dependencies and build everything from the core to the toolset in-house, end to end.'
         },
         video: { type: 'placeholder', src: '' },
         screenshots: [
-            'images/RMEngine_Icon.png',
             'images/RMEngine_Logo.png',
+            'images/RMEngine_Icon.png',
             'images/RMEngine_Launcher.png',
             'images/RMEngine_SceneView.png',
             'images/RMEngine_UIView.png',
