@@ -385,6 +385,16 @@ section {
     letter-spacing: 0.1em;
 }
 
+.profile-img {
+    width: 200px;
+    height: 260px;
+    object-fit: cover;
+    object-position: center top;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    display: block;
+}
+
 .about-text {
     background: rgba(255, 255, 255, 0.04);
     border-radius: 12px;
