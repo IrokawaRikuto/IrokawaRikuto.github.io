@@ -120,12 +120,22 @@ window.addEventListener('scroll', () => {
 // ===== スクリーンショットカルーセル状態 =====
 let currentScreenshots = [];
 let currentSSIndex = 0;
+let currentWorkTitle = '';
+
+function buildSSAlt(index) {
+    const n = currentScreenshots.length;
+    const ord = (index + 1) + (currentLang === 'ja' ? '枚目' : (n > 1 ? '/' + n : ''));
+    return currentWorkTitle ? currentWorkTitle + ' - ' + ord : ord;
+}
 
 function changeScreenshot(dir) {
     if (currentScreenshots.length <= 1) return;
     currentSSIndex = (currentSSIndex + dir + currentScreenshots.length) % currentScreenshots.length;
     const img = document.querySelector('.work-detail-screenshot img');
-    if (img) img.src = currentScreenshots[currentSSIndex];
+    if (img) {
+        img.src = currentScreenshots[currentSSIndex];
+        img.alt = buildSSAlt(currentSSIndex);
+    }
 }
 
 // ===== ライトボックス =====
@@ -139,6 +149,7 @@ const lightboxNext = lightbox.querySelector('.lightbox-next');
 function openLightbox(index) {
     currentSSIndex = index;
     lightboxImg.src = currentScreenshots[currentSSIndex];
+    lightboxImg.alt = buildSSAlt(currentSSIndex);
     lightboxPrev.style.display = currentScreenshots.length > 1 ? '' : 'none';
     lightboxNext.style.display = currentScreenshots.length > 1 ? '' : 'none';
     lightbox.classList.add('active');
@@ -152,9 +163,13 @@ function lightboxNav(dir) {
     if (currentScreenshots.length <= 1) return;
     currentSSIndex = (currentSSIndex + dir + currentScreenshots.length) % currentScreenshots.length;
     lightboxImg.src = currentScreenshots[currentSSIndex];
+    lightboxImg.alt = buildSSAlt(currentSSIndex);
     // モーダル側のサムネイルも同期
     const modalImg = document.querySelector('.work-detail-screenshot img');
-    if (modalImg) modalImg.src = currentScreenshots[currentSSIndex];
+    if (modalImg) {
+        modalImg.src = currentScreenshots[currentSSIndex];
+        modalImg.alt = buildSSAlt(currentSSIndex);
+    }
 }
 
 lightboxClose.addEventListener('click', closeLightbox);
@@ -180,7 +195,7 @@ const workData = {
             en: 'My very first complete project as a programmer. Being a fan of the Touhou Project series, I naturally settled on a shoot \'em up. The build covers the genre fundamentals — aimed shots toward the player, enemy behavior patterns, and a lives system — all implemented through Unity\'s Visual Scripting. The workflow leaned heavily on visual scripting and constant lookups, so iteration was slow, but the determination to "cram in everything I could do at the time" came through, and the project earned an award at the very first contest I ever submitted to.\n\nThe areas I focused on were authenticity to the source material. The screen aspect ratio and resolution were tuned to Touhou Project\'s 4:3 layout, free assets were curated to align the look with the original, and even the player ship\'s movement speed was adjusted so the feel matched the source. This was my starting line as a programmer — and the first time I experienced "finishing a game all the way through."'
         },
         video: { type: 'placeholder', src: '' },
-        screenshots: ['images/Touhou_Title.png', 'images/Touhou_GamePlay.png'],
+        screenshots: ['images/Touhou_Title.webp', 'images/Touhou_GamePlay.webp'],
         download: '',
     },
     'circlestriker': {
@@ -194,7 +209,7 @@ const workData = {
             en: 'My second project, built from scratch in Unity / C#. The original concept was a hack-and-slash where you mow down enemies with a sword, but partway through development I pivoted to a course-based 3D action game where the player advances through a giant cylindrical stage toward a goal.\n\nThe defining design feature is the camera-and-player relationship. The player character does not move sideways at all — instead, the entire stage rotates around them, reproducing horizontal movement in a pseudo way. Invisible walls placed to the player\'s left and right lock the lane of travel, so visually the stage scrolls past while the camera stays put. The character uses the Unity-chan asset, paired with official voice clips to keep the world consistent.\n\nI had wanted to add enemy characters and combat effects but ran out of bandwidth, leaving it as a pure course-style game. Even so, fully implementing 3D movement, camera control, and stage construction laid the foundation that carried into my later projects. The core idea — rotating the entire massive stage itself — was recognized at the Original TPS In-School Competition, where the project earned the Composition Award.'
         },
         video: { type: 'placeholder', src: '' },
-        screenshots: ['images/CircleStrikerLogo.png'],
+        screenshots: ['images/CircleStrikerLogo.webp'],
         download: '',
     },
     'gamma': {
@@ -208,21 +223,7 @@ const workData = {
             en: 'My very first team project, created during the 2nd-year HEW exhibition: a puzzle action game built around the unique concept of the player transforming into a shadow and traversing the shadows of objects as footholds — from planning to release as a full team effort.\n\nShortly after the team was formed, I was diagnosed with a pneumothorax that sidelined me from development for a stretch of time. After recovering, I returned in a leader-support role as the team\'s Technical Artist — coordinating asset submission formats with the designers, building the UI myself, and shaping the game\'s story alongside the planner. As a programmer, I implemented the player controls, and in the final phase I took on bug fixes across the entire codebase.\n\nWe did not place at the exhibition, but completing the project from concept to release — as a full team, through my first team experience and a mid-development health setback — was a formative experience that shaped how I approach team-based development to this day.'
         },
         video: { type: 'video', src: 'videos/gamma_pv.mp4' },
-        screenshots: ['images/gamma_screenshot.jpg'],
-        download: '',
-    },
-    'regamma': {
-        title: { ja: 'RE:GAMMA', en: 'RE:GAMMA' },
-        year: '2026',
-        tags: ['C++', 'DirectX', { ja: 'リメイク', en: 'Remake' }, { ja: '個人制作', en: 'Personal' }],
-        award: null,
-        env: 'Visual Studio / DirectX11 / Claude Code Pro',
-        desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
-        },
-        video: { type: 'placeholder', src: '' },
-        screenshots: [],
+        screenshots: ['images/gamma_screenshot.webp'],
         download: '',
     },
     'gamma-plus': {
@@ -273,8 +274,8 @@ const workData = {
         video: { type: 'video', src: 'videos/PettanMaker_PV.mp4' },
         screenshots: [
             'images/PettanMaker_Title.webp',
-            'images/PettanMaker_ConceptArt.png',
-            'images/PettanMaker_Logo.png',
+            'images/PettanMaker_ConceptArt.webp',
+            'images/PettanMaker_Logo.webp',
             'images/PettanMaker_GamePlay.webp',
             'images/PettanMaker_Sticker.webp',
             'images/PettanMaker_Clear.webp'
@@ -403,11 +404,12 @@ function openModal(workId) {
     const screenshots = data.screenshots || [];
     currentScreenshots = screenshots;
     currentSSIndex = 0;
+    currentWorkTitle = typeof data.title === 'object' ? data.title[lang] : data.title;
     ssArea.innerHTML = '';
     if (screenshots.length > 0) {
         const img = document.createElement('img');
         img.src = screenshots[0];
-        img.alt = 'screenshot';
+        img.alt = buildSSAlt(0);
         img.loading = 'lazy';
         img.addEventListener('click', () => openLightbox(currentSSIndex));
         ssArea.appendChild(img);
