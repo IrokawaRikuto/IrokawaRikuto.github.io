@@ -294,7 +294,7 @@ const workData = {
         },
         video: { type: 'placeholder', src: '' },
         screenshots: ['images/SANDTETRIS_Title.png', 'images/SANDTETRIS_GamePlay.png'],
-        download: 'games/SandTetris.exe',
+        download: 'games/SandTetris.zip',
     },
     'console-shooter': {
         title: { ja: 'ConsoleSTG', en: 'ConsoleSTG' },

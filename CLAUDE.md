@@ -44,7 +44,7 @@
 - meta description / OGPタグ追加済み
 - モバイル時の年表を縦ライン形式に変更（中央ライン、左に年号、右に吹き出し、タッチ対応）
 - 作品カードのscroll-margin-top: 80px（ナビバーに隠れない）
-- ダウンロード用ファイルを`games/`フォルダに格納（SandTetris.exe）
+- ダウンロード用ファイルを`games/`フォルダに格納（SandTetris.zip / ConsoleSTG.zip）
 - Sand Tetrisの説明文を技術詳細込みの長文に刷新（セルオートマトン物理、最適化手法、AI協業方針）
 - ConsoleSTG（旧称：コンソールシューティング）の説明文を刷新（制作経緯・ASCII描画方針・WriteConsoleOutputAダブルバッファ・ゲーム構成・AI協業方針）
 - ぺったんメイカー（2026, Unity/C#, 課題制作:チーム）追加: PV動画（`videos/PettanMaker_PV.mp4`）、スクリーンショット6枚（Title/ConceptArt/Logo/GamePlay/Sticker/Clear）、説明文（敵をシール化→からだに貼って効果発動でボス撃破、ステージごとに童話モチーフ、STAGE1=不思議の国のアリス／ハートの女王、HAL3年次チーム制作 NullPointerGames）
