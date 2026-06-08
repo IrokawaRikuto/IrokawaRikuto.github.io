@@ -46,7 +46,7 @@
 - 作品カードのscroll-margin-top: 80px（ナビバーに隠れない）
 - ダウンロード用ファイルを`games/`フォルダに格納（SandTetris.exe）
 - Sand Tetrisの説明文を技術詳細込みの長文に刷新（セルオートマトン物理、最適化手法、AI協業方針）
-- コンソールシューティングの説明文を刷新（制作経緯・ASCII描画方針・WriteConsoleOutputAダブルバッファ・ゲーム構成・AI協業方針）
+- ConsoleSTG（旧称：コンソールシューティング）の説明文を刷新（制作経緯・ASCII描画方針・WriteConsoleOutputAダブルバッファ・ゲーム構成・AI協業方針）
 - ぺったんメイカー（2026, Unity/C#, 課題制作:チーム）追加: PV動画（`videos/PettanMaker_PV.mp4`）、スクリーンショット6枚（Title/ConceptArt/Logo/GamePlay/Sticker/Clear）、説明文（敵をシール化→からだに貼って効果発動でボス撃破、ステージごとに童話モチーフ、STAGE1=不思議の国のアリス／ハートの女王、HAL3年次チーム制作 NullPointerGames）
 - 「制作中」タグ（`.tag-wip` 黄色ハイライト #ffb800）追加。`workData.tags` に `{ja:'制作中', en:'In Development'}` を含めると Works一覧・モーダル両方で黄色表示。モーダル側は `openModal` の tag レンダリングで `t.ja === '制作中'` を判定して `tag-wip` クラスを付与
 - モーダル説明文の改行対応（white-space: pre-line）
@@ -79,7 +79,7 @@
 |----|---------|-----|------|----------|------|----|----|
 | pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム, 制作中 | Unity / VS | ✅ | ✅ | - |
 | sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | ✅（games/） |
-| console-shooter | コンソールシューティング | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
+| console-shooter | ConsoleSTG | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ | - |
 | gamma-plus | GAMMA+ | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | rm-engine | RM Engine | 2026 | C++, DirectX, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | regamma | RE:GAMMA | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
