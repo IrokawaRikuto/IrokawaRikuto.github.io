@@ -204,8 +204,8 @@ const workData = {
         award: null,
         env: 'Visual Studio / DirectX11',
         desc: {
-            ja: '準備中…',
-            en: 'Coming soon...'
+            ja: '2年次の未来創造展（HEW）にてチーム制作したパズルアクションゲーム。プレイヤーが影に変身し、物体の影を足場にして進む独自のコンセプトを軸に、チームで企画から完成までを走り抜けた、自身にとって初のチーム制作作品。\n\nチーム結成直後に肺気胸を患い、しばらく制作に参加できない時期があったが、復帰後はリーダー補佐の立場で、TA（テクニカルアーティスト）としてチームに加わった。デザイナーへの素材提出フォーマットの取り決め、自身でのUI制作、プランナーと相談しながらのゲームストーリー構成に携わり、プログラマーとしてはプレイヤーの操作実装を担当。最終フェーズではチーム全体を横断するバグ修正にも回った。\n\n受賞には至らなかったものの、初めてのチーム制作、しかも病気というトラブルを挟みながらも、企画から完成・発表までをチーム全員で完走できた経験は大きく、その後のチーム制作観の土台になった作品。',
+            en: 'My very first team project, created during the 2nd-year HEW exhibition: a puzzle action game built around the unique concept of the player transforming into a shadow and traversing the shadows of objects as footholds — from planning to release as a full team effort.\n\nShortly after the team was formed, I was diagnosed with a pneumothorax that sidelined me from development for a stretch of time. After recovering, I returned in a leader-support role as the team\'s Technical Artist — coordinating asset submission formats with the designers, building the UI myself, and shaping the game\'s story alongside the planner. As a programmer, I implemented the player controls, and in the final phase I took on bug fixes across the entire codebase.\n\nWe did not place at the exhibition, but completing the project from concept to release — as a full team, through my first team experience and a mid-development health setback — was a formative experience that shaped how I approach team-based development to this day.'
         },
         video: { type: 'video', src: 'videos/gamma_pv.mp4' },
         screenshots: ['images/gamma_screenshot.jpg'],
