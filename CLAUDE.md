@@ -92,6 +92,7 @@
 - Sand Tetris: 配布形式を `SandTetris.exe` → `SandTetris.zip` に変更（`games/SandTetris.zip` 約20KB）。カード desc に「同色の砂がフィールド左壁から右壁まで連結したときにライン消去となる独自の消去ルールを持つ」の一文を追記（data-ja 属性と表示テキストの不整合を解消）
 - RE:GAMMA を完全削除（GAMMA+ に統合済み）: `workData.regamma` 削除、HTML側のコメントアウト版 RE:GAMMA カード削除
 - Works 並び順を更新: ぺったんメイカー / RM Engine / GAMMA+ / Sand Tetris / ConsoleSTG / GAMMA / CIRCLESTRIKER / 東方春三校（年表tooltipも同順）
+- ミニゲーム: 難易度・出現パターン・ボムを東方準拠に調整。①難易度=`DIFF`に `fireRateMul` を追加し発射間隔（旧 `基準F / bullets`）を密度と分離→`基準F × fireRateMul`、Easy/Hard/Lunaticのカーブを引き直し（Normalは数値現状維持）。②出現パターン=`buildWaveScript` を振り付け型に改良（同時出現最大2かつ軽量のみ／重編成・砲台は単独スロットで連続禁止＋間隔確保／stage・難易度で重み付け／stage上限5でクランプ）。③ボム=`launchBombOrbs` 発動時に画面上の敵弾を全消去（緊急回避ボム準拠、以降はオーブが追撃掃討）
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -117,7 +118,7 @@
   - Firebase読込/書込失敗は `console.error('[Ranking] ...')` で可視化
   - セキュリティ: `firestore.rules` でスキーマ・型・値域（name 1-12文字 / score 0-99999999 int / difficulty ∈ {easy,normal,hard,lunatic} / date == request.time）を縛り、update/delete は全面禁止。クライアント側でも `submitScore` で同じ値域に丸める二重防御。Firebase App Check (reCAPTCHA v3) を index.html に組み込み済み（`APP_CHECK_SITE_KEY` が空の間は無効、Site Key を入れると自動有効化）
   - Firebase Web SDK の apiKey は Firebase の設計上「公開前提」（プロジェクト識別子であって認可キーではない）。隠すのではなく Security Rules + App Check で防御する方針
-- 4難易度（Easy/Normal/Hard/Lunatic）。ボスHPは固定600（難易度非依存）、変化するのは弾幕密度（bullets）、速度（speed）、自機狙い弾数（aimedCount: 1/3/5/7）、連射弾数（wayCount: 3/5/7/9）
+- 4難易度（Easy/Normal/Hard/Lunatic）。ボスHPは固定600（難易度非依存）。Normalを基準(=1.0)に東方準拠で再設計した `DIFF`：弾幕密度（bullets: 0.55/1.0/1.45/1.95）、発射間隔倍率（fireRateMul: 1.5/1.0/0.74/0.6 ＝ 小さいほど速射。発射間隔 = 基準F × fireRateMul）、弾速（speed: 0.82/1.0/1.18/1.35）、自機狙い弾数（aimedCount: 1/3/5/7）、連射弾数（wayCount: 3/5/7/9）。発射間隔は従来 `基準F / bullets` だったが、密度と発射頻度を分離するため `基準F × fireRateMul` に変更（Normalは数値上現状維持）
 - 難易度配色: Easy=緑 #44ff44 / Normal=青 #44aaff / Hard=赤 #ff4444 / Lunatic=紫 #c466ff。難易度選択ボタン・ランキングタブ・HUDのSTAGE表示すべてで共通（JS側 `DIFF_COLORS` も同値）
 - ランキング画面レイアウト: 難易度タブを左に縦並び（`.ranking-body` flex 内、tabs幅84px）、右にスコアリストを表示。Back/Retry/Title などのボタンは `.ranking-body` の下に `text-align: right` で右下配置
 - モバイル対応（スライドパッド + BOMB/SLOWボタン、自動発射、キャンバス直下・詳細情報の上に配置）。表示条件は `@media (hover: none) and (pointer: coarse)` のタッチ端末のみ（PCで窓を狭めても出ない）
@@ -148,7 +149,8 @@
 - ホーミング: 攻撃対象（敵/ボス）優先、いない場合は敵弾を追尾
 - **各オーブは敵1体に対し最大1回しかダメージ判定を持たない**（`hitRefs` で重複防止）。ヒット後はその場で減速し次ターゲットを探す
 - 雑魚ダメージ: 8/接触、ボスダメージ: 18/接触（6オーブが全員ヒットすれば累計48 / 108、難易度非依存。中型HP30=4オーブ、大型HP100=ボム単発不可）
-- **敵弾消去はボム弾と直接接触したときのみ**（爆発による範囲消去は廃止）
+- **発動した瞬間に画面上の敵弾を全消去**（東方の緊急回避ボム準拠。`launchBombOrbs` 冒頭で `eBullets` を全 `spawnDeleteEffect`＋score加算してクリア）。その後の新規弾は虹色オーブが追撃で掃討
+- 発動後に新たに撃たれた敵弾の消去は、ボム弾と直接接触したときのみ（爆発による範囲消去は廃止）
 - 画面端で軽くバウンドして留まる
 - ボム中プレイヤー無敵（240F、bomb残時間と同じ）
 - 発動時にアイテム全回収
@@ -200,7 +202,7 @@
 - スプライト素材: 弾（小・中・大・星・楔・氷・札）、ボス魔法陣、弾消去エフェクト、ボスHPバー
 
 ### 敵出現パターン（Wave Script）
-- 最大3パターン同時出現
+- ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
 - topAimed=降下狙撃 / topAimedHeavy=重降下狙撃: 上部停止→自機狙い一斉射撃→退場

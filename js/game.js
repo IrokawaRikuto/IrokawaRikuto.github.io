@@ -112,13 +112,17 @@
     var ITEM_AUTO_COLLECT_Y = 100;
     var GRAZE_RADIUS = 24;
 
-    // aimedCount: 自機狙い弾の本数（1/3/5/7）
-    // wayCount: way系連射弾の基準本数（3/5/7/9）。way5/fan 等は +2 して使う
+    // 東方準拠の難易度設計。Normal を基準(=1.0)に、弾速・密度・発射頻度・自機狙い精度を段階的に。
+    //  bullets     : リング/バラマキ系の弾数倍率（密度）
+    //  fireRateMul : 発射間隔の倍率（小さいほど速射。間隔 = 基準F × fireRateMul）
+    //  speed       : 弾速倍率
+    //  aimedCount  : 自機狙い弾の本数（1/3/5/7）
+    //  wayCount    : way系連射弾の基準本数（3/5/7/9）。way5/fan 等は +2 して使う
     var DIFF = {
-        easy:    { bullets: 0.5, speed: 0.8, aimedCount: 1, wayCount: 3, label: 'Easy' },
-        normal:  { bullets: 1.0, speed: 1.0, aimedCount: 3, wayCount: 5, label: 'Normal' },
-        hard:    { bullets: 1.5, speed: 1.2, aimedCount: 5, wayCount: 7, label: 'Hard' },
-        lunatic: { bullets: 2.0, speed: 1.4, aimedCount: 7, wayCount: 9, label: 'Lunatic' }
+        easy:    { bullets: 0.55, fireRateMul: 1.50, speed: 0.82, aimedCount: 1, wayCount: 3, label: 'Easy' },
+        normal:  { bullets: 1.00, fireRateMul: 1.00, speed: 1.00, aimedCount: 3, wayCount: 5, label: 'Normal' },
+        hard:    { bullets: 1.45, fireRateMul: 0.74, speed: 1.18, aimedCount: 5, wayCount: 7, label: 'Hard' },
+        lunatic: { bullets: 1.95, fireRateMul: 0.60, speed: 1.35, aimedCount: 7, wayCount: 9, label: 'Lunatic' }
     };
 
     // ===== State =====
@@ -614,6 +618,12 @@
     function launchBombOrbs() {
         bombOrbs = [];
         forceCollectAllItems(); // ボム発動時にアイテム全回収
+        // 東方の緊急回避ボム準拠：発動した瞬間に画面上の敵弾を全消去（以降は虹色オーブが追撃で掃討）
+        for (var b = 0; b < eBullets.length; b++) {
+            spawnDeleteEffect(eBullets[b].x, eBullets[b].y);
+            score += 10;
+        }
+        eBullets = [];
         for (var i = 0; i < BOMB_ORB_COUNT; i++) {
             var a = (Math.PI * 2 / BOMB_ORB_COUNT) * i - Math.PI / 2;
             bombOrbs.push({
@@ -821,18 +831,18 @@
         if (type === 'small') {
             e.hp = 1; e.maxHp = 1; e.size = 8;
             e.speed = 1.5 + Math.random() * 1;
-            e.fireRate = Math.floor(120 / diff.bullets);
+            e.fireRate = Math.floor(120 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('small');
             if (patRoll > 0.7) { e.pattern = 'sine'; e.baseX = Math.max(50, Math.min(W - 50, e.x)); }
         } else if (type === 'medium') {
             e.hp = 30; e.maxHp = 30; e.size = 14;
             e.speed = 1 + Math.random() * 0.5;
-            e.fireRate = Math.floor(70 / diff.bullets);
+            e.fireRate = Math.floor(70 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('medium');
             if (patRoll > 0.5) { e.pattern = 'sine'; e.baseX = Math.max(55, Math.min(W - 55, e.x)); }
         } else if (type === 'large') {
             e.hp = 100; e.maxHp = 100; e.size = 20; e.speed = 0.4;
-            e.fireRate = Math.floor(45 / diff.bullets);
+            e.fireRate = Math.floor(45 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('large');
             e.pattern = 'hover'; e.targetY = 60 + Math.random() * 60;
         }
@@ -851,7 +861,7 @@
                 x: startX - dir * spacing * i,
                 y: baseY,
                 hp: 1, maxHp: 1, speed: spd, type: 'small',
-                pattern: 'drift', fireRate: Math.floor(110 / diff.bullets),
+                pattern: 'drift', fireRate: Math.floor(110 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 60),
                 size: 8, age: 0, baseX: 0, dir: dir,
                 bulletPattern: pickBulletPattern('small')
@@ -874,7 +884,7 @@
                 pathT: -i * 0.10,
                 pathSpeed: 1 / duration,
                 pathStartX: startX, pathEndX: endX, pathPeakY: peakY,
-                fireRate: Math.floor(70 / diff.bullets),
+                fireRate: Math.floor(70 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 30),
                 size: 8, age: 0, baseX: 0, dir: side === 0 ? 1 : -1,
                 bulletPattern: 'down'
@@ -892,7 +902,7 @@
                 hp: 1, maxHp: 1, speed: 1.4, type: 'small',
                 pattern: 'sCurve',
                 entrySide: side, entryX: startX,
-                fireRate: Math.floor(100 / diff.bullets),
+                fireRate: Math.floor(100 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 40),
                 size: 8, age: 0, baseX: 0, dir: side,
                 bulletPattern: 'aimed'
@@ -910,7 +920,7 @@
                 hp: 1, maxHp: 1, speed: 1.5, type: 'small',
                 pattern: 'zCurve',
                 entrySide: side, entryX: startX,
-                fireRate: Math.floor(110 / diff.bullets),
+                fireRate: Math.floor(110 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 40),
                 size: 8, age: 0, baseX: 0, dir: side,
                 bulletPattern: 'down'
@@ -926,7 +936,7 @@
             var ex = 30 + spacing * i;
             enemies.push({
                 x: ex, y: -15, hp: 1, maxHp: 1, speed: 1.0, type: 'small',
-                pattern: 'topHover', fireRate: Math.floor(70 / diff.bullets),
+                pattern: 'topHover', fireRate: Math.floor(70 * diff.fireRateMul),
                 fireTimer: 0,
                 size: 8, age: 0, baseX: ex, dir: 1,
                 bulletPattern: 'aimed',
@@ -943,7 +953,7 @@
             enemies.push({
                 x: positions[i].x, y: -20,
                 hp: 80, maxHp: 80, speed: 0.8, type: 'large',
-                pattern: 'hover', fireRate: Math.floor(35 / diff.bullets),
+                pattern: 'hover', fireRate: Math.floor(35 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 20),
                 size: 20, age: 0, baseX: positions[i].x, dir: 1,
                 bulletPattern: 'turretDual',
@@ -957,34 +967,49 @@
     var waveScript = [];
     var waveScriptIdx = 0;
 
+    // 道中ウェーブを「振り付け」して生成する。東方道中の緩急を意識し、
+    //  - 同時出現は最大2（しかも両方とも軽量パターンのときだけ）
+    //  - 重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロット
+    //  - 重いスロットは連続させず、直後に余裕（長めの間隔）を取る
+    //  - 使えるパターンと出現確率を stage（ループ回数, 上限あり）と難易度で重み付け
     function buildWaveScript() {
         waveScript = [];
         waveScriptIdx = 0;
         var t = 30;
-        var stage = waveIndex;
-        var stageScale = 1 + stage * 0.15;
+        var stage = Math.min(waveIndex, 5);     // ループ毎の難易度上昇に上限（破綻防止）
+        var stageScale = 1 + stage * 0.12;
+        var diffW = ({ easy: 0, normal: 1, hard: 2, lunatic: 3 })[diffKey];
+        if (diffW === undefined) diffW = 1;
 
-        // 基本パターンプール（1面から中型・大型も混ぜる）
-        var pool = ['formation', 'sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'mediumEscort', 'largeTank'];
-        if (stage >= 1) { pool.push('topAimed', 'invertedUL', 'invertedUR'); }
-        if (stage >= 2) { pool.push('sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'dualTurret'); }
-        if (stage >= 3) { pool.push('topAimedHeavy', 'invertedUL', 'invertedUR'); }
+        // 軽量パターン（同時出現を許す）
+        var lightPool = ['formation', 'sCurveL', 'sCurveR', 'zCurveL', 'zCurveR'];
+        if (stage >= 1 || diffW >= 1) lightPool.push('topAimed', 'invertedUL', 'invertedUR');
+        // 重量パターン（必ず単独スロット）
+        var heavyPool = ['mediumEscort', 'largeTank'];
+        if (stage >= 2 || diffW >= 2) heavyPool.push('topAimedHeavy');
+        if (stage >= 2 || diffW >= 3) heavyPool.push('dualTurret');
 
-        // シャッフル
-        var shuffled = [];
-        var copy = pool.slice();
-        while (copy.length > 0) shuffled.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-        var eventCount = Math.min(22, 14 + stage);
-        for (var i = 0; i < eventCount; i++) {
-            // 最大3パターン同時出現
-            var simultaneous = 1 + Math.floor(Math.random() * 3); // 1~3
-            for (var s = 0; s < simultaneous && i + s < eventCount; s++) {
-                var pat = shuffled[(i + s) % shuffled.length];
-                waveScript.push({ time: t, pattern: pat });
+        var slots = Math.min(11, 7 + stage);    // ウェーブ内の「山」の数
+        var lastHeavy = -2;                      // 重いスロットを連続させない
+        for (var i = 0; i < slots; i++) {
+            var canHeavy = heavyPool.length > 0 && (i - lastHeavy) >= 2 && i > 0;
+            var heavyChance = 0.16 + 0.06 * diffW + 0.04 * stage;
+            if (canHeavy && Math.random() < heavyChance) {
+                // 重編成は単独。直後にやや長めの間隔で立て直す時間を作る
+                waveScript.push({ time: t, pattern: pick(heavyPool) });
+                lastHeavy = i;
+                t += Math.max(220, Math.floor(440 / stageScale));
+            } else {
+                // 軽量パターン。確率で2個目を同時出現（両方とも軽量＝弾幕が破綻しない）
+                waveScript.push({ time: t, pattern: pick(lightPool) });
+                var doubleChance = 0.10 + 0.10 * diffW + 0.04 * stage;
+                if (Math.random() < doubleChance) {
+                    waveScript.push({ time: t, pattern: pick(lightPool) });
+                }
+                t += Math.max(150, Math.floor(330 / stageScale));
             }
-            i += simultaneous - 1;
-            t += Math.max(150, Math.floor(360 / stageScale));
         }
         bossInterval = t + 300;
     }
@@ -1490,7 +1515,7 @@
         } else {
             updateBossMovement();
             boss.phaseTimer++; boss.fireTimer++;
-            var fireRate = Math.floor(30 / diff.bullets);
+            var fireRate = Math.floor(30 * diff.fireRateMul);
             if (boss.fireTimer >= fireRate) { boss.fireTimer = 0; fireBossBullets(); }
             if (boss.phaseTimer > 360) {
                 if (practiceMode) {
@@ -1543,7 +1568,7 @@
                 hp: 30, maxHp: 30, speed: 1.5,
                 type: 'spawner',
                 pattern: 'spawnerHover',
-                fireRate: Math.floor(55 / diff.bullets),
+                fireRate: Math.floor(55 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 40),
                 size: 14, age: 0, baseX: 0, dir: 1,
                 bulletPattern: 'spawnerRing',
