@@ -928,20 +928,26 @@
         }
     }
 
-    // 画面上部に出現して自機狙い一斉射撃後に退場
-    function spawnTopAimedWave(count) {
+    // 画面上部に降下→停止し、規定数だけ射撃してから無射撃でまっすぐ降りていく狙撃編隊。
+    //  heavy=false（降下狙撃「滝」）: 真下に20発をスキマなく連射
+    //  heavy=true （重降下狙撃）    : 自機狙い1wayを40発撃ち続ける
+    // 停止位置(targetY)はウェーブ全体で共通＝横一列に揃える
+    function spawnTopAimedWave(count, heavy) {
         count = count || (5 + Math.floor(Math.random() * 4));
         var spacing = (W - 60) / (count - 1 || 1);
+        var stopY = 40 + Math.random() * 20; // ウェーブ共通の停止Y（横一列に揃える）
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
                 x: ex, y: -15, hp: 1, maxHp: 1, speed: 1.0, type: 'small',
-                pattern: 'topHover', fireRate: Math.floor(70 * diff.fireRateMul),
+                pattern: 'topHover',
                 fireTimer: 0,
                 size: 8, age: 0, baseX: ex, dir: 1,
-                bulletPattern: 'aimed',
-                targetY: 35 + Math.random() * 25,
-                hoverTime: 0, maxHover: 150 + Math.floor(Math.random() * 60)
+                snipeMode: heavy ? 'aimed' : 'waterfall',
+                shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
+                shotsToFire: heavy ? 40 : 20,
+                shotsFired: 0,
+                targetY: stopY
             });
         }
     }
@@ -981,9 +987,9 @@
         var diffW = ({ easy: 0, normal: 1, hard: 2, lunatic: 3 })[diffKey];
         if (diffW === undefined) diffW = 1;
 
-        // 軽量パターン（同時出現を許す）
-        var lightPool = ['formation', 'sCurveL', 'sCurveR', 'zCurveL', 'zCurveR'];
-        if (stage >= 1 || diffW >= 1) lightPool.push('topAimed', 'invertedUL', 'invertedUR');
+        // 軽量パターン（同時出現を許す）。出現するのはプラクティスにある道中パターンのみ
+        var lightPool = ['sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'topAimed'];
+        if (stage >= 1 || diffW >= 1) lightPool.push('invertedUL', 'invertedUR');
         // 重量パターン（必ず単独スロット）
         var heavyPool = ['mediumEscort', 'largeTank'];
         if (stage >= 2 || diffW >= 2) heavyPool.push('topAimedHeavy');
@@ -1017,8 +1023,8 @@
     function executeWaveEvent(pat) {
         switch (pat) {
             case 'formation': spawnDriftFormation(); break;
-            case 'topAimed': spawnTopAimedWave(); break;
-            case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3)); break;
+            case 'topAimed': spawnTopAimedWave(5 + Math.floor(Math.random() * 4), false); break;
+            case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3), true); break;
             case 'mediumEscort':
                 spawnEnemy('medium');
                 for (var j = 0; j < 5; j++) spawnEnemy('small');
@@ -1111,8 +1117,9 @@
             e.x = Math.max(e.size, Math.min(W - e.size, e.x));
         }
         else if (e.pattern === 'topHover') {
+            // 停止位置(targetY)まで降下→停止して射撃→撃ち終わったら無射撃でまっすぐ降りていく
             if (e.y < e.targetY) { e.y += e.speed; }
-            else { e.hoverTime++; if (e.hoverTime >= e.maxHover) e.y += e.speed * 1.5; }
+            else if (e.shotsFired >= e.shotsToFire) { e.y += e.speed * 1.5; }
         }
         else if (e.pattern === 'sineDrift') {
             e.x += e.dir * e.speed * 1.3;
@@ -1224,9 +1231,28 @@
             moveEnemy(e);
 
             e.fireTimer++;
-            if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) { e.fireTimer = 0; fireEnemyBullet(e); }
+            if (e.pattern === 'topHover') {
+                // 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
+                if (e.y >= e.targetY && e.shotsFired < e.shotsToFire && e.fireTimer >= e.shotInterval) {
+                    e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
+                }
+            } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
+                e.fireTimer = 0; fireEnemyBullet(e);
+            }
             if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
             if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
+        }
+    }
+
+    // 降下狙撃/重降下狙撃の射撃。waterfall=真下に連射（滝）、aimed=自機狙い1way
+    function fireSnipeShot(e) {
+        if (e.snipeMode === 'waterfall') {
+            var s = 2.2 * diff.speed;
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: 7, bulletType: 'small' });
+        } else {
+            var ang = Math.atan2(player.y - e.y, player.x - e.x);
+            var s2 = 2.4 * diff.speed;
+            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: 2, bulletType: 'small' });
         }
     }
 

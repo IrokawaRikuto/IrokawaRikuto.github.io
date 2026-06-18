@@ -54,7 +54,7 @@
 - ミニゲーム: ボス召喚スポナーを破壊可能化（HP30、プレイヤー弾・ボムでダメージ可、撃破・寿命いずれもアイテム/スコア無し）
 - ミニゲーム: 弾数の難易度別スケーリング実装（DIFFに aimedCount / wayCount を追加、自機狙い 1/3/5/7 発、連射 3/5/7/9 発、way5・fan・ボスphase3way・大技1狙いは wayCount+2 or aimedCount+2）
 - ミニゲーム: タイトルに「プラクティス」ボタン追加（道中11パターン＋ボス4種×6攻撃を個別練習）
-- ミニゲーム: 道中パターンを 13 → 11 に整理（2体しか出ないパターン削除＋左右対称を別パターンに分割＋隊列名付与「降下狙撃／重降下狙撃／護衛編隊／重戦車隊／双砲台／弧月L,R／蛇行L,R／稲妻L,R」）
+- ミニゲーム: 道中パターンを 13 → 11 に整理（2体しか出ないパターン削除＋左右対称を別パターンに分割＋隊列名付与「滝／グミ撃ち／護衛編隊／重戦車隊／双砲台／弧月L,R／蛇行L,R／稲妻L,R」）
 - ミニゲーム: ESCでポーズ機能追加（本編・プラクティス両対応。再開／リスタート／(プラクティス時のみ)パターン選択へ戻る／タイトルへの選択肢。ランキング登録は経由しない）
 - ミニゲーム: メニュー操作で `keydown` の自動リピート（`e.repeat`）を無視。長押しで決定が誤発火する不具合を回避
 - ミニゲーム: プラクティス選択画面の十字キーを2Dグリッドナビゲーションに変更（`getBoundingClientRect` で方向最近傍を選ぶ）。難易度ボタンも同じナビ対象に含める
@@ -93,6 +93,8 @@
 - RE:GAMMA を完全削除（GAMMA+ に統合済み）: `workData.regamma` 削除、HTML側のコメントアウト版 RE:GAMMA カード削除
 - Works 並び順を更新: ぺったんメイカー / RM Engine / GAMMA+ / Sand Tetris / ConsoleSTG / GAMMA / CIRCLESTRIKER / 東方春三校（年表tooltipも同順）
 - ミニゲーム: 難易度・出現パターン・ボムを東方準拠に調整。①難易度=`DIFF`に `fireRateMul` を追加し発射間隔（旧 `基準F / bullets`）を密度と分離→`基準F × fireRateMul`、Easy/Hard/Lunaticのカーブを引き直し（Normalは数値現状維持）。②出現パターン=`buildWaveScript` を振り付け型に改良（同時出現最大2かつ軽量のみ／重編成・砲台は単独スロットで連続禁止＋間隔確保／stage・難易度で重み付け／stage上限5でクランプ）。③ボム=`launchBombOrbs` 発動時に画面上の敵弾を全消去（緊急回避ボム準拠、以降はオーブが追撃掃討）
+
+- ミニゲーム: 道中をプラクティスの11パターンのみに限定（`buildWaveScript` の lightPool から `formation`＝横断隊列を除外）。降下狙撃系を改修＝停止Y(targetY)をウェーブ共通にして横一列に揃え、`fireSnipeShot` で射撃を一新。滝(旧降下狙撃)=真下に20発スキマなく連射、グミ撃ち(旧重降下狙撃)=自機狙い1way×40発。いずれも撃ち終わったら無射撃でまっすぐ降りて退場。プラクティスのボタン名も「滝／グミ撃ち」に変更
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -205,7 +207,7 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=降下狙撃 / topAimedHeavy=重降下狙撃: 上部停止→自機狙い一斉射撃→退場
+- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→無射撃でまっすぐ降りて退場。滝=真下に20発スキマなく連射（`fireSnipeShot` waterfall, shotInterval=2）、グミ撃ち=自機狙い1wayを40発（aimed, shotInterval=5）。`shotsFired >= shotsToFire` で降下開始
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
@@ -245,7 +247,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン11種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=降下狙撃/topAimedHeavy=重降下狙撃/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurveL=稲妻L/zCurveR=稲妻R）
+- 道中パターン11種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=滝/topAimedHeavy=グミ撃ち/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurveL=稲妻L/zCurveR=稲妻R）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
