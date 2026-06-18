@@ -149,6 +149,7 @@
     var bossInterval = 1200;
     var preBoss = false;
     var rankingFrom = 'title';
+    var lastResult = null; // 直近プレイの結果 { name, score, difficulty }。クリア後ランキングで「その時の結果」表示に使う
     var menuIndex = 0;
     var practiceMode = false;
     var practicePatternKey = null;
@@ -2440,17 +2441,39 @@
     }
 
     function loadRanking(difficultyKey) {
+        // クリア後（gameover）は上位3名＋その時の結果、メニューからは上位10名
+        var fromGameover = (rankingFrom === 'gameover');
+        var displayN = fromGameover ? 3 : 10;
+        var ownEntry = (fromGameover && lastResult && lastResult.difficulty === difficultyKey) ? lastResult : null;
+        var fetchLimit = ownEntry ? 100 : displayN; // 自分の順位を求めるため圏外考慮で多めに取得
         rankingList.innerHTML = '<li><span style="color:var(--text-muted)">Loading...</span></li>';
-        GameRanking.fetchRanking(difficultyKey, 10).then(function (data) {
+        GameRanking.fetchRanking(difficultyKey, fetchLimit).then(function (data) {
             rankingList.innerHTML = '';
-            if (data.length === 0) {
+            if (data.length === 0 && !ownEntry) {
                 rankingList.innerHTML = '<li><span style="color:var(--text-muted)">No scores yet</span></li>';
                 return;
             }
-            for (var i = 0; i < data.length; i++) {
+            var ownIdx = -1;
+            if (ownEntry) {
+                for (var k = 0; k < data.length; k++) {
+                    if (data[k].name === ownEntry.name && data[k].score === ownEntry.score) { ownIdx = k; break; }
+                }
+            }
+            var shownOwn = false;
+            var rows = Math.min(displayN, data.length);
+            for (var i = 0; i < rows; i++) {
                 var li = document.createElement('li');
+                if (ownEntry && i === ownIdx) { li.className = 'rank-own'; shownOwn = true; }
                 li.innerHTML = '<span class="rank">' + (i + 1) + '.</span><span class="name">' + escapeHtml(data[i].name) + '</span><span class="score">' + data[i].score + '</span>';
                 rankingList.appendChild(li);
+            }
+            // 自分の結果が上位に入っていなければ「その時の結果」を末尾に別行で追加
+            if (ownEntry && !shownOwn) {
+                var li2 = document.createElement('li');
+                li2.className = 'rank-own rank-own-extra';
+                var rankLabel = ownIdx >= 0 ? (ownIdx + 1) + '.' : '-';
+                li2.innerHTML = '<span class="rank">' + rankLabel + '</span><span class="name">' + escapeHtml(ownEntry.name) + '</span><span class="score">' + ownEntry.score + '</span>';
+                rankingList.appendChild(li2);
             }
         });
     }
@@ -3037,6 +3060,7 @@
     submitBtn.addEventListener('click', function () {
         playSE('decide');
         var name = nameInput.value.trim() || 'AAA';
+        lastResult = { name: name, score: score, difficulty: diffKey };
         submitBtn.disabled = true; submitBtn.textContent = '...';
         GameRanking.submitScore(name, score, diffKey).then(function () {
             submitBtn.disabled = false;
@@ -3052,6 +3076,7 @@
 
     skipBtn.addEventListener('click', function () {
         playSE('decide');
+        lastResult = { name: (nameInput.value.trim() || 'AAA'), score: score, difficulty: diffKey };
         showRanking('gameover', diffKey);
     });
 

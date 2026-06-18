@@ -123,6 +123,8 @@
 - 4難易度（Easy/Normal/Hard/Lunatic）。ボスHPは固定600（難易度非依存）。Normalを基準(=1.0)に東方準拠で再設計した `DIFF`：弾幕密度（bullets: 0.55/1.0/1.45/1.95）、発射間隔倍率（fireRateMul: 1.5/1.0/0.74/0.6 ＝ 小さいほど速射。発射間隔 = 基準F × fireRateMul）、弾速（speed: 0.82/1.0/1.18/1.35）、自機狙い弾数（aimedCount: 1/3/5/7）、連射弾数（wayCount: 3/5/7/9）。発射間隔は従来 `基準F / bullets` だったが、密度と発射頻度を分離するため `基準F × fireRateMul` に変更（Normalは数値上現状維持）
 - 難易度配色: Easy=緑 #44ff44 / Normal=青 #44aaff / Hard=赤 #ff4444 / Lunatic=紫 #c466ff。難易度選択ボタン・ランキングタブ・HUDのSTAGE表示すべてで共通（JS側 `DIFF_COLORS` も同値）
 - ランキング画面レイアウト: 難易度タブを左に縦並び（`.ranking-body` flex 内、tabs幅84px）、右にスコアリストを表示。Back/Retry/Title などのボタンは `.ranking-body` の下に `text-align: right` で右下配置
+- ランキング表示件数: クリア後（`rankingFrom === 'gameover'`）は上位3名＋「その時の結果」（`lastResult` を保持、上位3外なら末尾に別行 `.rank-own-extra` で実順位付き追加、上位3内なら該当行を `.rank-own` でハイライト）。タイトルメニューからは上位10名。`loadRanking` が `rankingFrom`/`lastResult` を見て件数と自スコア表示を切替
+- スマホ対応スクロール: `.game-canvas-wrap` の `overflow:hidden` で低い画面だと overlay 内がクリップされるため、`#game-ranking-screen` に `max-height:100% + overflow-y:auto`、`.practice-list` は従来どおり内部スクロール（両方 `-webkit-overflow-scrolling: touch`）
 - モバイル対応（スライドパッド + BOMB/SLOWボタン、自動発射、キャンバス直下・詳細情報の上に配置）。表示条件は `@media (hover: none) and (pointer: coarse)` のタッチ端末のみ（PCで窓を狭めても出ない）
 - HUD英語表記: HI SCORE, SCORE, PLAYER, BOMB, POWER, GRAZE, STAGE
 - ゲーム情報レイアウト（2カラム grid）:
