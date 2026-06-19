@@ -988,9 +988,9 @@
                 size: 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
-                shotsToFire: heavy ? 25 : 40,  // グミ撃ち=25 / 滝=40
+                shotsToFire: heavy ? 25 : 50,  // グミ撃ち=25 / 滝=50
                 shotsFired: 0,
-                descendDelay: 50,              // 撃ち終わってから降下するまでの「二拍」
+                descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
                 snipeColor: snipeColor,
                 targetY: stopY
             });
@@ -1068,7 +1068,7 @@
     function executeWaveEvent(pat) {
         switch (pat) {
             case 'formation': spawnDriftFormation(); break;
-            case 'topAimed': spawnTopAimedWave(5 + Math.floor(Math.random() * 4), false); break;
+            case 'topAimed': spawnTopAimedWave(8, false); break;
             case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3), true); break;
             case 'mediumEscort':
                 spawnEnemy('medium');
