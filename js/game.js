@@ -977,6 +977,8 @@
         count = count || (5 + Math.floor(Math.random() * 4));
         var spacing = (W - 60) / (count - 1 || 1);
         var stopY = 40 + Math.random() * 20; // ウェーブ共通の停止Y（横一列に揃える）
+        // 滝の弾色はウェーブごとに1色だけランダム抽選（全弾同色）。グミ撃ちは固定で index 1（赤）
+        var snipeColor = heavy ? 1 : Math.floor(Math.random() * 16);
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
@@ -986,9 +988,10 @@
                 size: 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
-                shotsToFire: heavy ? 30 : 40,  // グミ撃ち=30 / 滝=40
+                shotsToFire: heavy ? 25 : 40,  // グミ撃ち=25 / 滝=40
                 shotsFired: 0,
                 descendDelay: 50,              // 撃ち終わってから降下するまでの「二拍」
+                snipeColor: snipeColor,
                 targetY: stopY
             });
         }
@@ -1292,17 +1295,17 @@
         }
     }
 
-    // 降下狙撃/重降下狙撃の射撃。いずれも小弾（素材①の丸弾）を使用。
-    //  waterfall=滝: 真下に連射、毎発ランダムな色（16色からランダム）
-    //  aimed=グミ撃ち: 自機狙い1way、色は左から2つ目＝index 1（赤）
+    // 降下狙撃/重降下狙撃の射撃。いずれも小弾（素材①の丸弾）を使用。色は e.snipeColor（spawn時に決定）。
+    //  waterfall=滝: 真下に連射、ウェーブごとに抽選した1色で全弾同色
+    //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
             var s = 2.2 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: Math.floor(Math.random() * 16), bulletType: 'small' });
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: e.snipeColor, bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
             var s2 = 2.4 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: 1, bulletType: 'small' });
+            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: e.snipeColor, bulletType: 'small' });
         }
     }
 
