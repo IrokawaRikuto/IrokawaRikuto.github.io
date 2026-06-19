@@ -96,6 +96,8 @@
 
 - ミニゲーム: 道中をプラクティスの11パターンのみに限定（`buildWaveScript` の lightPool から `formation`＝横断隊列を除外）。降下狙撃系を改修＝停止Y(targetY)をウェーブ共通にして横一列に揃え、`fireSnipeShot` で射撃を一新。滝(旧降下狙撃)=真下に20発スキマなく連射、グミ撃ち(旧重降下狙撃)=自機狙い1way×40発。いずれも撃ち終わったら無射撃でまっすぐ降りて退場。プラクティスのボタン名も「滝／グミ撃ち」に変更
 
+- ミニゲーム: 自機・敵・ボスのキャラ描画をスプライト対応パイプラインに（東方寄せの素材差し替え準備）。`CHAR_SPRITES` 設定＋`drawCharSprite(img,cfg,cx,cy,targetW,targetH)` ヘルパーを追加し、`drawPlayer`/`drawEnemies`/`drawBoss`(本体)で「スプライトがあれば使用・無ければ従来の図形にフォールバック」。`loadSprite` の onerror で欠損時 null になる仕組みを利用し、PNGを `assets/game/` に置くだけで自動有効化（置くまでは図形のまま＝見た目不変、ただしDL試行で404がコンソールに出る）。配置すべきファイル: `player.png` / `enemy_small.png` / `enemy_medium.png` / `enemy_large.png` / `boss.png`。単一画像はそのまま（アスペクト比保持）、横並びアニメは `CHAR_SPRITES` の frameW/frames/animFps を素材に合わせて設定。サイズは player=drawW/drawH(px)、敵/ボス=drawScale(当たり半径 e.size/boss.size への倍率)で調整
+
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
 |----|---------|-----|------|----------|------|----|----|
@@ -269,6 +271,7 @@
 - GAMMA+ のスクリーンショット追加（紹介文は完了、現状はモーダル動画欄が「準備中…」表示）
 - ミニゲーム使用素材クレジット（現在 Coming Soon）
 - ミニゲームの敵キャラ動作（途中）：出現パターン・移動挙動・弾幕密度などの調整継続中
+- ミニゲームの自機・敵・ボスのキャラ素材（東方寄せ）：スプライト描画パイプラインは実装済み。`assets/game/` に `player.png` / `enemy_small.png` / `enemy_medium.png` / `enemy_large.png` / `boss.png` を配置すれば自動でスプライト表示に切替（未配置の間は図形フォールバック）。版権フリーのSTGドット素材 or 東方キャラ素材を入手して差し替え予定
 - Firebase Console 側の手動作業:
   - Firestore Database → ルール画面に `firestore.rules` の内容を貼り付けて公開
   - App Check 設定（reCAPTCHA v3 サイトキー取得 → `index.html` の `APP_CHECK_SITE_KEY` に設定 → Firebase Console で reCAPTCHA シークレット登録 → APIs タブで Cloud Firestore を Monitor → 問題なければ Enforce）
