@@ -986,8 +986,9 @@
                 size: 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
-                shotsToFire: heavy ? 40 : 20,
+                shotsToFire: heavy ? 30 : 40,  // グミ撃ち=30 / 滝=40
                 shotsFired: 0,
+                descendDelay: 50,              // 撃ち終わってから降下するまでの「二拍」
                 targetY: stopY
             });
         }
@@ -1158,9 +1159,12 @@
             e.x = Math.max(e.size, Math.min(W - e.size, e.x));
         }
         else if (e.pattern === 'topHover') {
-            // 停止位置(targetY)まで降下→停止して射撃→撃ち終わったら無射撃でまっすぐ降りていく
+            // 停止位置(targetY)まで降下→停止して射撃→撃ち終わったら二拍おいて無射撃でまっすぐ降りていく
             if (e.y < e.targetY) { e.y += e.speed; }
-            else if (e.shotsFired >= e.shotsToFire) { e.y += e.speed * 1.5; }
+            else if (e.shotsFired >= e.shotsToFire) {
+                if (e.descendDelay > 0) { e.descendDelay--; }
+                else { e.y += e.speed * 1.5; }
+            }
         }
         else if (e.pattern === 'sineDrift') {
             e.x += e.dir * e.speed * 1.3;
@@ -1288,15 +1292,17 @@
         }
     }
 
-    // 降下狙撃/重降下狙撃の射撃。waterfall=真下に連射（滝）、aimed=自機狙い1way
+    // 降下狙撃/重降下狙撃の射撃。いずれも小弾（素材①の丸弾）を使用。
+    //  waterfall=滝: 真下に連射、毎発ランダムな色（16色からランダム）
+    //  aimed=グミ撃ち: 自機狙い1way、色は左から2つ目＝index 1（赤）
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
             var s = 2.2 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: 7, bulletType: 'small' });
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: Math.floor(Math.random() * 16), bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
             var s2 = 2.4 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: 2, bulletType: 'small' });
+            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: 1, bulletType: 'small' });
         }
     }
 

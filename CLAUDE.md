@@ -211,7 +211,7 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→無射撃でまっすぐ降りて退場。滝=真下に20発スキマなく連射（`fireSnipeShot` waterfall, shotInterval=2）、グミ撃ち=自機狙い1wayを40発（aimed, shotInterval=5）。`shotsFired >= shotsToFire` で降下開始
+- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら二拍（`descendDelay`=50F）おいて無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=真下に40発スキマなく連射・毎発ランダム色（`fireSnipeShot` waterfall, shotInterval=2, color=Math.random*16）、グミ撃ち=自機狙い1wayを30発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay` カウントダウンで降下開始
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
