@@ -63,6 +63,7 @@
     loadSprite('bulletPlayer', 'assets/game/bullet_player_main.png');
     loadSprite('items', 'assets/game/items.png');
     loadSprite('bombOrb', 'assets/game/bomb_orb.png');
+    loadSprite('optionOrb', 'assets/game/option_orb.png');  // 自機オプション（白黒陰陽玉）
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
@@ -451,16 +452,22 @@
         ctx.save();
         ctx.translate(player.x, player.y);
 
-        // オプション（陰陽玉風の小オーブ）を両側に描画
+        // オプション（白黒陰陽玉）を両側に描画。スプライトが無ければ簡易オーブにフォールバック
         var oOffs = getOptionOffsets();
+        var orbReady = isSpriteReady('optionOrb');
         for (var oi = 0; oi < oOffs.length; oi++) {
             var o = oOffs[oi];
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = 'rgba(255,68,68,0.95)';
-            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, -Math.PI / 2, Math.PI / 2); ctx.fill();
-            ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.stroke();
+            if (orbReady) {
+                var os = 14;
+                ctx.drawImage(sprites.optionOrb, o.dx - os / 2, o.dy - os / 2, os, os);
+            } else {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,68,68,0.95)';
+                ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, -Math.PI / 2, Math.PI / 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.stroke();
+            }
         }
 
         if (isSpriteReady('player')) {
