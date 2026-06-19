@@ -133,6 +133,8 @@
     var HOMING_SPEED = 7.5;     // 追尾弾の速度
     var HOMING_TURN = 0.13;     // 1フレームあたりの最大旋回角(rad)。大きいほど強追尾
     var HOMING_LIFE = 100;      // 追尾弾の寿命(フレーム)
+    // 陰陽玉シート(option_orb.png 240x840, 7行×大小)のうち最下段の白黒(大)を切り出して使用
+    var OPTION_ORB_SRC = { sx: 22, sy: 742, sw: 75, sh: 75 };
     var MAX_LIVES = 3;          // 初期残機（HUD最低表示数も兼ねる）
     var LIFE_CAP = 8;            // 残機の上限（1UP取得で増えるが上限あり）
     var MAX_BOMBS = 2;
@@ -458,8 +460,9 @@
         for (var oi = 0; oi < oOffs.length; oi++) {
             var o = oOffs[oi];
             if (orbReady) {
-                var os = 14;
-                ctx.drawImage(sprites.optionOrb, o.dx - os / 2, o.dy - os / 2, os, os);
+                var os = 16;
+                var sc = OPTION_ORB_SRC;
+                ctx.drawImage(sprites.optionOrb, sc.sx, sc.sy, sc.sw, sc.sh, o.dx - os / 2, o.dy - os / 2, os, os);
             } else {
                 ctx.fillStyle = '#fff';
                 ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.fill();
