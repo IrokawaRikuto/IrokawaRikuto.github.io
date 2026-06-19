@@ -127,6 +127,11 @@
     var PLAYER_SIZE = 10;
     var PLAYER_HITBOX = 2;
     var FIRE_INTERVAL = 4;
+    // 自機オプション（永夜抄ホーミングアミュレット参照）：両側のオプションが追尾弾を発射
+    var OPTION_INTERVAL = 10;   // オプションの追尾弾発射間隔（フレーム）
+    var HOMING_SPEED = 7.5;     // 追尾弾の速度
+    var HOMING_TURN = 0.13;     // 1フレームあたりの最大旋回角(rad)。大きいほど強追尾
+    var HOMING_LIFE = 100;      // 追尾弾の寿命(フレーム)
     var MAX_LIVES = 3;          // 初期残機（HUD最低表示数も兼ねる）
     var LIFE_CAP = 8;            // 残機の上限（1UP取得で増えるが上限あり）
     var MAX_BOMBS = 2;
@@ -173,6 +178,7 @@
     var continueDeathPos = { x: 0, y: 0 };
     var invTimer = 0;
     var fireTimer = 0;
+    var optionTimer = 0;
     var bombTimer = 0;
     var diff = DIFF.normal;
     var diffKey = 'normal';
@@ -336,8 +342,14 @@
                 fireTimer = 0;
                 firePlayerShot();
             }
+            optionTimer++;
+            if (optionTimer >= OPTION_INTERVAL) {
+                optionTimer = 0;
+                fireOptionAmulets();
+            }
         } else {
             fireTimer = FIRE_INTERVAL - 1;
+            optionTimer = OPTION_INTERVAL - 1; // 押した瞬間に撃てるよう待機
         }
 
         // Bomb（夢想封印）
@@ -391,12 +403,65 @@
         }
     }
 
+    // 自機オプションの位置オフセット（自機中心からの相対）。低速時は内側に寄る（集中＝永夜抄準拠）。
+    // Power Lv3以上で2対(4基)、それ未満で1対(2基)。
+    function getOptionOffsets() {
+        var lvl = Math.floor(power / 100); // 1..4
+        var slow = keys['ShiftLeft'] || keys['ShiftRight'] || mobileKeys.slow;
+        var s1 = slow ? 12 : 24;
+        var s2 = slow ? 22 : 40;
+        var arr = [{ dx: -s1, dy: 6 }, { dx: s1, dy: 6 }];
+        if (lvl >= 3) { arr.push({ dx: -s2, dy: 15 }, { dx: s2, dy: 15 }); }
+        return arr;
+    }
+
+    // 両側オプションから追尾アミュレットを発射（初速は真上、以降は最近接の敵/ボスへ旋回）
+    function fireOptionAmulets() {
+        var offs = getOptionOffsets();
+        for (var k = 0; k < offs.length; k++) {
+            pBullets.push({
+                x: player.x + offs[k].dx, y: player.y + offs[k].dy,
+                vx: 0, vy: -HOMING_SPEED, w: 5, h: 16,
+                homing: true, speed: HOMING_SPEED, turn: HOMING_TURN,
+                life: HOMING_LIFE, rot: 0
+            });
+        }
+    }
+
+    // 追尾弾のターゲット（最近接の敵/ボス）を返す。いなければ null。
+    function findHomingTarget(x, y) {
+        var best = null, bd = Infinity;
+        for (var i = 0; i < enemies.length; i++) {
+            var e = enemies[i];
+            if (e.y < -5) continue;
+            var dx = e.x - x, dy = e.y - y, d = dx * dx + dy * dy;
+            if (d < bd) { bd = d; best = { x: e.x, y: e.y }; }
+        }
+        if (boss && !boss.entering) {
+            var bx = boss.x - x, by = boss.y - y, db = bx * bx + by * by;
+            if (db < bd) { bd = db; best = { x: boss.x, y: boss.y }; }
+        }
+        return best;
+    }
+
     function drawPlayer() {
         if ((invTimer > 0 || bombTimer > 0) && Math.floor(frame / 4) % 2 === 0) return;
         var slow = keys['ShiftLeft'] || keys['ShiftRight'] || mobileKeys.slow;
 
         ctx.save();
         ctx.translate(player.x, player.y);
+
+        // オプション（陰陽玉風の小オーブ）を両側に描画
+        var oOffs = getOptionOffsets();
+        for (var oi = 0; oi < oOffs.length; oi++) {
+            var o = oOffs[oi];
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,68,68,0.95)';
+            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, -Math.PI / 2, Math.PI / 2); ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(o.dx, o.dy, 4, 0, Math.PI * 2); ctx.stroke();
+        }
 
         if (isSpriteReady('player')) {
             var pc = CHAR_SPRITES.player;
@@ -444,25 +509,52 @@
     function updatePBullets() {
         for (var i = pBullets.length - 1; i >= 0; i--) {
             var b = pBullets[i];
+            if (b.homing) {
+                // 最近接の敵/ボスへ、旋回角を制限して緩やかに追尾（永夜抄アミュレット風）
+                var t = findHomingTarget(b.x, b.y);
+                if (t) {
+                    var desired = Math.atan2(t.y - b.y, t.x - b.x);
+                    var cur = Math.atan2(b.vy, b.vx);
+                    var d = desired - cur;
+                    while (d > Math.PI) d -= Math.PI * 2;
+                    while (d < -Math.PI) d += Math.PI * 2;
+                    if (d > b.turn) d = b.turn; else if (d < -b.turn) d = -b.turn;
+                    var na = cur + d;
+                    b.vx = Math.cos(na) * b.speed;
+                    b.vy = Math.sin(na) * b.speed;
+                }
+                b.rot = Math.atan2(b.vy, b.vx) + Math.PI / 2; // 札スプライトは上向き基準
+                if (--b.life <= 0) { pBullets.splice(i, 1); continue; }
+            }
             b.x += b.vx; b.y += b.vy;
-            if (b.y < -20 || b.x < -20 || b.x > W + 20) pBullets.splice(i, 1);
+            if (b.y < -20 || b.y > H + 20 || b.x < -20 || b.x > W + 20) pBullets.splice(i, 1);
         }
     }
     function drawPBullets() {
         var useSprite = isSpriteReady('bulletPlayer');
-        if (useSprite) {
-            for (var i = 0; i < pBullets.length; i++) {
-                var b = pBullets[i];
-                // bullet.h を基準に縦長に描画（スプライト 16x24）
+        for (var i = 0; i < pBullets.length; i++) {
+            var b = pBullets[i];
+            if (useSprite) {
                 var dh = b.h * 1.4;
                 var dw = dh * (16 / 24);
-                ctx.drawImage(sprites.bulletPlayer, 0, 0, 16, 24, b.x - dw / 2, b.y - dh * 0.4, dw, dh);
-            }
-        } else {
-            ctx.fillStyle = '#ff4444';
-            for (var i = 0; i < pBullets.length; i++) {
-                var b = pBullets[i];
-                ctx.fillRect(b.x - b.w / 2, b.y, b.w, b.h);
+                if (b.homing) {
+                    // 追尾弾は進行方向へ回転
+                    ctx.save();
+                    ctx.translate(b.x, b.y);
+                    ctx.rotate(b.rot || 0);
+                    ctx.drawImage(sprites.bulletPlayer, 0, 0, 16, 24, -dw / 2, -dh * 0.4, dw, dh);
+                    ctx.restore();
+                } else {
+                    ctx.drawImage(sprites.bulletPlayer, 0, 0, 16, 24, b.x - dw / 2, b.y - dh * 0.4, dw, dh);
+                }
+            } else {
+                if (b.homing) {
+                    ctx.fillStyle = '#ff88cc';
+                    ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(b.x - b.w / 2, b.y, b.w, b.h);
+                }
             }
         }
     }
@@ -982,13 +1074,16 @@
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
-                x: ex, y: -15, hp: 1, maxHp: 1, speed: 1.0, type: 'small',
+                x: ex, y: -15,
+                hp: heavy ? 30 : 1, maxHp: heavy ? 30 : 1,
+                speed: 1.0,
+                type: heavy ? 'medium' : 'small',  // グミ撃ち=中型 / 滝=小型
                 pattern: 'topHover',
                 fireTimer: 0,
-                size: 8, age: 0, baseX: ex, dir: 1,
+                size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
-                shotsToFire: heavy ? 25 : 50,  // グミ撃ち=25 / 滝=50
+                shotsToFire: heavy ? 20 : 50,  // グミ撃ち=20 / 滝=50
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
                 snipeColor: snipeColor,

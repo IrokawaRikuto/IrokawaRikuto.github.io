@@ -136,6 +136,7 @@
 
 ### 自機
 - 低速移動時の集中ショット、アイテム引き寄せ（本家準拠挙動）
+- 自機両側にオプション（陰陽玉風オーブ）。永夜抄のホーミングアミュレット参照の追尾弾を発射（`fireOptionAmulets`→`pBullets` に `homing:true`、`updatePBullets` で最近接の敵/ボスへ旋回角 `HOMING_TURN`=0.13rad/F 制限で緩やかに追尾、速度 `HOMING_SPEED`=7.5、寿命 `HOMING_LIFE`=100F、発射間隔 `OPTION_INTERVAL`=10F）。オプションは Power Lv3以上で2対(4基)・未満で1対(2基)、低速時は内側に寄る。本ショット（`firePlayerShot`）は従来どおり別途発射
 - 当たり判定はPLAYER_HITBOX=2（中央の赤い丸のみ）
 - 残機: 初期3 (`MAX_LIVES`)、上限8 (`LIFE_CAP`)。0で被弾→コンティニュー選択 or ゲームオーバー
 - ボム: 初期2、被弾時に初期値(2)にリセット（多く持ってても失う、0でも2に戻る）
@@ -211,7 +212,7 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=8体均等配置・真下に50発スキマなく連射・色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用, shotInterval=2）、グミ撃ち=自機狙い1wayを25発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
+- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=小型8体均等配置・真下に50発スキマなく連射・色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用, shotInterval=2）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
