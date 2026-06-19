@@ -244,6 +244,7 @@
 .practice-list {
     text-align: left;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     flex: 1;
     padding: 0 4px 4px;
     min-height: 0;
@@ -412,6 +413,14 @@
 }
 
 /* ===== Ranking ===== */
+/* スマホの低い画面でも画面内でスクロールできるように（canvas-wrap の overflow:hidden でクリップされる対策） */
+#game-ranking-screen {
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
 .ranking-body {
     display: flex;
     gap: 16px;
@@ -479,6 +488,19 @@
 #game-ranking-list li .rank { color: var(--accent); width: 28px; }
 #game-ranking-list li .name { flex: 1; }
 #game-ranking-list li .score { text-align: right; min-width: 70px; }
+/* クリア後ランキングで「その時の結果」をハイライト */
+#game-ranking-list li.rank-own {
+    background: rgba(255, 68, 68, 0.18);
+    border-radius: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+#game-ranking-list li.rank-own .name { color: #fff; font-weight: bold; }
+#game-ranking-list li.rank-own .score { color: #ffd24a; }
+#game-ranking-list li.rank-own-extra {
+    margin-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.25);
+}
 
 #game-ranking-btns {
     margin: 16px auto 0;
