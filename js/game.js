@@ -1187,8 +1187,7 @@
             for (var i = enemies.length - 1; i >= 0; i--) {
                 var e = enemies[i]; e.age++;
                 moveEnemy(e);
-                e.fireTimer++;
-                if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) { e.fireTimer = 0; fireEnemyBullet(e); }
+                tickEnemyFire(e);
                 if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
                 if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
             }
@@ -1201,8 +1200,7 @@
             for (var i = enemies.length - 1; i >= 0; i--) {
                 var e = enemies[i]; e.age++;
                 moveEnemy(e);
-                e.fireTimer++;
-                if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) { e.fireTimer = 0; fireEnemyBullet(e); }
+                tickEnemyFire(e);
                 if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
                 if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
             }
@@ -1231,17 +1229,22 @@
             var e = enemies[i]; e.age++;
             moveEnemy(e);
 
-            e.fireTimer++;
-            if (e.pattern === 'topHover') {
-                // 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
-                if (e.y >= e.targetY && e.shotsFired < e.shotsToFire && e.fireTimer >= e.shotInterval) {
-                    e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
-                }
-            } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
-                e.fireTimer = 0; fireEnemyBullet(e);
-            }
+            tickEnemyFire(e);
             if (e.hp <= 0) { enemyDestroyed(e); enemies.splice(i, 1); continue; }
             if (e.y > H + 40 || e.x < -40 || e.x > W + 40) enemies.splice(i, 1);
+        }
+    }
+
+    // 敵1体の発射処理（道中／プラクティス／preBoss の全ループ共通）
+    function tickEnemyFire(e) {
+        e.fireTimer++;
+        if (e.pattern === 'topHover') {
+            // 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
+            if (e.y >= e.targetY && e.shotsFired < e.shotsToFire && e.fireTimer >= e.shotInterval) {
+                e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
+            }
+        } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
+            e.fireTimer = 0; fireEnemyBullet(e);
         }
     }
 
