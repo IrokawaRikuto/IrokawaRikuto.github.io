@@ -426,7 +426,7 @@
                 x: player.x + offs[k].dx, y: player.y + offs[k].dy,
                 vx: 0, vy: -HOMING_SPEED, w: 5, h: 16,
                 homing: true, speed: HOMING_SPEED, turn: HOMING_TURN,
-                life: HOMING_LIFE, rot: 0, dmg: 0.5  // 追尾弾は通常ショットの半分のダメージ
+                life: HOMING_LIFE, rot: 0, dmg: 0.25  // 追尾弾は通常ショットの1/4ダメージ
             });
         }
     }
@@ -550,6 +550,7 @@
                 if (b.homing) {
                     // 追尾弾は進行方向へ回転
                     ctx.save();
+                    ctx.globalAlpha = 0.5;   // 追尾弾は半透明
                     ctx.translate(b.x, b.y);
                     ctx.rotate(b.rot || 0);
                     ctx.drawImage(sprites.bulletPlayer, 0, 0, 16, 24, -dw / 2, -dh * 0.4, dw, dh);
@@ -559,8 +560,10 @@
                 }
             } else {
                 if (b.homing) {
+                    ctx.globalAlpha = 0.5;   // 追尾弾は半透明
                     ctx.fillStyle = '#ff88cc';
                     ctx.beginPath(); ctx.arc(b.x, b.y, 3, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
                 } else {
                     ctx.fillStyle = '#ff4444';
                     ctx.fillRect(b.x - b.w / 2, b.y, b.w, b.h);
