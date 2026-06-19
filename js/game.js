@@ -66,6 +66,40 @@
     loadSprite('magicCircle', 'assets/game/boss_magic_circle.png');
     loadSprite('deleteEffect', 'assets/game/bullet_delete_effect.png');
     loadSprite('bossHpBar', 'assets/game/boss_hpbar.png');
+
+    // ===== 自機・敵キャラのスプライト（あとで assets/game/ に PNG を配置して差し替え）=====
+    // 各 PNG が無い間は loadSprite の onerror で null になり、従来の図形描画にフォールバックする。
+    //   単一画像     : frameW=0 のまま（画像全体を1フレーム扱い）。アスペクト比は保持して描画。
+    //   横並びアニメ : frameW>0 と frames>1 を素材に合わせて設定。animFps>0 でループ再生。
+    //   player は drawW/drawH（描画ピクセル）、敵は drawScale（当たり半径 e.size への倍率）で大きさ指定。
+    var CHAR_SPRITES = {
+        player:      { frameW: 0, frameH: 0, frames: 1, animFps: 0, drawW: 44, drawH: 44 },
+        enemySmall:  { frameW: 0, frameH: 0, frames: 1, animFps: 0, drawScale: 3.0 },
+        enemyMedium: { frameW: 0, frameH: 0, frames: 1, animFps: 0, drawScale: 2.6 },
+        enemyLarge:  { frameW: 0, frameH: 0, frames: 1, animFps: 0, drawScale: 2.4 },
+        boss:        { frameW: 0, frameH: 0, frames: 1, animFps: 0, drawScale: 3.2 }
+    };
+    loadSprite('player', 'assets/game/player.png');
+    loadSprite('enemySmall', 'assets/game/enemy_small.png');
+    loadSprite('enemyMedium', 'assets/game/enemy_medium.png');
+    loadSprite('enemyLarge', 'assets/game/enemy_large.png');
+    loadSprite('bossChar', 'assets/game/boss.png');
+
+    // キャラスプライトを中央(cx,cy)に描画。targetH を省略すると素材のアスペクト比を保持。
+    // frameW>0 のときは横並びシートの frames/animFps に従ってフレームを切り出す。
+    function drawCharSprite(img, cfg, cx, cy, targetW, targetH) {
+        var fw = (cfg.frameW && cfg.frameW > 0) ? cfg.frameW : img.naturalWidth;
+        var fh = (cfg.frameH && cfg.frameH > 0) ? cfg.frameH : img.naturalHeight;
+        var frames = cfg.frames || 1;
+        var idx = 0;
+        if (frames > 1 && cfg.animFps > 0) {
+            idx = Math.floor(frame / Math.max(1, Math.round(60 / cfg.animFps))) % frames;
+        }
+        var sx = idx * fw;
+        var dw = targetW;
+        var dh = (targetH != null) ? targetH : targetW * (fh / fw);
+        ctx.drawImage(img, sx, 0, fw, fh, cx - dw / 2, cy - dh / 2, dw, dh);
+    }
     // Sprite layout: small=16x16 x9, medium=64x32 x8, large=128x64 x8, wedge/ice/seal=16x16 x9
     // Colors: 0=red,1=orange,2=yellow,3=green,4=cyan,5=blue,6=purple,7=gray (8=white for 9-sprites)
     var BULLET_COLORS = { red: 0, orange: 1, yellow: 2, green: 3, cyan: 4, blue: 5, purple: 6, gray: 7 };
@@ -364,19 +398,25 @@
         ctx.save();
         ctx.translate(player.x, player.y);
 
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.moveTo(0, -PLAYER_SIZE);
-        ctx.lineTo(-PLAYER_SIZE * 0.8, PLAYER_SIZE * 0.5);
-        ctx.lineTo(0, PLAYER_SIZE * 0.2);
-        ctx.lineTo(PLAYER_SIZE * 0.8, PLAYER_SIZE * 0.5);
-        ctx.closePath();
-        ctx.fill();
+        if (isSpriteReady('player')) {
+            var pc = CHAR_SPRITES.player;
+            drawCharSprite(sprites.player, pc, 0, 0, pc.drawW, pc.drawH);
+        } else {
+            // フォールバック：白い三角＋赤い噴射
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(0, -PLAYER_SIZE);
+            ctx.lineTo(-PLAYER_SIZE * 0.8, PLAYER_SIZE * 0.5);
+            ctx.lineTo(0, PLAYER_SIZE * 0.2);
+            ctx.lineTo(PLAYER_SIZE * 0.8, PLAYER_SIZE * 0.5);
+            ctx.closePath();
+            ctx.fill();
 
-        ctx.fillStyle = 'rgba(255,68,68,0.7)';
-        ctx.beginPath();
-        ctx.arc(0, PLAYER_SIZE * 0.4, 3 + Math.random() * 2, 0, Math.PI * 2);
-        ctx.fill();
+            ctx.fillStyle = 'rgba(255,68,68,0.7)';
+            ctx.beginPath();
+            ctx.arc(0, PLAYER_SIZE * 0.4, 3 + Math.random() * 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         if (slow) {
             ctx.strokeStyle = 'rgba(255,255,255,0.8)';
@@ -1517,13 +1557,20 @@
                 continue;
             }
 
-            ctx.fillStyle = e.type === 'large' ? '#ff3333' : e.type === 'medium' ? '#cc4444' : '#aa3333';
-            ctx.beginPath();
-            ctx.moveTo(0, e.size); ctx.lineTo(-e.size, -e.size * 0.3);
-            ctx.lineTo(0, -e.size * 0.6); ctx.lineTo(e.size, -e.size * 0.3);
-            ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.beginPath();
-            ctx.arc(0, 0, e.size * 0.2, 0, Math.PI * 2); ctx.fill();
+            var ekey = e.type === 'large' ? 'enemyLarge' : e.type === 'medium' ? 'enemyMedium' : 'enemySmall';
+            var ecfg = e.type === 'large' ? CHAR_SPRITES.enemyLarge : e.type === 'medium' ? CHAR_SPRITES.enemyMedium : CHAR_SPRITES.enemySmall;
+            if (isSpriteReady(ekey)) {
+                drawCharSprite(sprites[ekey], ecfg, 0, 0, e.size * ecfg.drawScale, null);
+            } else {
+                // フォールバック：赤い菱形＋白い中心点
+                ctx.fillStyle = e.type === 'large' ? '#ff3333' : e.type === 'medium' ? '#cc4444' : '#aa3333';
+                ctx.beginPath();
+                ctx.moveTo(0, e.size); ctx.lineTo(-e.size, -e.size * 0.3);
+                ctx.lineTo(0, -e.size * 0.6); ctx.lineTo(e.size, -e.size * 0.3);
+                ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#fff'; ctx.beginPath();
+                ctx.arc(0, 0, e.size * 0.2, 0, Math.PI * 2); ctx.fill();
+            }
             ctx.restore();
         }
     }
@@ -1903,12 +1950,16 @@
             ctx.globalAlpha = 1;
         }
 
-        // ボス本体（種類ごとに色替え）
-        ctx.fillStyle = colors.main; ctx.beginPath(); ctx.arc(0, 0, boss.size, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = colors.dark;
-        ctx.beginPath(); ctx.moveTo(-boss.size, 0); ctx.lineTo(-boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(-boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(boss.size, 0); ctx.lineTo(boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = colors.halo; ctx.beginPath(); ctx.arc(0, 0, boss.size * 0.25, 0, Math.PI * 2); ctx.fill();
+        // ボス本体（スプライトがあれば使用、無ければ種類ごとに色替えした図形）
+        if (isSpriteReady('bossChar')) {
+            drawCharSprite(sprites.bossChar, CHAR_SPRITES.boss, 0, 0, boss.size * CHAR_SPRITES.boss.drawScale, null);
+        } else {
+            ctx.fillStyle = colors.main; ctx.beginPath(); ctx.arc(0, 0, boss.size, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = colors.dark;
+            ctx.beginPath(); ctx.moveTo(-boss.size, 0); ctx.lineTo(-boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(-boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(boss.size, 0); ctx.lineTo(boss.size * 1.8, -boss.size * 0.5); ctx.lineTo(boss.size * 0.5, -boss.size * 0.3); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = colors.halo; ctx.beginPath(); ctx.arc(0, 0, boss.size * 0.25, 0, Math.PI * 2); ctx.fill();
+        }
 
         // HPバー: 画像ベース、12時からCW方向に削れる（画像クリップ方式）
         var hpRatio = Math.max(0, boss.hp / boss.maxHp);
