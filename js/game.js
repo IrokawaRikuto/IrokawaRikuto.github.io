@@ -423,7 +423,7 @@
                 x: player.x + offs[k].dx, y: player.y + offs[k].dy,
                 vx: 0, vy: -HOMING_SPEED, w: 5, h: 16,
                 homing: true, speed: HOMING_SPEED, turn: HOMING_TURN,
-                life: HOMING_LIFE, rot: 0
+                life: HOMING_LIFE, rot: 0, dmg: 0.5  // 追尾弾は通常ショットの半分のダメージ
             });
         }
     }
@@ -2278,13 +2278,13 @@
             for (var j = enemies.length - 1; j >= 0; j--) {
                 var e = enemies[j];
                 if (Math.abs(b.x - e.x) < e.size + 4 && Math.abs(b.y - e.y) < e.size + 4) {
-                    e.hp -= 1; pBullets.splice(i, 1); spawnParticle(b.x, b.y, '#ffffff', 1); break;
+                    e.hp -= (b.dmg || 1); pBullets.splice(i, 1); spawnParticle(b.x, b.y, '#ffffff', 1); break;
                 }
             }
             if (boss && !boss.entering && i < pBullets.length) {
                 var b2 = pBullets[i];
                 if (b2 && Math.abs(b2.x - boss.x) < boss.size + 4 && Math.abs(b2.y - boss.y) < boss.size + 4) {
-                    boss.hp -= 1; pBullets.splice(i, 1); spawnParticle(b2.x, b2.y, '#ffffff', 1);
+                    boss.hp -= (b2.dmg || 1); pBullets.splice(i, 1); spawnParticle(b2.x, b2.y, '#ffffff', 1);
                 }
             }
         }
