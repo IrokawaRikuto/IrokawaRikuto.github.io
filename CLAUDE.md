@@ -136,7 +136,7 @@
 
 ### 自機
 - 低速移動時の集中ショット、アイテム引き寄せ（本家準拠挙動）
-- 自機両側にオプション（陰陽玉風オーブ）。永夜抄のホーミングアミュレット参照の追尾弾を発射（`fireOptionAmulets`→`pBullets` に `homing:true`、`updatePBullets` で最近接の敵/ボスへ旋回角 `HOMING_TURN`=0.13rad/F 制限で緩やかに追尾、速度 `HOMING_SPEED`=7.5、寿命 `HOMING_LIFE`=100F、発射間隔 `OPTION_INTERVAL`=10F）。追尾弾は半透明（drawPBullets で globalAlpha=0.5）で描画、ダメージは通常ショットの1/4（`dmg:0.25`、衝突は `e.hp -= (b.dmg||1)`）。オプションは Power Lv3以上で2対(4基)・未満で1対(2基)、低速時は内側に寄る。本ショット（`firePlayerShot`）は従来どおり別途発射。オプションの見た目は陰陽玉シート `assets/game/option_orb.png`（240x840, 7行×大小のユーザー素材）の最下段＝白黒(大) を `OPTION_ORB_SRC`(sx22,sy742,75x75) で切り出し16pxで描画、未ロード時は簡易オーブにフォールバック
+- 自機両側にオプション（陰陽玉風オーブ）。永夜抄のホーミングアミュレット参照の追尾弾を発射（`fireOptionAmulets`→`pBullets` に `homing:true`、`updatePBullets` で最近接の敵/ボスへ旋回角 `HOMING_TURN`=0.13rad/F 制限で緩やかに追尾、速度 `HOMING_SPEED`=7.5、寿命 `HOMING_LIFE`=100F、発射間隔 `OPTION_INTERVAL`=10F）。追尾弾は半透明（drawPBullets で globalAlpha=0.5）で描画、ダメージは通常ショットの1/4（`dmg:0.25`、衝突は `e.hp -= (b.dmg||1)`）→ 弱すぎたため 1/2（`dmg:0.5`）に戻し。オプションは Power Lv3以上で2対(4基)・未満で1対(2基)、低速時は内側に寄る。本ショット（`firePlayerShot`）は従来どおり別途発射。オプションの見た目は陰陽玉シート `assets/game/option_orb.png`（240x840, 7行×大小のユーザー素材）の最下段＝白黒(大) を `OPTION_ORB_SRC`(sx22,sy742,75x75) で切り出し16pxで描画、未ロード時は簡易オーブにフォールバック
 - 当たり判定はPLAYER_HITBOX=2（中央の赤い丸のみ）
 - 残機: 初期3 (`MAX_LIVES`)、上限8 (`LIFE_CAP`)。0で被弾→コンティニュー選択 or ゲームオーバー
 - ボム: 初期2、被弾時に初期値(2)にリセット（多く持ってても失う、0でも2に戻る）
