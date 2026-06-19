@@ -426,7 +426,7 @@
                 x: player.x + offs[k].dx, y: player.y + offs[k].dy,
                 vx: 0, vy: -HOMING_SPEED, w: 5, h: 16,
                 homing: true, speed: HOMING_SPEED, turn: HOMING_TURN,
-                life: HOMING_LIFE, rot: 0, dmg: 0.25  // 追尾弾は通常ショットの1/4ダメージ
+                life: HOMING_LIFE, rot: 0, dmg: 0.5  // 追尾弾は通常ショットの半分のダメージ
             });
         }
     }
