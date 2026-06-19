@@ -406,15 +406,20 @@
         }
     }
 
-    // 自機オプションの位置オフセット（自機中心からの相対）。低速時は内側に寄る（集中＝永夜抄準拠）。
+    // 自機オプションの位置オフセット（自機中心からの相対。dy<0=前方）。
+    // 通常時：両側に展開（従来どおり）。低速時：前方に台形配置（前に2・斜め後ろに2）。
     // Power Lv3以上で2対(4基)、それ未満で1対(2基)。
     function getOptionOffsets() {
         var lvl = Math.floor(power / 100); // 1..4
         var slow = keys['ShiftLeft'] || keys['ShiftRight'] || mobileKeys.slow;
-        var s1 = slow ? 12 : 24;
-        var s2 = slow ? 22 : 40;
-        var arr = [{ dx: -s1, dy: 6 }, { dx: s1, dy: 6 }];
-        if (lvl >= 3) { arr.push({ dx: -s2, dy: 15 }, { dx: s2, dy: 15 }); }
+        if (slow) {
+            // 前方の2個（狭め・前）＋斜め後ろの2個（広め・後ろ）＝台形
+            var arr = [{ dx: -9, dy: -16 }, { dx: 9, dy: -16 }];
+            if (lvl >= 3) { arr.push({ dx: -19, dy: -3 }, { dx: 19, dy: -3 }); }
+            return arr;
+        }
+        var arr = [{ dx: -24, dy: 6 }, { dx: 24, dy: 6 }];
+        if (lvl >= 3) { arr.push({ dx: -40, dy: 15 }, { dx: 40, dy: 15 }); }
         return arr;
     }
 
@@ -966,7 +971,7 @@
     function spawnEnemy(type) {
         var e = {
             x: 30 + Math.random() * (W - 60), y: -20,
-            hp: 1, maxHp: 1, speed: 1, type: type,
+            hp: 2.5, maxHp: 2.5, speed: 1, type: type,
             pattern: 'straight', fireRate: 200,
             fireTimer: Math.floor(Math.random() * 60),
             size: 8, age: 0, baseX: 0,
@@ -975,19 +980,19 @@
         };
         var patRoll = Math.random();
         if (type === 'small') {
-            e.hp = 1; e.maxHp = 1; e.size = 8;
+            e.hp = 2.5; e.maxHp = 2.5; e.size = 8;
             e.speed = 1.5 + Math.random() * 1;
             e.fireRate = Math.floor(120 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('small');
             if (patRoll > 0.7) { e.pattern = 'sine'; e.baseX = Math.max(50, Math.min(W - 50, e.x)); }
         } else if (type === 'medium') {
-            e.hp = 30; e.maxHp = 30; e.size = 14;
+            e.hp = 15; e.maxHp = 15; e.size = 14;
             e.speed = 1 + Math.random() * 0.5;
             e.fireRate = Math.floor(70 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('medium');
             if (patRoll > 0.5) { e.pattern = 'sine'; e.baseX = Math.max(55, Math.min(W - 55, e.x)); }
         } else if (type === 'large') {
-            e.hp = 100; e.maxHp = 100; e.size = 20; e.speed = 0.4;
+            e.hp = 50; e.maxHp = 50; e.size = 20; e.speed = 0.4;
             e.fireRate = Math.floor(45 * diff.fireRateMul);
             e.bulletPattern = pickBulletPattern('large');
             e.pattern = 'hover'; e.targetY = 60 + Math.random() * 60;
@@ -1006,7 +1011,7 @@
             enemies.push({
                 x: startX - dir * spacing * i,
                 y: baseY,
-                hp: 1, maxHp: 1, speed: spd, type: 'small',
+                hp: 2.5, maxHp: 2.5, speed: spd, type: 'small',
                 pattern: 'drift', fireRate: Math.floor(110 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 60),
                 size: 8, age: 0, baseX: 0, dir: dir,
@@ -1025,7 +1030,7 @@
         for (var i = 0; i < countPerSide; i++) {
             enemies.push({
                 x: startX, y: H + 30,
-                hp: 1, maxHp: 1, speed: 1, type: 'small',
+                hp: 2.5, maxHp: 2.5, speed: 1, type: 'small',
                 pattern: 'arcPath',
                 pathT: -i * 0.10,
                 pathSpeed: 1 / duration,
@@ -1045,7 +1050,7 @@
         for (var i = 0; i < count; i++) {
             enemies.push({
                 x: startX, y: -20 - i * 20,
-                hp: 1, maxHp: 1, speed: 1.4, type: 'small',
+                hp: 2.5, maxHp: 2.5, speed: 1.4, type: 'small',
                 pattern: 'sCurve',
                 entrySide: side, entryX: startX,
                 fireRate: Math.floor(100 * diff.fireRateMul),
@@ -1063,7 +1068,7 @@
         for (var i = 0; i < count; i++) {
             enemies.push({
                 x: startX, y: -20 - i * 20,
-                hp: 1, maxHp: 1, speed: 1.5, type: 'small',
+                hp: 2.5, maxHp: 2.5, speed: 1.5, type: 'small',
                 pattern: 'zCurve',
                 entrySide: side, entryX: startX,
                 fireRate: Math.floor(110 * diff.fireRateMul),
@@ -1088,7 +1093,7 @@
             var ex = 30 + spacing * i;
             enemies.push({
                 x: ex, y: -15,
-                hp: heavy ? 30 : 1, maxHp: heavy ? 30 : 1,
+                hp: heavy ? 15 : 2.5, maxHp: heavy ? 15 : 2.5,
                 speed: 1.0,
                 type: heavy ? 'medium' : 'small',  // グミ撃ち=中型 / 滝=小型
                 pattern: 'topHover',
@@ -1111,7 +1116,7 @@
         for (var i = 0; i < 2; i++) {
             enemies.push({
                 x: positions[i].x, y: -20,
-                hp: 80, maxHp: 80, speed: 0.8, type: 'large',
+                hp: 75, maxHp: 75, speed: 0.8, type: 'large',
                 pattern: 'hover', fireRate: Math.floor(35 * diff.fireRateMul),
                 fireTimer: Math.floor(Math.random() * 20),
                 size: 20, age: 0, baseX: positions[i].x, dir: 1,
@@ -1759,7 +1764,7 @@
             enemies.push({
                 x: p.x, y: -20,
                 targetSx: p.x, targetSy: p.y,
-                hp: 30, maxHp: 30, speed: 1.5,
+                hp: 40, maxHp: 40, speed: 1.5,
                 type: 'spawner',
                 pattern: 'spawnerHover',
                 fireRate: Math.floor(55 * diff.fireRateMul),
