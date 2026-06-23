@@ -108,6 +108,7 @@
 - ミニゲーム: 滝の弾速グラデーションを「加速方式」から「発射順の固定速度グラデーション」に変更。各弾は等速のまま発射順に WF_V0(1.5)→WF_VMAX(3.5) へ線形増速し、後発の速い弾が先発の遅い弾を追い越す。中央(y≈224)あたりで最後の弾が最初の弾を追い越すよう WF_INTERVAL=3 に調整（間隔は重視しない）。旧 accelY/vMaxY 加速ロジックは撤去
 - ミニゲーム: 滝の弾速を倍に（WF_V0 1.5→3.0 / WF_VMAX 3.5→7.0）。倍速で追い越し位置が下にずれるため WF_INTERVAL を 3→2 に詰めて追い越しを中央〜やや下(y≈260)に維持
 - ミニゲーム: グミ撃ち(topAimedHeavy)を全面刷新。中型9体固定（難易度非依存）。左右どちらかから順に上から出現して発射タイミングをずらし、退場降下は全員一斉(`descendAtAge`)。射撃を自機狙い7発バースト×3回(計21発)に変更し、各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き、`burstAim`）。バースト内弾速は遅→速グラデーション(GM_V0 3.0→GM_VMAX 7.0、滝の旧グラデの2倍速相当・滝とは独立)。6発目で次バーストが始まる(`GUMMI_SCHEDULE`/`GUMMI_NEXT_BURST_AT`、バースト同士が1発ぶん重なる)。`fireGummiShot` 追加、旧 aimed(`fireSnipeShot` else分岐)は撤去
+- ミニゲーム: 稲妻(zCurve)を改修。①L/Rを1パターンに統合（両側から各5体ずつ計10体、`spawnZCurveFormation` 引数なしで両側生成）。プラクティスも「稲妻」1ボタンに。②出現(zone0)と1回目の曲がり(zone1)の角度を緩やかに（横速 1.7→0.8）、2回目の降下(zone2)は従来1.7のまま。③射撃をグミ撃ち似のバーストに変更＝出現(y>0)した瞬間から自機狙い5発バースト×2回（全弾同速 LN_SPEED3.2・グラデーションなし、バーストごとに1発目で方向固定）。`LN_SCHEDULE`/`fireLightningShot` 追加、弾色 index12（黄）。道中パターン 11→10種
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -230,7 +231,7 @@
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
 - invertedUL/UR=弧月L/R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
 - sCurveL/R=蛇行L/R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
-- zCurveL/R=稲妻L/R: 片側の上からジグザグZ字で降下（7-9体、下向き、L=左から / R=右から）
+- zCurve=稲妻: 左右両方の上からジグザグZ字で降下（L/R統合、各5体ずつ計10体）。出現(zone0)と1回目の曲がり(zone1)は緩やか（横速 0.8）、2回目の降下(zone2)は従来（横速 1.7）。射撃は出現(y>0)した瞬間から、自機狙い**5発バースト×2回**（全弾同速 `LN_SPEED`3.2、グラデーションなし）。各バーストは1発目で自機方向を固定（`burstAim`、グミ撃ち似）。スケジュール `LN_SCHEDULE`（burst1=0,6,12,18,24 / burst2=42,48,54,60,66）を `lnTimer`/`lnSchedIdx` で消化。弾色 index12（黄）。`fireLightningShot` 使用
 - 被弾時Powerばらまき: fan(60F、約120°斜めに発射 spd=3〜4) → rise(60F、vx=0/vy=-1.5で垂直浮上) → fall(重力 vy+=0.1, 終端3) の3段階。`spawnDeathPowerItems` が `deathPhase` を付けて `updateItems` 側で分岐
 - 敵撃破アイテムは真上に飛んでから通常の自由落下
 - 回収エリア（画面上部）のアイテム引き寄せ速度=12
@@ -264,7 +265,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン11種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=滝/topAimedHeavy=グミ撃ち/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurveL=稲妻L/zCurveR=稲妻R）
+- 道中パターン10種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=滝/topAimedHeavy=グミ撃ち/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurve=稲妻（L/R統合））
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
