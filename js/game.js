@@ -26,6 +26,7 @@
     var practiceDiffSelect = document.getElementById('practice-diff-select');
     var practiceResultTitle = document.getElementById('practice-result-title');
     var practiceBackBtn = document.getElementById('practice-back-btn');
+    var difficultyBackBtn = document.getElementById('difficulty-back-btn');
     var pauseScreen = document.getElementById('game-pause-screen');
     var continueScreen = document.getElementById('game-continue-screen');
 
@@ -119,7 +120,14 @@
     loadSE('select', 'assets/game/se_select.mp3');
     function playSE(key) {
         var a = seAudio[key]; if (!a) return;
-        try { a.currentTime = 0; a.play().catch(function(){}); } catch (e) {}
+        // cloneNode で都度新しいインスタンスを再生 → 同じSEが重なっても前の音が途切れない
+        try {
+            var node = a.cloneNode();
+            node.volume = a.volume;
+            node.play().catch(function(){});
+        } catch (e) {
+            try { a.currentTime = 0; a.play().catch(function(){}); } catch (e2) {}
+        }
     }
 
     // ===== Constants =====
@@ -145,9 +153,11 @@
     function bulletHitRadius(b) {
         var s = b.size || 4;
         var t = b.bulletType || 'small';
-        if (t === 'star') return s * 0.55;                                  // 大きめ星弾は中央コアのみ
-        if (t === 'wedge' || t === 'ice' || t === 'seal') return s * 0.55;  // 細長弾は本体細め
-        return s * 0.7;                                                     // 丸弾 (small/medium/large)
+        if (t === 'star') return s * 0.55;   // 大きめ星弾は中央コアのみ（先端は判定なし）
+        if (t === 'wedge') return s * 0.42;  // 楔弾は中央の丸い芯のみ（外側の ( 部分は判定なし）
+        if (t === 'seal') return s * 0.45;   // 札弾はグラフィックより気持ち小さめ
+        if (t === 'ice') return s * 0.55;    // 氷弾は本体細め
+        return s * 0.7;                      // 丸弾 (small/medium/large)
     }
     var BOMB_DURATION = 60;
     var ITEM_ATTRACT_RADIUS = 36;
@@ -3272,6 +3282,14 @@
             playSE('decide'); goToTitle();
         });
         practiceBackBtn.addEventListener('mouseenter', function () { playSE('select'); });
+    }
+
+    // 難易度選択: 戻るボタン（タイトルへ）
+    if (difficultyBackBtn) {
+        difficultyBackBtn.addEventListener('click', function () {
+            playSE('decide'); goToTitle();
+        });
+        difficultyBackBtn.addEventListener('mouseenter', function () { playSE('select'); });
     }
 
     // プラクティス結果: リトライ／パターン選択／タイトル

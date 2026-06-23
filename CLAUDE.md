@@ -99,6 +99,9 @@
 - ミニゲーム: 自機・敵・ボスのキャラ描画をスプライト対応パイプラインに（東方寄せの素材差し替え準備）。`CHAR_SPRITES` 設定＋`drawCharSprite(img,cfg,cx,cy,targetW,targetH)` ヘルパーを追加し、`drawPlayer`/`drawEnemies`/`drawBoss`(本体)で「スプライトがあれば使用・無ければ従来の図形にフォールバック」。`loadSprite` の onerror で欠損時 null になる仕組みを利用し、PNGを `assets/game/` に置くだけで自動有効化（置くまでは図形のまま＝見た目不変、ただしDL試行で404がコンソールに出る）。配置すべきファイル: `player.png` / `enemy_small.png` / `enemy_medium.png` / `enemy_large.png` / `boss.png`。単一画像はそのまま（アスペクト比保持）、横並びアニメは `CHAR_SPRITES` の frameW/frames/animFps を素材に合わせて設定。サイズは player=drawW/drawH(px)、敵/ボス=drawScale(当たり半径 e.size/boss.size への倍率)で調整
 - ミニゲーム: ボス弾幕を種別ごとに差別化（`fireBossBullets` を `boss.bulletKind` で分岐＝星=螺旋/回転、楔=高速自機狙い/横ウォール、氷=雪結晶対称/吹雪、札=隙間壁/格子）。共通ヘルパー `bossAimedFan`/`bossRing` を追加
 - ミニゲーム: タイトルの「SHOOTING」を赤グロー＋白い芯の二段描画で視認性UP、「- Portfolio Mini Game -」サブ表記を削除
+- ミニゲーム: 難易度選択画面に「戻る」ボタン追加（`#difficulty-back-btn`、クリックでタイトルへ。ESC/Xも従来通り対応）
+- ミニゲーム: 効果音を多重再生対応（`playSE` を `cloneNode()` 方式に変更。選択SE連打で前の音が途切れず重なって鳴る）
+- ミニゲーム: 弾の当たり判定を弾種ごとに微調整（楔弾 0.55→0.42＝中央の丸芯のみ・( 部分は判定なし、札弾 0.55→0.45＝グラフィックより気持ち小さめ。星弾/氷弾は 0.55 維持）
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -176,7 +179,7 @@
 - diagonal / random / split / spread / circle は従来通り（パターン構造維持 or `diff.bullets` 倍率依存）
 - 中型は中弾、大型は大弾を放つ（bulletType=medium/large、サイズ自動切替）
 - 小型HP=2.5、中型HP=15、大型HP=50、dualTurret大型HP=75、スポナーHP=40、ボスHP=600固定（中型・大型のHPバー非表示）。プレイヤー通常ショット=1ダメージ/発、追尾弾=0.5、ボム=雑魚8/ボス18（1接触）
-- 敵弾の当たり判定は本家準拠の `bulletHitRadius(b)`：丸弾(small/medium/large) `b.size*0.7`、星弾/楔弾/氷弾/札弾 `b.size*0.55`。敵接触は `e.size*0.5`、ボス接触は `boss.size*0.55`
+- 敵弾の当たり判定は本家準拠の `bulletHitRadius(b)`：丸弾(small/medium/large) `b.size*0.7`、星弾 `b.size*0.55`（中央コアのみ＝先端は判定なし）、氷弾 `b.size*0.55`、楔弾 `b.size*0.42`（中央の丸い芯のみ＝外側の ( 部分は判定なし）、札弾 `b.size*0.45`（グラフィックより気持ち小さめ）。敵接触は `e.size*0.5`、ボス接触は `boss.size*0.55`
 - 星弾は常時ゆっくり回転（frame*0.04 + 個別spin）、見た目サイズは b.size*3（大型化）、ボスPhase1の全方位回転星弾も同仕様
 - 弾スプライトは新素材（東方風弾幕素材 Ver.3）を使用。色 index 0 始まり：
   - 16x16 系（`bullet_small/wedge/ice/seal/small_star`）: 256x16, 16色（0=灰, 1=赤橙, 2=赤, 3=桃, 4=紫, 5=青紫, 6=青, 7=水, 8=淡水, 9=緑, 10=淡緑, 11=黄緑, 12=黄, 13=黃橙, 14=橙, 15=灰）
@@ -264,6 +267,7 @@
 
 ### 音声（SE）
 - assets/game/se_decide.mp3（決定音）、se_select.mp3（選択音）を使用
+- `playSE` は `cloneNode()` で都度新しいインスタンスを再生 → 同じSEが連続/重複しても前の音が途切れず重なって鳴る
 - 選択SE: 矢印キー移動、マウスホバー（直前と同じ項目では鳴らさない）、ランキングタブホバー
 - 決定SE: Z/Enter/Escape、クリック全般（タイトルメニュー/難易度/ランキングタブ/リトライ/戻る/スコア送信/スキップ）
 - キャンセルSE未対応（未用意）
