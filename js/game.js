@@ -292,16 +292,18 @@
         // Title text (パーティクルの手前に描画、大きく表示)
         ctx.save();
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#ff4444';
-        ctx.shadowColor = '#ff4444';
-        ctx.shadowBlur = 30;
+        var tx = CANVAS_W / 2, ty = CANVAS_H * 0.24;
         ctx.font = 'bold 54px "Courier New", monospace';
-        ctx.fillText('SHOOTING', CANVAS_W / 2, CANVAS_H * 0.22);
-        ctx.fillText('SHOOTING', CANVAS_W / 2, CANVAS_H * 0.22); // 二重描画で明るく
+        // 赤いグロー（外側）を二重で
+        ctx.shadowColor = '#ff3030';
+        ctx.shadowBlur = 26;
+        ctx.fillStyle = '#ff5a5a';
+        ctx.fillText('SHOOTING', tx, ty);
+        ctx.fillText('SHOOTING', tx, ty);
+        // 明るい芯（白）を重ねて視認性UP
         ctx.shadowBlur = 0;
-        ctx.font = '12px "Courier New", monospace';
-        ctx.fillStyle = 'rgba(255,200,200,0.6)';
-        ctx.fillText('- Portfolio Mini Game -', CANVAS_W / 2, CANVAS_H * 0.22 + 32);
+        ctx.fillStyle = '#fff2f2';
+        ctx.fillText('SHOOTING', tx, ty);
         ctx.restore();
     }
 
@@ -1822,64 +1824,152 @@
         eBullets.push({ x: x, y: y, vx: vx, vy: vy, size: sh.size, grazed: false, color: sh.color, bulletType: sh.bulletType, spin: spinVal });
     }
 
+    // --- ボス弾幕の共通ヘルパー ---
+    function bossAimedFan(spd, n, spreadBase) {
+        var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+        if (n <= 1) { pushBossBullet(boss.x, boss.y + boss.size, Math.cos(angle) * spd, Math.sin(angle) * spd); return; }
+        var spread = spreadBase + 0.06 * (n - 3);
+        for (var i = 0; i < n; i++) {
+            var a = angle - spread + (spread * 2 / (n - 1)) * i;
+            pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd, Math.sin(a) * spd);
+        }
+    }
+    function bossRing(n, spd, rot, sizeHint) {
+        for (var i = 0; i < n; i++) {
+            var a = (Math.PI * 2 / n) * i + rot;
+            pushBossBullet(boss.x, boss.y + boss.size * 0.5, Math.cos(a) * spd, Math.sin(a) * spd, sizeHint ? bossBulletShape(sizeHint) : undefined);
+        }
+    }
+
+    // ボス種別ごとに弾幕の「撃ち方」を変える（1回の呼び出し＝1ボレー。間隔は fireRate 側）
     function fireBossBullets() {
-        var spd = 2 * diff.speed, phase = boss.phase % 4;
-        if (phase === 0) {
-            // 自機狙い扇: Easy 1 / Normal 3 / Hard 5 / Lunatic 7
-            var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
-            var n = diff.aimedCount;
-            if (n <= 1) {
-                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(angle) * spd, Math.sin(angle) * spd);
-            } else {
-                var spread = 0.3 + 0.08 * (n - 3); // 弾数に応じて扇を広げる
+        var kind = (boss && boss.bulletKind) || 'star';
+        if (kind === 'star') fireBossStar();
+        else if (kind === 'wedge') fireBossWedge();
+        else if (kind === 'ice') fireBossIce();
+        else fireBossSeal();
+    }
+
+    // 星弾：螺旋・回転リング（ゆったり大味）
+    function fireBossStar() {
+        var spd = 2 * diff.speed, p = boss.phase % 4;
+        if (p === 0) {
+            // 多腕スパイラル（毎ボレーで角度が回り、螺旋になる）
+            var arms = 3 + Math.min(2, Math.floor(diff.bullets));
+            var base = boss.age * 0.22;
+            for (var i = 0; i < arms; i++) {
+                var a = base + (Math.PI * 2 / arms) * i;
+                pushBossBullet(boss.x, boss.y, Math.cos(a) * spd, Math.sin(a) * spd);
+            }
+        } else if (p === 1) {
+            // 全方位2層・逆回転
+            bossRing(Math.max(6, Math.floor(8 * diff.bullets)), spd * 0.9, boss.age * 0.05);
+            bossRing(Math.max(5, Math.floor(6 * diff.bullets)), spd * 1.1, -boss.age * 0.05, 6);
+        } else if (p === 2) {
+            // 自機狙い扇 + 左右の螺旋オーブ
+            bossAimedFan(spd, diff.aimedCount, 0.3);
+            var a1 = boss.age * 0.25, a2 = -boss.age * 0.25;
+            pushBossBullet(boss.x, boss.y, Math.cos(a1) * spd * 0.8, Math.sin(a1) * spd * 0.8);
+            pushBossBullet(boss.x, boss.y, Math.cos(a2) * spd * 0.8, Math.sin(a2) * spd * 0.8);
+        } else {
+            // 大きな全方位リングをパルス発射
+            bossRing(Math.max(10, Math.floor(14 * diff.bullets)), spd, boss.age * 0.03, 7);
+        }
+    }
+
+    // 楔弾：高速な自機狙い・直線ウォール（攻撃的）
+    function fireBossWedge() {
+        var spd = 2.4 * diff.speed, p = boss.phase % 4;
+        if (p === 0) {
+            // 細く速い自機狙いストリーム
+            bossAimedFan(spd * 1.1, Math.max(3, diff.aimedCount), 0.12);
+        } else if (p === 1) {
+            // 左右から交互の横ウォール（やや下向き）
+            var dir = (Math.floor(boss.phaseTimer / 30) % 2 === 0) ? 1 : -1;
+            var n = Math.max(5, Math.floor(7 * diff.bullets));
+            for (var i = 0; i < n; i++) {
+                var y = boss.y - 36 + i * 13;
+                pushBossBullet(boss.x, y, dir * spd, 0.35 * spd);
+            }
+        } else if (p === 2) {
+            // 回転十字 + 自機狙い
+            var rot = boss.age * 0.06;
+            for (var i = 0; i < 4; i++) {
+                var a = rot + (Math.PI / 2) * i;
+                pushBossBullet(boss.x, boss.y, Math.cos(a) * spd, Math.sin(a) * spd);
+            }
+            bossAimedFan(spd * 1.2, diff.aimedCount, 0.1);
+        } else {
+            // 超高速の自機狙いバースト
+            bossAimedFan(spd * 1.4, diff.aimedCount + 2, 0.18);
+        }
+    }
+
+    // 氷弾：雪結晶の対称バースト＋吹雪（虹色・拡散）
+    function fireBossIce() {
+        var spd = 2 * diff.speed, p = boss.phase % 4;
+        if (p === 0) {
+            // 雪の結晶：6方向×2層の対称バースト
+            var arms = 6, rot = boss.age * 0.03;
+            for (var layer = 0; layer < 2; layer++) {
+                var ls = spd * (0.8 + layer * 0.4);
+                for (var i = 0; i < arms; i++) {
+                    var a = (Math.PI * 2 / arms) * i + rot + layer * 0.18;
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * ls, Math.sin(a) * ls);
+                }
+            }
+        } else if (p === 1) {
+            // 吹雪：広角ランダム散布
+            var n = Math.max(6, Math.floor(9 * diff.bullets));
+            for (var i = 0; i < n; i++) {
+                var a = Math.PI * 0.15 + Math.random() * Math.PI * 0.7;
+                var s = spd * (0.6 + Math.random() * 0.7);
+                pushBossBullet(boss.x + (Math.random() - 0.5) * 30, boss.y, Math.cos(a) * s, Math.sin(a) * s);
+            }
+        } else if (p === 2) {
+            // 対称の密な全方位リング
+            bossRing(Math.max(10, Math.floor(14 * diff.bullets)), spd * 0.85, boss.age * 0.04);
+        } else {
+            // 自機狙い + 左右対称の扇
+            bossAimedFan(spd, diff.aimedCount, 0.25);
+            var n = Math.max(3, Math.floor(4 * diff.bullets));
+            for (var side = -1; side <= 1; side += 2) {
                 for (var i = 0; i < n; i++) {
-                    var a = angle - spread + (spread * 2 / (n - 1)) * i;
-                    pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd, Math.sin(a) * spd);
+                    var a = Math.PI / 2 + side * (0.5 + i * 0.18);
+                    pushBossBullet(boss.x, boss.y, Math.cos(a) * spd * 0.9, Math.sin(a) * spd * 0.9);
                 }
             }
-        } else if (phase === 1) {
-            // 全方位回転2層逆回転：大きめ
-            var n = Math.max(6, Math.floor(7 * diff.bullets));
+        }
+    }
+
+    // 札弾：隙間付きの壁／格子など規律的な配置
+    function fireBossSeal() {
+        var spd = 2 * diff.speed, p = boss.phase % 4;
+        if (p === 0) {
+            // 札の壁：横一列を上から落とす（1か所だけ隙間＝回避ポイント）
+            var n = Math.max(7, Math.floor(9 * diff.bullets));
+            var gap = Math.floor(Math.random() * n);
             for (var i = 0; i < n; i++) {
-                var a = (Math.PI * 2 / n) * i + boss.age * 0.05;
-                pushBossBullet(boss.x, boss.y + boss.size * 0.5, Math.cos(a) * spd * 0.9, Math.sin(a) * spd * 0.9, bossBulletShape(7));
+                if (i === gap) continue;
+                var x = 20 + (W - 40) * (i / (n - 1));
+                pushBossBullet(x, 12, 0, spd * 0.9);
             }
-            if ((boss.phaseTimer / 18) % 2 < 1) {
-                var n2 = Math.max(5, Math.floor(5 * diff.bullets));
-                for (var i = 0; i < n2; i++) {
-                    var a = (Math.PI * 2 / n2) * i - boss.age * 0.05;
-                    pushBossBullet(boss.x, boss.y + boss.size * 0.5, Math.cos(a) * spd * 1.1, Math.sin(a) * spd * 1.1, bossBulletShape(6));
-                }
-            }
-        } else if (phase === 2) {
-            // ランダム散らし
-            var n = Math.max(5, Math.floor(8 * diff.bullets));
-            for (var i = 0; i < n; i++) {
-                var a = Math.random() * Math.PI * 0.8 + Math.PI * 0.1;
-                var s = spd * (0.7 + Math.random() * 0.6);
-                pushBossBullet(boss.x + (Math.random() - 0.5) * 30, boss.y + boss.size, Math.cos(a) * s, Math.sin(a) * s);
+        } else if (p === 1) {
+            // 回転リング + 自機狙い
+            bossRing(Math.max(8, Math.floor(10 * diff.bullets)), spd * 0.9, boss.age * 0.04);
+            bossAimedFan(spd * 1.1, diff.aimedCount, 0.2);
+        } else if (p === 2) {
+            // 格子：複数の縦ストリームを少しずつ揺らす
+            var cols = Math.max(4, Math.floor(5 * diff.bullets));
+            for (var i = 0; i < cols; i++) {
+                var x = 30 + (W - 60) * (i / (cols - 1));
+                var off = Math.sin(boss.age * 0.1 + i) * 1.2;
+                pushBossBullet(x, 12, off, spd);
             }
         } else {
-            // way (wayCount+2) + 自機狙い (aimedCount)
-            var base = Math.PI / 2;
-            var wn = diff.wayCount + 2;
-            var whalf = (wn - 1) / 2;
-            for (var i = 0; i < wn; i++) {
-                var k = i - whalf;
-                var a = base + k * 0.25;
-                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(a) * spd, Math.sin(a) * spd);
-            }
-            var angle = Math.atan2(player.y - boss.y, player.x - boss.x);
-            var an = diff.aimedCount;
-            if (an <= 1) {
-                pushBossBullet(boss.x, boss.y + boss.size, Math.cos(angle) * spd * 1.2, Math.sin(angle) * spd * 1.2);
-            } else {
-                var asp = 0.2 + 0.05 * (an - 3);
-                for (var i = 0; i < an; i++) {
-                    var aa = angle - asp + (asp * 2 / (an - 1)) * i;
-                    pushBossBullet(boss.x, boss.y + boss.size, Math.cos(aa) * spd * 1.2, Math.sin(aa) * spd * 1.2);
-                }
-            }
+            // 自機狙い扇 + 逆回転リング
+            bossAimedFan(spd, diff.aimedCount, 0.25);
+            bossRing(Math.max(6, Math.floor(8 * diff.bullets)), spd * 0.8, -boss.age * 0.05, 6);
         }
     }
 
