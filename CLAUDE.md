@@ -102,6 +102,8 @@
 - ミニゲーム: 難易度選択画面に「戻る」ボタン追加（`#difficulty-back-btn`、クリックでタイトルへ。ESC/Xも従来通り対応）
 - ミニゲーム: 効果音を多重再生対応（`playSE` を `cloneNode()` 方式に変更。選択SE連打で前の音が途切れず重なって鳴る）
 - ミニゲーム: 弾の当たり判定を弾種ごとに微調整（楔弾 0.55→0.42＝中央の丸芯のみ・( 部分は判定なし、札弾 0.55→0.45＝グラフィックより気持ち小さめ。星弾/氷弾は 0.55 維持）
+- ミニゲーム: ボスの瞬間移動バグ修正（figure8 移動＝攻撃4/phase3 を直接代入から lerp 追従に変更。フェーズ突入時やプラクティスのループで moveTimer=0 リセット時に中央へワープしていた不具合を解消）
+- ミニゲーム: 滝パターン調整（弾速 2.2→4.4 で2倍・高速化、発射数 50→40、弾サイズ 3→2.25 で弾同士の隙間を確保）
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -217,7 +219,7 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=小型8体均等配置・真下に50発スキマなく連射・色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用, shotInterval=2）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
+- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=小型8体均等配置・真下に40発連射（弾速 4.4×diff.speed＝高速、弾サイズ2.25で隙間あり）・色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用, shotInterval=2）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)

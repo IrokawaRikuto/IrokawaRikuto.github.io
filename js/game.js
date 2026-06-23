@@ -1113,7 +1113,7 @@
                 size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
-                shotsToFire: heavy ? 20 : 50,  // グミ撃ち=20 / 滝=50
+                shotsToFire: heavy ? 20 : 40,  // グミ撃ち=20 / 滝=40
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
                 snipeColor: snipeColor,
@@ -1425,8 +1425,8 @@
     //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
-            var s = 2.2 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 3, grazed: false, color: e.snipeColor, bulletType: 'small' });
+            var s = 4.4 * diff.speed;
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
             var s2 = 2.4 * diff.speed;
@@ -1815,10 +1815,13 @@
             boss.x += (boss.dashTargetX - boss.x) * 0.12;
             boss.y += (boss.dashTargetY - boss.y) * 0.12;
         } else if (m === 'figure8') {
+            // 目標点をfigure-8に沿って動かし、lerpで追従（直接代入だとmoveTimerリセット時に瞬間移動する）
             var cx = W / 2, cy = 80, rx = 110, ry = 30;
             var t = boss.moveTimer * 0.02;
-            boss.x = cx + Math.sin(t) * rx;
-            boss.y = cy + Math.sin(t * 2) * ry;
+            var tx = cx + Math.sin(t) * rx;
+            var ty = cy + Math.sin(t * 2) * ry;
+            boss.x += (tx - boss.x) * 0.12;
+            boss.y += (ty - boss.y) * 0.12;
         }
         if (boss.x < 50) boss.x = 50;
         if (boss.x > W - 50) boss.x = W - 50;
