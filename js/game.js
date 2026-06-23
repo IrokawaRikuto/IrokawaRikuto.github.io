@@ -120,6 +120,13 @@
     loadSE('select', 'assets/game/se_select.mp3');
     function playSE(key) {
         var a = seAudio[key]; if (!a) return;
+        // 決定音は「キー処理で再生→そのキーが起こす click ハンドラでも再生」の二重再生を防ぐため短時間デバウンス
+        // （選択音は連続ナビで重ねたいのでデバウンスしない）
+        if (key === 'decide') {
+            var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+            if (playSE._lastDecide && now - playSE._lastDecide < 70) return;
+            playSE._lastDecide = now;
+        }
         // cloneNode で都度新しいインスタンスを再生 → 同じSEが重なっても前の音が途切れない
         try {
             var node = a.cloneNode();
@@ -205,7 +212,7 @@
     // 稲妻(zCurve)のバースト射撃：グミ撃ち似だが全弾同速（グラデーションなし）。中弾・紫(index2)・自機狙い5発バースト×2回。
     // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。出現(y>0)から LN_FIRE_DELAY 後に発射開始。
     // LN_BURST_GAP=バースト間の撃つ間隔。
-    var LN_SPEED = 4.5, LN_SHOT_INT = 6, LN_BURSTS = 2, LN_BURST_SHOTS = 5, LN_BURST_GAP = 57, LN_FIRE_DELAY = 120;
+    var LN_SPEED = 4.5, LN_SHOT_INT = 6, LN_BURSTS = 2, LN_BURST_SHOTS = 5, LN_BURST_GAP = 57, LN_FIRE_DELAY = 30;
     var LN_SCHEDULE = (function () {
         var arr = [];
         for (var b = 0; b < LN_BURSTS; b++) {
