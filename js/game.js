@@ -187,8 +187,8 @@
     // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。バースト内は弾速が遅→速グラデーション
     // （GM_V0→GM_VMAX、滝より速め）。6発目(index5)が撃たれた時に次バーストが始まる＝バースト同士が1発ぶん重なる。
     // 敵は左右どちらかから順に上から出現して発射タイミングをずらし、退場(降下)は全員同じ age で一斉。
-    var GM_V0 = 3.0, GM_VMAX = 7.0;                          // バースト内グラデーション弾速（遅→速。滝とは独立した固定値）
-    var GUMMI_SHOT_INT = 5, GUMMI_BURSTS = 3, GUMMI_BURST_SHOTS = 7, GUMMI_STAGGER = 12;
+    var GM_V0 = 4.5, GM_VMAX = 10.5;                         // バースト内グラデーション弾速（遅→速。滝とは独立した固定値、中弾）
+    var GUMMI_SHOT_INT = 5, GUMMI_BURSTS = 3, GUMMI_BURST_SHOTS = 7, GUMMI_STAGGER = 4;
     var GUMMI_NEXT_BURST_AT = (GUMMI_BURST_SHOTS - 2) * GUMMI_SHOT_INT; // 6発目(index5)=5×INT で次バースト開始
     var GUMMI_SCHEDULE = (function () {
         var arr = [];
@@ -1154,7 +1154,7 @@
                 var rank = fromLeft ? gi : (count - 1 - gi);  // 出現順（0=最初に出る側）
                 enemies.push({
                     x: gx, y: -15,
-                    hp: 30, maxHp: 30, speed: 1.0, type: 'medium',
+                    hp: 12, maxHp: 12, speed: 1.0, type: 'medium',
                     pattern: 'topHover', gummi: true,
                     fireTimer: 0, size: 14, age: 0, baseX: gx, dir: 1,
                     snipeColor: snipeColor, targetY: stopY,
@@ -1522,7 +1522,7 @@
         }
         var ang = e.burstAim[entry.burst];
         var v = GM_V0 + (GM_VMAX - GM_V0) * entry.grad;
-        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
+        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 5, grazed: false, color: e.snipeColor, bulletType: 'medium' });
     }
 
     // 稲妻の射撃。グミ撃ち似だが全弾同速(LN_SPEED)。バースト1発目(shot===0)で自機方向を捕捉し、以降同じ向き。
