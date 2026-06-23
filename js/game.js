@@ -178,9 +178,10 @@
     };
 
     // 滝(topAimed)の弾速グラデーション設定（難易度非依存・固定）。
-    // 各弾は初速 WF_V0 → 最高速 WF_VMAX まで毎フレーム WF_ACCEL 加速。発射間隔 WF_INTERVAL は固定で、
-    // 加速完了後の弾間隔 = WF_VMAX × WF_INTERVAL（中心間 ≈ 15.4px ＝ 弾サイズ0.75ぶんの隙間）に収束する。
-    var WF_V0 = 1.3, WF_VMAX = 2.2, WF_ACCEL = 0.012, WF_INTERVAL = 7;
+    // 発射順に弾速を WF_V0(最初/最遅) → WF_VMAX(最後/最速) へ線形に上げる（各弾は等速）。
+    // 後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央(y≈224)あたりで最後の弾が最初の弾を追い越す。
+    // 間隔は WF_INTERVAL 固定（間隔は重視せず、追い越し位置を優先した値）。
+    var WF_V0 = 1.5, WF_VMAX = 3.5, WF_INTERVAL = 3;
 
     // ===== State =====
     var state = 'TITLE';
@@ -1117,7 +1118,7 @@
                 fireTimer: 0,
                 size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
-                shotInterval: heavy ? 5 : WF_INTERVAL,   // 滝は固定間隔（弾速グラデーションは弾側で加速）
+                shotInterval: heavy ? 5 : WF_INTERVAL,   // 滝は固定間隔（弾速は発射順にグラデーション）
                 shotsToFire: heavy ? 20 : 20,  // グミ撃ち=20 / 滝=20
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 165,  // 撃ち終わってから降下するまでの待機（滝=2.75秒、最後の弾を見せてから降りる）
@@ -1431,9 +1432,11 @@
     //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
-            // 弾速グラデーション：遅い初速(WF_V0)から共通の最高速度(WF_VMAX)まで加速。
-            // 発射間隔は WF_INTERVAL 固定なので加速し切った後の間隔 = WF_VMAX × WF_INTERVAL で一定（難易度非依存）
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: WF_V0, accelY: WF_ACCEL, vMaxY: WF_VMAX, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
+            // 弾速グラデーション：発射順に WF_V0(最遅) → WF_VMAX(最速) へ線形に上げる（各弾は等速）。
+            // 後発の速い弾が先発の遅い弾を追い越し、中央あたりで最後の弾が最初の弾を追い越す
+            var n = e.shotsToFire > 1 ? e.shotsToFire - 1 : 1;
+            var v = WF_V0 + (WF_VMAX - WF_V0) * (e.shotsFired / n);
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
             var s2 = 2.4 * diff.speed;
@@ -2268,10 +2271,7 @@
     // ===== Enemy Bullets =====
     function updateEBullets() {
         for (var i = eBullets.length - 1; i >= 0; i--) {
-            var b = eBullets[i];
-            // 滝弾: 遅い初速から共通の最高速度まで加速（飛翔中は速度グラデーション、加速完了後は等速＝間隔一定）
-            if (b.accelY) { b.vy = Math.min(b.vMaxY, b.vy + b.accelY); }
-            b.x += b.vx; b.y += b.vy;
+            var b = eBullets[i]; b.x += b.vx; b.y += b.vy;
             if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) eBullets.splice(i, 1);
         }
     }
