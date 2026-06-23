@@ -106,6 +106,8 @@
 - ミニゲーム: 滝パターン調整（弾速は元の 2.2×diff.speed、発射数 20、弾サイズ2.25）。弾同士の隙間が弾サイズの約0.75ぶんになるよう `shotInterval` を弾速追従で算出（`shotInterval = round(直径×1.75 / 弾速)`、Easy=9 / Normal=7 / Hard=6 / Lunatic=5）
 - ミニゲーム: 滝を弾速グラデーション化＋難易度設計を変更。①難易度では敵数だけ増加（Easy=7/Normal=8/Hard=9/Lunatic=10）、弾数(20)・弾速・間隔は難易度非依存に。②弾速グラデーション＝各滝弾は等速だが発射順に弾速を `WF_V0`(1.5)→`WF_VMAX`(3.5) へ線形に上げる。後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央(y≈224)あたりで最後の弾が最初の弾を追い越す。間隔は重視せず `WF_INTERVAL`(3) 固定（追い越し位置を優先）
 - ミニゲーム: 滝の弾速グラデーションを「加速方式」から「発射順の固定速度グラデーション」に変更。各弾は等速のまま発射順に WF_V0(1.5)→WF_VMAX(3.5) へ線形増速し、後発の速い弾が先発の遅い弾を追い越す。中央(y≈224)あたりで最後の弾が最初の弾を追い越すよう WF_INTERVAL=3 に調整（間隔は重視しない）。旧 accelY/vMaxY 加速ロジックは撤去
+- ミニゲーム: 滝の弾速を倍に（WF_V0 1.5→3.0 / WF_VMAX 3.5→7.0）。倍速で追い越し位置が下にずれるため WF_INTERVAL を 3→2 に詰めて追い越しを中央〜やや下(y≈260)に維持
+- ミニゲーム: グミ撃ち(topAimedHeavy)を全面刷新。中型9体固定（難易度非依存）。左右どちらかから順に上から出現して発射タイミングをずらし、退場降下は全員一斉(`descendAtAge`)。射撃を自機狙い7発バースト×3回(計21発)に変更し、各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き、`burstAim`）。バースト内弾速は遅→速グラデーション(GM_V0 3.0→GM_VMAX 7.0、滝の旧グラデの2倍速相当・滝とは独立)。6発目で次バーストが始まる(`GUMMI_SCHEDULE`/`GUMMI_NEXT_BURST_AT`、バースト同士が1発ぶん重なる)。`fireGummiShot` 追加、旧 aimed(`fireSnipeShot` else分岐)は撤去
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -221,7 +223,8 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=均等配置・真下に各20発連射。敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10、`executeWaveEvent` の topAimed で `7 + diffW`）。弾数・弾速・間隔は難易度非依存。弾速グラデーション＝発射順に弾速を `WF_V0`(1.5, 最初/最遅) → `WF_VMAX`(3.5, 最後/最速) へ線形に上げる（各弾は等速）。後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央(y≈224)あたりで最後の弾が最初の弾を追い越す。発射間隔 `WF_INTERVAL`(3) 固定（間隔は重視せず追い越し位置優先）。色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=165F≒2.75秒 / グミ撃ち=50F）カウントダウンで降下開始（最後の弾を見せてから降りる）
+- topAimed=滝: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら `descendDelay`(165F≒2.75秒)待機後に無射撃でまっすぐ降りて退場。弾は小弾（素材①の丸弾, bulletType:'small', size2.25）。均等配置・真下に各20発連射。敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10、`executeWaveEvent` の topAimed で `7 + diffW`）。弾数・弾速・間隔は難易度非依存。弾速グラデーション＝発射順に弾速を `WF_V0`(3.0, 最初/最遅) → `WF_VMAX`(7.0, 最後/最速) へ線形に上げる（各弾は等速）。後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央〜やや下(y≈260)あたりで最後の弾が最初の弾を追い越す。発射間隔 `WF_INTERVAL`(2) 固定（間隔は重視せず追い越し位置優先）。色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` が使用）
+- topAimedHeavy=グミ撃ち: 中型9体固定（難易度非依存）。左右どちらか(`fromLeft`)から順に上から出現して発射タイミングをずらし、退場(降下)は全員同じ `descendAtAge` で一斉。自機狙い**7発バースト×3回**（計21発）。各バーストは1発目(shot===0)で自機方向を捕捉し以降プレイヤーが動いても同じ向きで撃つ（`burstAim[burst]`）。バースト内は弾速が遅→速グラデーション（`GM_V0`3.0→`GM_VMAX`7.0、滝とは独立した固定値）。**6発目(index5)が撃たれた時に次バーストが始まる**（`GUMMI_NEXT_BURST_AT`=5×`GUMMI_SHOT_INT`、バースト同士が1発ぶん重なる）。発射スケジュールは `GUMMI_SCHEDULE`（21エントリ t順ソート、最大t=80）を `burstTimer`/`schedIdx` で消化。色 index1（赤）, 弾 size2.25。`GUMMI_STAGGER`=12 で出現間隔
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)

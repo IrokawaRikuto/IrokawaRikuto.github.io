@@ -181,7 +181,26 @@
     // 発射順に弾速を WF_V0(最初/最遅) → WF_VMAX(最後/最速) へ線形に上げる（各弾は等速）。
     // 後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央(y≈224)あたりで最後の弾が最初の弾を追い越す。
     // 間隔は WF_INTERVAL 固定（間隔は重視せず、追い越し位置を優先した値）。
-    var WF_V0 = 1.5, WF_VMAX = 3.5, WF_INTERVAL = 3;
+    var WF_V0 = 3.0, WF_VMAX = 7.0, WF_INTERVAL = 2;
+
+    // グミ撃ち(topAimedHeavy)設定：中型9体・自機狙い7発バースト×3回。
+    // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。バースト内は弾速が遅→速グラデーション
+    // （GM_V0→GM_VMAX、滝より速め）。6発目(index5)が撃たれた時に次バーストが始まる＝バースト同士が1発ぶん重なる。
+    // 敵は左右どちらかから順に上から出現して発射タイミングをずらし、退場(降下)は全員同じ age で一斉。
+    var GM_V0 = 3.0, GM_VMAX = 7.0;                          // バースト内グラデーション弾速（遅→速。滝とは独立した固定値）
+    var GUMMI_SHOT_INT = 5, GUMMI_BURSTS = 3, GUMMI_BURST_SHOTS = 7, GUMMI_STAGGER = 12;
+    var GUMMI_NEXT_BURST_AT = (GUMMI_BURST_SHOTS - 2) * GUMMI_SHOT_INT; // 6発目(index5)=5×INT で次バースト開始
+    var GUMMI_SCHEDULE = (function () {
+        var arr = [];
+        for (var b = 0; b < GUMMI_BURSTS; b++) {
+            var bs = b * GUMMI_NEXT_BURST_AT;
+            for (var s = 0; s < GUMMI_BURST_SHOTS; s++) {
+                arr.push({ t: bs + s * GUMMI_SHOT_INT, burst: b, shot: s, grad: s / (GUMMI_BURST_SHOTS - 1) });
+            }
+        }
+        arr.sort(function (a, b2) { return a.t - b2.t; });
+        return arr;
+    })();
 
     // ===== State =====
     var state = 'TITLE';
@@ -1107,21 +1126,39 @@
         var stopY = 40 + Math.random() * 20; // ウェーブ共通の停止Y（横一列に揃える）
         // 滝の弾色はウェーブごとに1色だけランダム抽選（全弾同色）。グミ撃ちは固定で index 1（赤）
         var snipeColor = heavy ? 1 : Math.floor(Math.random() * 16);
+        if (heavy) {
+            // グミ撃ち: 中型9体。左右どちらかから順に上から出現（発射タイミングをずらす）、退場(降下)は全員一斉
+            var fromLeft = Math.random() < 0.5;
+            var descendTime = Math.ceil((stopY + 15) / 1.0);           // 出現位置(-15)→停止Yまでの降下フレーム
+            var burstDur = GUMMI_SCHEDULE[GUMMI_SCHEDULE.length - 1].t; // 全バースト撃ち切りまでの時間
+            var descendAtAge = (count - 1) * GUMMI_STAGGER + descendTime + burstDur + 60; // 最後の1体が撃ち終えて+1秒で全員退場
+            for (var gi = 0; gi < count; gi++) {
+                var gx = 30 + spacing * gi;
+                var rank = fromLeft ? gi : (count - 1 - gi);  // 出現順（0=最初に出る側）
+                enemies.push({
+                    x: gx, y: -15,
+                    hp: 30, maxHp: 30, speed: 1.0, type: 'medium',
+                    pattern: 'topHover', gummi: true,
+                    fireTimer: 0, size: 14, age: 0, baseX: gx, dir: 1,
+                    snipeColor: snipeColor, targetY: stopY,
+                    appearDelay: rank * GUMMI_STAGGER,  // この age になるまで画面外で待機
+                    descendAtAge: descendAtAge,         // この age で全員一斉に退場降下
+                    burstTimer: 0, schedIdx: 0, burstAim: []
+                });
+            }
+            return;
+        }
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
                 x: ex, y: -15,
-                hp: heavy ? 15 : 2.5, maxHp: heavy ? 15 : 2.5,
-                speed: 1.0,
-                type: heavy ? 'medium' : 'small',  // グミ撃ち=中型 / 滝=小型
-                pattern: 'topHover',
-                fireTimer: 0,
-                size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
-                snipeMode: heavy ? 'aimed' : 'waterfall',
-                shotInterval: heavy ? 5 : WF_INTERVAL,   // 滝は固定間隔（弾速は発射順にグラデーション）
-                shotsToFire: heavy ? 20 : 20,  // グミ撃ち=20 / 滝=20
-                shotsFired: 0,
-                descendDelay: heavy ? 50 : 165,  // 撃ち終わってから降下するまでの待機（滝=2.75秒、最後の弾を見せてから降りる）
+                hp: 2.5, maxHp: 2.5, speed: 1.0, type: 'small',
+                pattern: 'topHover', fireTimer: 0,
+                size: 8, age: 0, baseX: ex, dir: 1,
+                snipeMode: 'waterfall',
+                shotInterval: WF_INTERVAL,   // 滝は固定間隔（弾速は発射順にグラデーション）
+                shotsToFire: 20, shotsFired: 0,
+                descendDelay: 165,  // 撃ち終わってから降下するまでの待機（2.75秒、最後の弾を見せてから降りる）
                 snipeColor: snipeColor,
                 targetY: stopY
             });
@@ -1201,7 +1238,7 @@
             case 'formation': spawnDriftFormation(); break;
             // 滝: 敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10）。弾数・弾速・間隔は難易度非依存
             case 'topAimed': spawnTopAimedWave(7 + ({ easy: 0, normal: 1, hard: 2, lunatic: 3 })[diffKey], false); break;
-            case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3), true); break;
+            case 'topAimedHeavy': spawnTopAimedWave(9, true); break;  // グミ撃ち=中型9体固定
             case 'mediumEscort':
                 spawnEnemy('medium');
                 for (var j = 0; j < 5; j++) spawnEnemy('small');
@@ -1294,11 +1331,18 @@
             e.x = Math.max(e.size, Math.min(W - e.size, e.x));
         }
         else if (e.pattern === 'topHover') {
-            // 停止位置(targetY)まで降下→停止して射撃→撃ち終わったら二拍おいて無射撃でまっすぐ降りていく
-            if (e.y < e.targetY) { e.y += e.speed; }
-            else if (e.shotsFired >= e.shotsToFire) {
-                if (e.descendDelay > 0) { e.descendDelay--; }
-                else { e.y += e.speed * 1.5; }
+            if (e.gummi) {
+                // グミ撃ち: 出現前は画面外で待機 → 停止位置まで降下して射撃 → 全員同じ age で一斉に退場降下
+                if (e.age < e.appearDelay) { /* 出現待ち（y=-15のまま） */ }
+                else if (e.age >= e.descendAtAge) { e.y += e.speed * 1.5; }
+                else if (e.y < e.targetY) { e.y += e.speed; }
+            } else {
+                // 滝: 停止位置(targetY)まで降下→停止して射撃→撃ち終わったら二拍おいて無射撃でまっすぐ降りていく
+                if (e.y < e.targetY) { e.y += e.speed; }
+                else if (e.shotsFired >= e.shotsToFire) {
+                    if (e.descendDelay > 0) { e.descendDelay--; }
+                    else { e.y += e.speed * 1.5; }
+                }
             }
         }
         else if (e.pattern === 'sineDrift') {
@@ -1418,8 +1462,17 @@
     function tickEnemyFire(e) {
         e.fireTimer++;
         if (e.pattern === 'topHover') {
-            // 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
-            if (e.y >= e.targetY && e.shotsFired < e.shotsToFire && e.fireTimer >= e.shotInterval) {
+            if (e.gummi) {
+                // 停止位置に着いてから GUMMI_SCHEDULE に沿ってバースト発射（退場開始まで）
+                if (e.y >= e.targetY && e.age >= e.appearDelay && e.age < e.descendAtAge) {
+                    e.burstTimer++;
+                    while (e.schedIdx < GUMMI_SCHEDULE.length && GUMMI_SCHEDULE[e.schedIdx].t <= e.burstTimer) {
+                        fireGummiShot(e, GUMMI_SCHEDULE[e.schedIdx]);
+                        e.schedIdx++;
+                    }
+                }
+            } else if (e.y >= e.targetY && e.shotsFired < e.shotsToFire && e.fireTimer >= e.shotInterval) {
+                // 滝: 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
                 e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
             }
         } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
@@ -1427,21 +1480,24 @@
         }
     }
 
-    // 降下狙撃/重降下狙撃の射撃。いずれも小弾（素材①の丸弾）を使用。色は e.snipeColor（spawn時に決定）。
-    //  waterfall=滝: 真下に連射、ウェーブごとに抽選した1色で全弾同色
-    //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
+    // 滝(waterfall)の射撃。真下に連射、小弾（素材①の丸弾）・ウェーブごとに抽選した1色で全弾同色。
+    // 弾速グラデーション：発射順に WF_V0(最遅) → WF_VMAX(最速) へ線形に上げる（各弾は等速）。
+    // 後発の速い弾が先発の遅い弾を追い越し、中央あたりで最後の弾が最初の弾を追い越す
     function fireSnipeShot(e) {
-        if (e.snipeMode === 'waterfall') {
-            // 弾速グラデーション：発射順に WF_V0(最遅) → WF_VMAX(最速) へ線形に上げる（各弾は等速）。
-            // 後発の速い弾が先発の遅い弾を追い越し、中央あたりで最後の弾が最初の弾を追い越す
-            var n = e.shotsToFire > 1 ? e.shotsToFire - 1 : 1;
-            var v = WF_V0 + (WF_VMAX - WF_V0) * (e.shotsFired / n);
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
-        } else {
-            var ang = Math.atan2(player.y - e.y, player.x - e.x);
-            var s2 = 2.4 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * s2, vy: Math.sin(ang) * s2, size: 3, grazed: false, color: e.snipeColor, bulletType: 'small' });
+        var n = e.shotsToFire > 1 ? e.shotsToFire - 1 : 1;
+        var v = WF_V0 + (WF_VMAX - WF_V0) * (e.shotsFired / n);
+        eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
+    }
+
+    // グミ撃ちの射撃。GUMMI_SCHEDULE の1エントリぶんを発射。バースト1発目(shot===0)で自機方向を捕捉し、
+    // 以降そのバーストはプレイヤーが動いても同じ向きで撃つ。弾速はバースト内で GM_V0→GM_VMAX のグラデーション（遅→速）。
+    function fireGummiShot(e, entry) {
+        if (entry.shot === 0) {
+            e.burstAim[entry.burst] = Math.atan2(player.y - e.y, player.x - e.x);
         }
+        var ang = e.burstAim[entry.burst];
+        var v = GM_V0 + (GM_VMAX - GM_V0) * entry.grad;
+        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
     }
 
     function fireEnemyBullet(e) {
