@@ -1120,7 +1120,7 @@
                 shotInterval: heavy ? 5 : WF_INTERVAL,   // 滝は固定間隔（弾速グラデーションは弾側で加速）
                 shotsToFire: heavy ? 20 : 20,  // グミ撃ち=20 / 滝=20
                 shotsFired: 0,
-                descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
+                descendDelay: heavy ? 50 : 165,  // 撃ち終わってから降下するまでの待機（滝=2.75秒、最後の弾を見せてから降りる）
                 snipeColor: snipeColor,
                 targetY: stopY
             });
