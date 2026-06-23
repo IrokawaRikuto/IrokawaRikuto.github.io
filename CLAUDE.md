@@ -109,6 +109,10 @@
 - ミニゲーム: 滝の弾速を倍に（WF_V0 1.5→3.0 / WF_VMAX 3.5→7.0）。倍速で追い越し位置が下にずれるため WF_INTERVAL を 3→2 に詰めて追い越しを中央〜やや下(y≈260)に維持
 - ミニゲーム: グミ撃ち(topAimedHeavy)を全面刷新。中型9体固定（難易度非依存）。左右どちらかから順に上から出現して発射タイミングをずらし、退場降下は全員一斉(`descendAtAge`)。射撃を自機狙い7発バースト×3回(計21発)に変更し、各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き、`burstAim`）。バースト内弾速は遅→速グラデーション(GM_V0 3.0→GM_VMAX 7.0、滝の旧グラデの2倍速相当・滝とは独立)。6発目で次バーストが始まる(`GUMMI_SCHEDULE`/`GUMMI_NEXT_BURST_AT`、バースト同士が1発ぶん重なる)。`fireGummiShot` 追加、旧 aimed(`fireSnipeShot` else分岐)は撤去
 - ミニゲーム: グミ撃ち微調整。出現を素早く（`GUMMI_STAGGER` 12→4＝ぱっぱと全部出す）、弾を中弾化（small/size2.25 → medium/size5）、弾速1.5倍（`GM_V0` 3.0→4.5 / `GM_VMAX` 7.0→10.5）、HP を 30→12 に軟化
+- ミニゲーム: グミ撃ち再調整。弾を大弾化（medium/size5 → large/size6）、弾速を落とす（`GM_V0` 4.5→2.5 / `GM_VMAX` 10.5→5.0、速すぎ修正）
+- ミニゲーム: 稲妻 再調整。出現時の角度を横寄りに（zone0/zone1 横速 0.8→2.5＝もっと横に動く）、弾速アップ（`LN_SPEED` 3.2→4.5）＋中弾化＋色を紫(index2)に、最初の発射を2秒遅延（`LN_FIRE_DELAY`=120F）、バースト間の撃つ間隔を+0.25秒（`LN_BURST_GAP` 42→57）
+- ミニゲーム: 自機オプションの追尾弾ダメージを 0.5→0.75（通常ショットの0.75）に
+- ミニゲーム: 起動時の専用URL対応（`#minigame`）。開くと `history.replaceState` で `#minigame` を付与、閉じると除去。`#minigame` で直接アクセス／共有するとミニゲームが自動起動（works モーダルの `#work-` と同方式。`checkGameHash` を load/hashchange で実行）
 - ミニゲーム: 稲妻(zCurve)を改修。①L/Rを1パターンに統合（両側から各5体ずつ計10体、`spawnZCurveFormation` 引数なしで両側生成）。プラクティスも「稲妻」1ボタンに。②出現(zone0)と1回目の曲がり(zone1)の角度を緩やかに（横速 1.7→0.8）、2回目の降下(zone2)は従来1.7のまま。③射撃をグミ撃ち似のバーストに変更＝出現(y>0)した瞬間から自機狙い5発バースト×2回（全弾同速 LN_SPEED3.2・グラデーションなし、バーストごとに1発目で方向固定）。`LN_SCHEDULE`/`fireLightningShot` 追加、弾色 index12（黄）。道中パターン 11→10種
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
@@ -126,7 +130,7 @@
 ※ GAMMA+ はモーダル動画欄が「準備中…」になる（screenshots / video 未追加）。RM Engine は screenshots[0]=Logo がモーダル動画欄にも自動表示される
 
 ## 隠しミニゲーム（東方風シューティング）
-- フッターの START ボタンから起動
+- フッターの START ボタンから起動。専用URL `#minigame` でも直接起動・共有可能（開閉で `history.replaceState`、load/hashchange の `checkGameHash` で同期）
 - HTML5 Canvas + JavaScript（640x480、4:3、東方原作スタイルのフィールド+HUD）
 - 構成: js/game.js, js/game-firebase.js, css/game.css, assets/game/（スプライト素材）
 - Firebase Firestore によるオンラインランキング（localStorage ミラー＋フォールバック付き）
@@ -149,7 +153,7 @@
 
 ### 自機
 - 低速移動時の集中ショット、アイテム引き寄せ（本家準拠挙動）
-- 自機両側にオプション（陰陽玉風オーブ）。永夜抄のホーミングアミュレット参照の追尾弾を発射（`fireOptionAmulets`→`pBullets` に `homing:true`、`updatePBullets` で最近接の敵/ボスへ旋回角 `HOMING_TURN`=0.13rad/F 制限で緩やかに追尾、速度 `HOMING_SPEED`=7.5、寿命 `HOMING_LIFE`=100F、発射間隔 `OPTION_INTERVAL`=10F）。追尾弾は半透明（drawPBullets で globalAlpha=0.5）で描画、ダメージは通常ショットの1/4（`dmg:0.25`、衝突は `e.hp -= (b.dmg||1)`）→ 弱すぎたため 1/2（`dmg:0.5`）に戻し。オプションは Power Lv3以上で2対(4基)・未満で1対(2基)。配置は `getOptionOffsets`：通常時は両側展開、低速時は前方に台形配置（前に2＝狭め前方/斜め後ろに2＝広め）。本ショット（`firePlayerShot`）は従来どおり別途発射。オプションの見た目は陰陽玉シート `assets/game/option_orb.png`（240x840, 7行×大小のユーザー素材）の最下段＝白黒(大) を `OPTION_ORB_SRC`(sx22,sy742,75x75) で切り出し16pxで描画、未ロード時は簡易オーブにフォールバック
+- 自機両側にオプション（陰陽玉風オーブ）。永夜抄のホーミングアミュレット参照の追尾弾を発射（`fireOptionAmulets`→`pBullets` に `homing:true`、`updatePBullets` で最近接の敵/ボスへ旋回角 `HOMING_TURN`=0.13rad/F 制限で緩やかに追尾、速度 `HOMING_SPEED`=7.5、寿命 `HOMING_LIFE`=100F、発射間隔 `OPTION_INTERVAL`=10F）。追尾弾は半透明（drawPBullets で globalAlpha=0.5）で描画、ダメージは通常ショットの1/4（`dmg:0.25`、衝突は `e.hp -= (b.dmg||1)`）→ 弱すぎたため 1/2（`dmg:0.5`）→ 最終的に 0.75（`dmg:0.75`）。オプションは Power Lv3以上で2対(4基)・未満で1対(2基)。配置は `getOptionOffsets`：通常時は両側展開、低速時は前方に台形配置（前に2＝狭め前方/斜め後ろに2＝広め）。本ショット（`firePlayerShot`）は従来どおり別途発射。オプションの見た目は陰陽玉シート `assets/game/option_orb.png`（240x840, 7行×大小のユーザー素材）の最下段＝白黒(大) を `OPTION_ORB_SRC`(sx22,sy742,75x75) で切り出し16pxで描画、未ロード時は簡易オーブにフォールバック
 - 当たり判定はPLAYER_HITBOX=2（中央の赤い丸のみ）
 - 残機: 初期3 (`MAX_LIVES`)、上限8 (`LIFE_CAP`)。0で被弾→コンティニュー選択 or ゲームオーバー
 - ボム: 初期2、被弾時に初期値(2)にリセット（多く持ってても失う、0でも2に戻る）
@@ -226,13 +230,13 @@
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
 - topAimed=滝: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら `descendDelay`(165F≒2.75秒)待機後に無射撃でまっすぐ降りて退場。弾は小弾（素材①の丸弾, bulletType:'small', size2.25）。均等配置・真下に各20発連射。敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10、`executeWaveEvent` の topAimed で `7 + diffW`）。弾数・弾速・間隔は難易度非依存。弾速グラデーション＝発射順に弾速を `WF_V0`(3.0, 最初/最遅) → `WF_VMAX`(7.0, 最後/最速) へ線形に上げる（各弾は等速）。後発の速い弾が先発の遅い弾を追い越し、プレイフィールド中央〜やや下(y≈260)あたりで最後の弾が最初の弾を追い越す。発射間隔 `WF_INTERVAL`(2) 固定（間隔は重視せず追い越し位置優先）。色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` が使用）
-- topAimedHeavy=グミ撃ち: 中型9体固定（難易度非依存、HP12）。左右どちらか(`fromLeft`)から順に上から出現して発射タイミングをずらし（`GUMMI_STAGGER`=4＝ぱっぱと素早く出る）、退場(降下)は全員同じ `descendAtAge` で一斉。自機狙い**7発バースト×3回**（計21発）。各バーストは1発目(shot===0)で自機方向を捕捉し以降プレイヤーが動いても同じ向きで撃つ（`burstAim[burst]`）。弾は**中弾**（bulletType:'medium', size5, 色 index1=赤）。バースト内は弾速が遅→速グラデーション（`GM_V0`4.5→`GM_VMAX`10.5、滝とは独立した固定値）。**6発目(index5)が撃たれた時に次バーストが始まる**（`GUMMI_NEXT_BURST_AT`=5×`GUMMI_SHOT_INT`、バースト同士が1発ぶん重なる）。発射スケジュールは `GUMMI_SCHEDULE`（21エントリ t順ソート、最大t=80）を `burstTimer`/`schedIdx` で消化
+- topAimedHeavy=グミ撃ち: 中型9体固定（難易度非依存、HP12）。左右どちらか(`fromLeft`)から順に上から出現して発射タイミングをずらし（`GUMMI_STAGGER`=4＝ぱっぱと素早く出る）、退場(降下)は全員同じ `descendAtAge` で一斉。自機狙い**7発バースト×3回**（計21発）。各バーストは1発目(shot===0)で自機方向を捕捉し以降プレイヤーが動いても同じ向きで撃つ（`burstAim[burst]`）。弾は**大弾**（bulletType:'large', size6, 色 index1=赤）。バースト内は弾速が遅→速グラデーション（`GM_V0`2.5→`GM_VMAX`5.0、滝とは独立した固定値）。**6発目(index5)が撃たれた時に次バーストが始まる**（`GUMMI_NEXT_BURST_AT`=5×`GUMMI_SHOT_INT`、バースト同士が1発ぶん重なる）。発射スケジュールは `GUMMI_SCHEDULE`（21エントリ t順ソート、最大t=80）を `burstTimer`/`schedIdx` で消化
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
 - invertedUL/UR=弧月L/R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
 - sCurveL/R=蛇行L/R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
-- zCurve=稲妻: 左右両方の上からジグザグZ字で降下（L/R統合、各5体ずつ計10体）。出現(zone0)と1回目の曲がり(zone1)は緩やか（横速 0.8）、2回目の降下(zone2)は従来（横速 1.7）。射撃は出現(y>0)した瞬間から、自機狙い**5発バースト×2回**（全弾同速 `LN_SPEED`3.2、グラデーションなし）。各バーストは1発目で自機方向を固定（`burstAim`、グミ撃ち似）。スケジュール `LN_SCHEDULE`（burst1=0,6,12,18,24 / burst2=42,48,54,60,66）を `lnTimer`/`lnSchedIdx` で消化。弾色 index12（黄）。`fireLightningShot` 使用
+- zCurve=稲妻: 左右両方の上からジグザグZ字で降下（L/R統合、各5体ずつ計10体）。出現(zone0)と1回目の曲がり(zone1)は横に大きく動く（横速 2.5）、2回目の降下(zone2)は従来（横速 1.7）。射撃は出現(y>0)後 `LN_FIRE_DELAY`(120F≒2秒)待ってから、自機狙い**5発バースト×2回**（中弾 size5・全弾同速 `LN_SPEED`4.5、グラデーションなし）。各バーストは1発目で自機方向を固定（`burstAim`、グミ撃ち似）。スケジュール `LN_SCHEDULE`（burst1=0,6,12,18,24 / burst2=57,63,69,75,81、`LN_BURST_GAP`=57＝バースト間の撃つ間隔）を `lnTimer`/`lnSchedIdx` で消化。弾色 index2（紫）。`fireLightningShot` 使用
 - 被弾時Powerばらまき: fan(60F、約120°斜めに発射 spd=3〜4) → rise(60F、vx=0/vy=-1.5で垂直浮上) → fall(重力 vy+=0.1, 終端3) の3段階。`spawnDeathPowerItems` が `deathPhase` を付けて `updateItems` 側で分岐
 - 敵撃破アイテムは真上に飛んでから通常の自由落下
 - 回収エリア（画面上部）のアイテム引き寄せ速度=12
