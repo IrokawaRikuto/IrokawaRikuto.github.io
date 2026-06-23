@@ -1104,7 +1104,7 @@
         // 滝: 弾同士の隙間が弾サイズの約0.75ぶんになるよう発射間隔を算出（難易度の弾速に追従）
         var wfBulletPx = 2.25 * 4;          // 滝弾の見た目サイズ（fireSnipeShot の size × 描画倍率4）
         var wfSpacing = wfBulletPx * 1.75;  // 中心間距離 = 直径 + 0.75ぶんの隙間
-        var wfSpeed = 4.4 * diff.speed;     // fireSnipeShot waterfall と同じ弾速
+        var wfSpeed = 2.2 * diff.speed;     // fireSnipeShot waterfall と同じ弾速
         var wfInterval = Math.max(1, Math.round(wfSpacing / wfSpeed));
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
@@ -1118,7 +1118,7 @@
                 size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
                 shotInterval: heavy ? 5 : wfInterval,   // 滝は隙間が弾サイズ0.75ぶんになる間隔
-                shotsToFire: heavy ? 20 : 40,  // グミ撃ち=20 / 滝=40
+                shotsToFire: heavy ? 20 : 20,  // グミ撃ち=20 / 滝=20
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
                 snipeColor: snipeColor,
@@ -1430,7 +1430,7 @@
     //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
-            var s = 4.4 * diff.speed;
+            var s = 2.2 * diff.speed;
             eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
