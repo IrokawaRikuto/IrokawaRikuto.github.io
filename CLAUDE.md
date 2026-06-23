@@ -104,6 +104,7 @@
 - ミニゲーム: 弾の当たり判定を弾種ごとに微調整（楔弾 0.55→0.42＝中央の丸芯のみ・( 部分は判定なし、札弾 0.55→0.45＝グラフィックより気持ち小さめ。星弾/氷弾は 0.55 維持）
 - ミニゲーム: ボスの瞬間移動バグ修正（figure8 移動＝攻撃4/phase3 を直接代入から lerp 追従に変更。フェーズ突入時やプラクティスのループで moveTimer=0 リセット時に中央へワープしていた不具合を解消）
 - ミニゲーム: 滝パターン調整（弾速は元の 2.2×diff.speed、発射数 20、弾サイズ2.25）。弾同士の隙間が弾サイズの約0.75ぶんになるよう `shotInterval` を弾速追従で算出（`shotInterval = round(直径×1.75 / 弾速)`、Easy=9 / Normal=7 / Hard=6 / Lunatic=5）
+- ミニゲーム: 滝を弾速グラデーション化＋難易度設計を変更。①難易度では敵数だけ増加（Easy=7/Normal=8/Hard=9/Lunatic=10）、弾数(20)・弾速・間隔は難易度非依存に。②弾速グラデーション＝各滝弾が初速 `WF_V0`(1.3)→最高速 `WF_VMAX`(2.2) へ毎フレーム `WF_ACCEL`(0.012) 加速（弾に `accelY/vMaxY` を持たせ `updateEBullets` で適用）。発射間隔 `WF_INTERVAL`(7) 固定により加速完了後は全弾等速で間隔 ≈15.4px（弾サイズ0.75ぶん隙間）に収束＝従来と同等。飛翔中のみ上=遅・下=速の勾配が見える
 
 ## 作品一覧（workData）表示順：新しい順（Works並び）
 | ID | タイトル | 年 | タグ | 開発環境 | 動画 | SS | DL |
@@ -219,7 +220,7 @@
 - ウェーブ生成（`buildWaveScript`）は「振り付け」型に改良：同時出現は最大2かつ両方とも軽量パターンのときのみ。重編成（mediumEscort/largeTank/topAimedHeavy）と砲台（dualTurret）は必ず単独スロットで、連続させず直後に長めの間隔を取る。使えるパターンと出現確率は stage（ループ回数）と難易度で重み付け。ループ毎の難易度上昇（stage）は上限5でクランプ（無限上昇による破綻を防止）
 - 1面（stage 0）から mediumEscort / largeTank も基本プールに含まれ、中型・大型が登場
 - formation: 横断隊列（7-11体、`spawnDriftFormation`）
-- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=小型8体均等配置・真下に20発連射（弾速 2.2×diff.speed、弾サイズ2.25）・弾同士の隙間が弾サイズの約0.75ぶんになるよう `shotInterval` を弾速追従で算出（Easy=9 / Normal=7 / Hard=6 / Lunatic=5）・色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
+- topAimed=滝 / topAimedHeavy=グミ撃ち: 上部に降下→停止位置(targetY)はウェーブ共通で横一列に揃う→規定数だけ射撃→撃ち終わったら待機後に無射撃でまっすぐ降りて退場。弾はどちらも小弾（素材①の丸弾, bulletType:'small'）。滝=均等配置・真下に各20発連射。敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10、`executeWaveEvent` の topAimed で `7 + diffW`）。弾数・弾速・間隔は難易度非依存。弾速グラデーション＝各弾が初速 `WF_V0`(1.3) から最高速 `WF_VMAX`(2.2) まで毎フレーム `WF_ACCEL`(0.012) 加速（弾側 `accelY/vMaxY`、`updateEBullets` で適用）。発射間隔 `WF_INTERVAL`(7) 固定なので加速完了後の弾間隔 = `WF_VMAX×WF_INTERVAL` ≈15.4px（弾サイズ0.75ぶんの隙間）に収束。飛翔中は上=遅い・下=速いの速度勾配が見える。色はウェーブごとに1色だけ抽選し全弾同色（`spawnTopAimedWave` で `snipeColor=Math.random*16` を決め `fireSnipeShot` waterfall が使用）、グミ撃ち=中型(hp30/size14)・自機狙い1wayを20発・色index1（赤, aimed, shotInterval=5）。`shotsFired >= shotsToFire` 到達後 `descendDelay`（滝=90F / グミ撃ち=50F）カウントダウンで降下開始
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
