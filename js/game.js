@@ -1101,6 +1101,11 @@
         var stopY = 40 + Math.random() * 20; // ウェーブ共通の停止Y（横一列に揃える）
         // 滝の弾色はウェーブごとに1色だけランダム抽選（全弾同色）。グミ撃ちは固定で index 1（赤）
         var snipeColor = heavy ? 1 : Math.floor(Math.random() * 16);
+        // 滝: 弾同士の隙間が弾サイズの約0.75ぶんになるよう発射間隔を算出（難易度の弾速に追従）
+        var wfBulletPx = 2.25 * 4;          // 滝弾の見た目サイズ（fireSnipeShot の size × 描画倍率4）
+        var wfSpacing = wfBulletPx * 1.75;  // 中心間距離 = 直径 + 0.75ぶんの隙間
+        var wfSpeed = 4.4 * diff.speed;     // fireSnipeShot waterfall と同じ弾速
+        var wfInterval = Math.max(1, Math.round(wfSpacing / wfSpeed));
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
@@ -1112,7 +1117,7 @@
                 fireTimer: 0,
                 size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
-                shotInterval: heavy ? 5 : 2,   // 滝はほぼスキマなし
+                shotInterval: heavy ? 5 : wfInterval,   // 滝は隙間が弾サイズ0.75ぶんになる間隔
                 shotsToFire: heavy ? 20 : 40,  // グミ撃ち=20 / 滝=40
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
