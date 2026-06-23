@@ -202,6 +202,19 @@
         return arr;
     })();
 
+    // 稲妻(zCurve)のバースト射撃：グミ撃ち似だが全弾同速（グラデーションなし）。自機狙い5発バースト×2回。
+    // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。出現(y>0)した瞬間から発射開始。
+    var LN_SPEED = 3.2, LN_SHOT_INT = 6, LN_BURSTS = 2, LN_BURST_SHOTS = 5, LN_BURST_GAP = 42;
+    var LN_SCHEDULE = (function () {
+        var arr = [];
+        for (var b = 0; b < LN_BURSTS; b++) {
+            var bs = b * LN_BURST_GAP;
+            for (var s = 0; s < LN_BURST_SHOTS; s++) arr.push({ t: bs + s * LN_SHOT_INT, burst: b, shot: s });
+        }
+        arr.sort(function (a, c) { return a.t - c.t; });
+        return arr;
+    })();
+
     // ===== State =====
     var state = 'TITLE';
     var animId = null;
@@ -1098,21 +1111,25 @@
         }
     }
 
-    // 片側の上からZ字（ジグザグ）で降下する編隊。side=1 が左から、side=-1 が右から
-    function spawnZCurveFormation(side) {
-        var count = 7 + Math.floor(Math.random() * 3); // 7-9
-        var startX = side > 0 ? 30 : W - 30;
-        for (var i = 0; i < count; i++) {
-            enemies.push({
-                x: startX, y: -20 - i * 20,
-                hp: 2.5, maxHp: 2.5, speed: 1.5, type: 'small',
-                pattern: 'zCurve',
-                entrySide: side, entryX: startX,
-                fireRate: Math.floor(110 * diff.fireRateMul),
-                fireTimer: Math.floor(Math.random() * 40),
-                size: 8, age: 0, baseX: 0, dir: side,
-                bulletPattern: 'down'
-            });
+    // 稲妻: 左右両方の上からZ字（ジグザグ）で降下する編隊（L/R統合）。各5体ずつ計10体。
+    // 出現(zone0)と1回目の曲がり(zone1)は緩やか、2回目の降下(zone2)は従来どおり。
+    // 射撃は出現した瞬間から、自機狙い5発バースト×2回（全弾同速、バーストごとに1発目で方向固定）。
+    function spawnZCurveFormation() {
+        var perSide = 5;
+        var sides = [1, -1];
+        for (var si = 0; si < sides.length; si++) {
+            var side = sides[si];
+            var startX = side > 0 ? 30 : W - 30;
+            for (var i = 0; i < perSide; i++) {
+                enemies.push({
+                    x: startX, y: -20 - i * 24,
+                    hp: 2.5, maxHp: 2.5, speed: 1.5, type: 'small',
+                    pattern: 'zCurve',
+                    entrySide: side, entryX: startX,
+                    fireTimer: 0, size: 8, age: 0, baseX: 0, dir: side,
+                    lnColor: 12, lnTimer: 0, lnSchedIdx: 0, burstAim: []
+                });
+            }
         }
     }
 
@@ -1201,7 +1218,7 @@
         if (diffW === undefined) diffW = 1;
 
         // 軽量パターン（同時出現を許す）。出現するのはプラクティスにある道中パターンのみ
-        var lightPool = ['sCurveL', 'sCurveR', 'zCurveL', 'zCurveR', 'topAimed'];
+        var lightPool = ['sCurveL', 'sCurveR', 'zCurve', 'topAimed'];
         if (stage >= 1 || diffW >= 1) lightPool.push('invertedUL', 'invertedUR');
         // 重量パターン（必ず単独スロット）
         var heavyPool = ['mediumEscort', 'largeTank'];
@@ -1262,11 +1279,8 @@
             case 'sCurveR':
                 spawnSCurveFormation(-1);
                 break;
-            case 'zCurveL':
-                spawnZCurveFormation(1);
-                break;
-            case 'zCurveR':
-                spawnZCurveFormation(-1);
+            case 'zCurve':       // 稲妻（L/R統合・両側から出現）
+                spawnZCurveFormation();
                 break;
         }
     }
@@ -1376,7 +1390,9 @@
             if (e.y > 0) {
                 var zone = Math.floor(Math.min(H - 1, e.y) / (H / 3)); // 0,1,2
                 var horzDir = (zone === 1) ? -e.entrySide : e.entrySide;
-                e.x += horzDir * 1.7;
+                // 出現(zone0)と1回目の曲がり(zone1)は緩やか(0.8)、2回目の降下(zone2)は従来(1.7)
+                var horzSpd = (zone === 2) ? 1.7 : 0.8;
+                e.x += horzDir * horzSpd;
                 if (e.x < 20) e.x = 20;
                 if (e.x > W - 20) e.x = W - 20;
             }
@@ -1475,6 +1491,15 @@
                 // 滝: 停止位置に着いてから規定数だけ発射。撃ち終わったら以降は撃たない
                 e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
             }
+        } else if (e.pattern === 'zCurve') {
+            // 稲妻: 出現(y>0)した瞬間から LN_SCHEDULE に沿ってバースト射撃
+            if (e.y > 0 && e.lnSchedIdx < LN_SCHEDULE.length) {
+                e.lnTimer++;
+                while (e.lnSchedIdx < LN_SCHEDULE.length && LN_SCHEDULE[e.lnSchedIdx].t <= e.lnTimer) {
+                    fireLightningShot(e, LN_SCHEDULE[e.lnSchedIdx]);
+                    e.lnSchedIdx++;
+                }
+            }
         } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
             e.fireTimer = 0; fireEnemyBullet(e);
         }
@@ -1498,6 +1523,15 @@
         var ang = e.burstAim[entry.burst];
         var v = GM_V0 + (GM_VMAX - GM_V0) * entry.grad;
         eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
+    }
+
+    // 稲妻の射撃。グミ撃ち似だが全弾同速(LN_SPEED)。バースト1発目(shot===0)で自機方向を捕捉し、以降同じ向き。
+    function fireLightningShot(e, entry) {
+        if (entry.shot === 0) {
+            e.burstAim[entry.burst] = Math.atan2(player.y - e.y, player.x - e.x);
+        }
+        var ang = e.burstAim[entry.burst];
+        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * LN_SPEED, vy: Math.sin(ang) * LN_SPEED, size: 2.25, grazed: false, color: e.lnColor, bulletType: 'small' });
     }
 
     function fireEnemyBullet(e) {
