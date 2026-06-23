@@ -177,6 +177,11 @@
         lunatic: { bullets: 1.95, fireRateMul: 0.60, speed: 1.35, aimedCount: 7, wayCount: 9, label: 'Lunatic' }
     };
 
+    // 滝(topAimed)の弾速グラデーション設定（難易度非依存・固定）。
+    // 各弾は初速 WF_V0 → 最高速 WF_VMAX まで毎フレーム WF_ACCEL 加速。発射間隔 WF_INTERVAL は固定で、
+    // 加速完了後の弾間隔 = WF_VMAX × WF_INTERVAL（中心間 ≈ 15.4px ＝ 弾サイズ0.75ぶんの隙間）に収束する。
+    var WF_V0 = 1.3, WF_VMAX = 2.2, WF_ACCEL = 0.012, WF_INTERVAL = 7;
+
     // ===== State =====
     var state = 'TITLE';
     var animId = null;
@@ -1101,11 +1106,6 @@
         var stopY = 40 + Math.random() * 20; // ウェーブ共通の停止Y（横一列に揃える）
         // 滝の弾色はウェーブごとに1色だけランダム抽選（全弾同色）。グミ撃ちは固定で index 1（赤）
         var snipeColor = heavy ? 1 : Math.floor(Math.random() * 16);
-        // 滝: 弾同士の隙間が弾サイズの約0.75ぶんになるよう発射間隔を算出（難易度の弾速に追従）
-        var wfBulletPx = 2.25 * 4;          // 滝弾の見た目サイズ（fireSnipeShot の size × 描画倍率4）
-        var wfSpacing = wfBulletPx * 1.75;  // 中心間距離 = 直径 + 0.75ぶんの隙間
-        var wfSpeed = 2.2 * diff.speed;     // fireSnipeShot waterfall と同じ弾速
-        var wfInterval = Math.max(1, Math.round(wfSpacing / wfSpeed));
         for (var i = 0; i < count; i++) {
             var ex = 30 + spacing * i;
             enemies.push({
@@ -1117,7 +1117,7 @@
                 fireTimer: 0,
                 size: heavy ? 14 : 8, age: 0, baseX: ex, dir: 1,
                 snipeMode: heavy ? 'aimed' : 'waterfall',
-                shotInterval: heavy ? 5 : wfInterval,   // 滝は隙間が弾サイズ0.75ぶんになる間隔
+                shotInterval: heavy ? 5 : WF_INTERVAL,   // 滝は固定間隔（弾速グラデーションは弾側で加速）
                 shotsToFire: heavy ? 20 : 20,  // グミ撃ち=20 / 滝=20
                 shotsFired: 0,
                 descendDelay: heavy ? 50 : 90,  // 撃ち終わってから降下するまでの待機（滝は長め）
@@ -1198,7 +1198,8 @@
     function executeWaveEvent(pat) {
         switch (pat) {
             case 'formation': spawnDriftFormation(); break;
-            case 'topAimed': spawnTopAimedWave(8, false); break;
+            // 滝: 敵数だけ難易度で増加（Easy=7 / Normal=8 / Hard=9 / Lunatic=10）。弾数・弾速・間隔は難易度非依存
+            case 'topAimed': spawnTopAimedWave(7 + ({ easy: 0, normal: 1, hard: 2, lunatic: 3 })[diffKey], false); break;
             case 'topAimedHeavy': spawnTopAimedWave(6 + Math.floor(Math.random() * 3), true); break;
             case 'mediumEscort':
                 spawnEnemy('medium');
@@ -1430,8 +1431,9 @@
     //  aimed=グミ撃ち: 自機狙い1way、色は index 1（赤＝左から2つ目）固定
     function fireSnipeShot(e) {
         if (e.snipeMode === 'waterfall') {
-            var s = 2.2 * diff.speed;
-            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: s, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
+            // 弾速グラデーション：遅い初速(WF_V0)から共通の最高速度(WF_VMAX)まで加速。
+            // 発射間隔は WF_INTERVAL 固定なので加速し切った後の間隔 = WF_VMAX × WF_INTERVAL で一定（難易度非依存）
+            eBullets.push({ x: e.x, y: e.y + e.size, vx: 0, vy: WF_V0, accelY: WF_ACCEL, vMaxY: WF_VMAX, size: 2.25, grazed: false, color: e.snipeColor, bulletType: 'small' });
         } else {
             var ang = Math.atan2(player.y - e.y, player.x - e.x);
             var s2 = 2.4 * diff.speed;
@@ -2266,7 +2268,10 @@
     // ===== Enemy Bullets =====
     function updateEBullets() {
         for (var i = eBullets.length - 1; i >= 0; i--) {
-            var b = eBullets[i]; b.x += b.vx; b.y += b.vy;
+            var b = eBullets[i];
+            // 滝弾: 遅い初速から共通の最高速度まで加速（飛翔中は速度グラデーション、加速完了後は等速＝間隔一定）
+            if (b.accelY) { b.vy = Math.min(b.vMaxY, b.vy + b.accelY); }
+            b.x += b.vx; b.y += b.vy;
             if (b.x < -20 || b.x > W + 20 || b.y < -20 || b.y > H + 20) eBullets.splice(i, 1);
         }
     }
