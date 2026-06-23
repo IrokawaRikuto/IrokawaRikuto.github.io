@@ -187,7 +187,7 @@
     // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。バースト内は弾速が遅→速グラデーション
     // （GM_V0→GM_VMAX、滝より速め）。6発目(index5)が撃たれた時に次バーストが始まる＝バースト同士が1発ぶん重なる。
     // 敵は左右どちらかから順に上から出現して発射タイミングをずらし、退場(降下)は全員同じ age で一斉。
-    var GM_V0 = 4.5, GM_VMAX = 10.5;                         // バースト内グラデーション弾速（遅→速。滝とは独立した固定値、中弾）
+    var GM_V0 = 2.5, GM_VMAX = 5.0;                          // バースト内グラデーション弾速（遅→速。滝とは独立した固定値、大弾）
     var GUMMI_SHOT_INT = 5, GUMMI_BURSTS = 3, GUMMI_BURST_SHOTS = 7, GUMMI_STAGGER = 4;
     var GUMMI_NEXT_BURST_AT = (GUMMI_BURST_SHOTS - 2) * GUMMI_SHOT_INT; // 6発目(index5)=5×INT で次バースト開始
     var GUMMI_SCHEDULE = (function () {
@@ -202,9 +202,10 @@
         return arr;
     })();
 
-    // 稲妻(zCurve)のバースト射撃：グミ撃ち似だが全弾同速（グラデーションなし）。自機狙い5発バースト×2回。
-    // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。出現(y>0)した瞬間から発射開始。
-    var LN_SPEED = 3.2, LN_SHOT_INT = 6, LN_BURSTS = 2, LN_BURST_SHOTS = 5, LN_BURST_GAP = 42;
+    // 稲妻(zCurve)のバースト射撃：グミ撃ち似だが全弾同速（グラデーションなし）。中弾・紫(index2)・自機狙い5発バースト×2回。
+    // 各バーストは1発目で自機方向を固定（以降プレイヤーが動いても同じ向き）。出現(y>0)から LN_FIRE_DELAY 後に発射開始。
+    // LN_BURST_GAP=バースト間の撃つ間隔。
+    var LN_SPEED = 4.5, LN_SHOT_INT = 6, LN_BURSTS = 2, LN_BURST_SHOTS = 5, LN_BURST_GAP = 57, LN_FIRE_DELAY = 120;
     var LN_SCHEDULE = (function () {
         var arr = [];
         for (var b = 0; b < LN_BURSTS; b++) {
@@ -481,7 +482,7 @@
                 x: player.x + offs[k].dx, y: player.y + offs[k].dy,
                 vx: 0, vy: -HOMING_SPEED, w: 5, h: 16,
                 homing: true, speed: HOMING_SPEED, turn: HOMING_TURN,
-                life: HOMING_LIFE, rot: 0, dmg: 0.5  // 追尾弾は通常ショットの半分のダメージ
+                life: HOMING_LIFE, rot: 0, dmg: 0.75  // 追尾弾は通常ショットの0.75ダメージ
             });
         }
     }
@@ -1127,7 +1128,7 @@
                     pattern: 'zCurve',
                     entrySide: side, entryX: startX,
                     fireTimer: 0, size: 8, age: 0, baseX: 0, dir: side,
-                    lnColor: 12, lnTimer: 0, lnSchedIdx: 0, burstAim: []
+                    lnColor: 2, lnTimer: 0, lnSchedIdx: 0, burstAim: []  // 中弾8色パレットの紫=index2
                 });
             }
         }
@@ -1390,8 +1391,8 @@
             if (e.y > 0) {
                 var zone = Math.floor(Math.min(H - 1, e.y) / (H / 3)); // 0,1,2
                 var horzDir = (zone === 1) ? -e.entrySide : e.entrySide;
-                // 出現(zone0)と1回目の曲がり(zone1)は緩やか(0.8)、2回目の降下(zone2)は従来(1.7)
-                var horzSpd = (zone === 2) ? 1.7 : 0.8;
+                // 出現(zone0)と1回目の曲がり(zone1)は横に大きく動く(2.5)、2回目の降下(zone2)は従来(1.7)
+                var horzSpd = (zone === 2) ? 1.7 : 2.5;
                 e.x += horzDir * horzSpd;
                 if (e.x < 20) e.x = 20;
                 if (e.x > W - 20) e.x = W - 20;
@@ -1492,10 +1493,11 @@
                 e.fireTimer = 0; fireSnipeShot(e); e.shotsFired++;
             }
         } else if (e.pattern === 'zCurve') {
-            // 稲妻: 出現(y>0)した瞬間から LN_SCHEDULE に沿ってバースト射撃
+            // 稲妻: 出現(y>0)後 LN_FIRE_DELAY フレーム待ってから LN_SCHEDULE に沿ってバースト射撃
             if (e.y > 0 && e.lnSchedIdx < LN_SCHEDULE.length) {
                 e.lnTimer++;
-                while (e.lnSchedIdx < LN_SCHEDULE.length && LN_SCHEDULE[e.lnSchedIdx].t <= e.lnTimer) {
+                var st = e.lnTimer - LN_FIRE_DELAY;  // 発射開始からの経過（最初の発射を2秒遅らせる）
+                while (e.lnSchedIdx < LN_SCHEDULE.length && LN_SCHEDULE[e.lnSchedIdx].t <= st) {
                     fireLightningShot(e, LN_SCHEDULE[e.lnSchedIdx]);
                     e.lnSchedIdx++;
                 }
@@ -1522,7 +1524,7 @@
         }
         var ang = e.burstAim[entry.burst];
         var v = GM_V0 + (GM_VMAX - GM_V0) * entry.grad;
-        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 5, grazed: false, color: e.snipeColor, bulletType: 'medium' });
+        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, size: 6, grazed: false, color: e.snipeColor, bulletType: 'large' });
     }
 
     // 稲妻の射撃。グミ撃ち似だが全弾同速(LN_SPEED)。バースト1発目(shot===0)で自機方向を捕捉し、以降同じ向き。
@@ -1531,7 +1533,7 @@
             e.burstAim[entry.burst] = Math.atan2(player.y - e.y, player.x - e.x);
         }
         var ang = e.burstAim[entry.burst];
-        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * LN_SPEED, vy: Math.sin(ang) * LN_SPEED, size: 2.25, grazed: false, color: e.lnColor, bulletType: 'small' });
+        eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * LN_SPEED, vy: Math.sin(ang) * LN_SPEED, size: 5, grazed: false, color: e.lnColor, bulletType: 'medium' });
     }
 
     function fireEnemyBullet(e) {
@@ -3216,6 +3218,8 @@
         modal.querySelectorAll('[data-ja][data-en]').forEach(function (el) {
             el.textContent = el.getAttribute('data-' + currentLang);
         });
+        // 専用URL（面接官への共有・直接起動用）。#minigame を付与
+        if (location.hash !== '#minigame') history.replaceState(null, '', '#minigame');
         goToTitle();
     }
 
@@ -3226,7 +3230,19 @@
         if (animId) { cancelAnimationFrame(animId); animId = null; }
         if (titleAnimId) { cancelAnimationFrame(titleAnimId); titleAnimId = null; }
         keys = {}; resetMobileKeys();
+        if (location.hash === '#minigame') history.replaceState(null, '', location.pathname + location.search);
     }
+
+    // URLハッシュ #minigame でミニゲームを開く（works モーダルの #work- と同方式）
+    function checkGameHash() {
+        if (location.hash === '#minigame') {
+            if (!modal.classList.contains('active')) openGameModal();
+        } else if (modal.classList.contains('active')) {
+            closeGameModal();
+        }
+    }
+    window.addEventListener('load', checkGameHash);
+    window.addEventListener('hashchange', checkGameHash);
 
     // ===== Input =====
     document.addEventListener('keydown', function (e) {
