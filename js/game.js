@@ -867,7 +867,7 @@
                     var hitR = (target.kind === 'bullet') ? (orb.radius + (target.ref.size || 4)) : 26;
                     if (target.kind !== 'bullet' && dist < hitR) {
                         if (target.kind === 'enemy') target.ref.hp -= BOMB_ORB_EXPLODE_DAMAGE;
-                        else if (target.kind === 'boss') target.ref.hp -= BOMB_ORB_BOSS_DAMAGE;
+                        else if (target.kind === 'boss') target.ref.hp -= BOMB_ORB_BOSS_DAMAGE * (boss && boss.spellActive ? 0.5 : 1);
                         orb.hitRefs.push(target.ref);
                         spawnExplosion(orb.x, orb.y, '#ffffff', 4);
                         // ヒット後はその場で減速し、次フレームで新ターゲットを探す
@@ -1632,8 +1632,8 @@
         if (practiceMode) return; // プラクティス中はアイテムを落とさない
         if (e.type === 'small') {
             var r = Math.random();
-            if (r < 0.35) spawnItems(e.x, e.y, 'powerS', 1);
-            else if (r < 0.45) { spawnItems(e.x, e.y, 'powerS', 1); spawnItems(e.x, e.y, 'scoreS', 1); }
+            if (r < 0.45) spawnItems(e.x, e.y, 'powerS', 1);
+            else if (r < 0.55) { spawnItems(e.x, e.y, 'powerS', 1); spawnItems(e.x, e.y, 'scoreS', 1); }
             else spawnItems(e.x, e.y, 'scoreS', 1);
         } else if (e.type === 'medium') {
             spawnItems(e.x, e.y, 'score', 1);
@@ -2302,7 +2302,7 @@
             if (boss && !boss.entering && i < pBullets.length) {
                 var b2 = pBullets[i];
                 if (b2 && Math.abs(b2.x - boss.x) < boss.size + 4 && Math.abs(b2.y - boss.y) < boss.size + 4) {
-                    boss.hp -= (b2.dmg || 1); pBullets.splice(i, 1); spawnParticle(b2.x, b2.y, '#ffffff', 1);
+                    boss.hp -= (b2.dmg || 1) * (boss.spellActive ? 0.5 : 1); pBullets.splice(i, 1); spawnParticle(b2.x, b2.y, '#ffffff', 1);
                 }
             }
         }
