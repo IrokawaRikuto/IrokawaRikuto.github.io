@@ -223,6 +223,10 @@
         return arr;
     })();
 
+    // 横断(crossing)設定：小型が左右から各15体、上部を高さ・出現タイミングをランダムに、まっすぐ平行に高速横断。
+    // 出現後 CROSS_FIRE_DELAY フレームで一度だけ下向き±60°の扇（wayCount+2＝5/7/9/11way）を速めの小弾で放つ。
+    var CROSS_PER_SIDE = 15, CROSS_SPEED = 4.0, CROSS_FIRE_DELAY = 15, CROSS_BULLET_SPEED = 3.3;
+
     // ===== State =====
     var state = 'TITLE';
     var animId = null;
@@ -1141,8 +1145,27 @@
         }
     }
 
-    // 画面上部に降下→停止し、規定数だけ射撃してから無射撃でまっすぐ降りていく狙撃編隊。
-    //  heavy=false（降下狙撃「滝」）: 真下に20発をスキマなく連射
+    // 横断: 小型が左右から各15体、上部を高さ・出現タイミングをランダムに、まっすぐ平行に高速横断する。
+    // 出現後 CROSS_FIRE_DELAY で一度だけ下向き扇（5/7/9/11way）を放つ。
+    function spawnCrossingFormation() {
+        var sides = [1, -1];
+        for (var si = 0; si < sides.length; si++) {
+            var dir = sides[si];
+            var startX = dir > 0 ? -20 : W + 20;
+            for (var i = 0; i < CROSS_PER_SIDE; i++) {
+                enemies.push({
+                    x: startX, y: 30 + Math.random() * 110,   // 高さを一定範囲(30〜140)でランダム
+                    hp: 2.5, maxHp: 2.5, speed: CROSS_SPEED, type: 'small',
+                    pattern: 'crossing',
+                    fireTimer: 0, size: 8, age: 0, dir: dir,
+                    appearDelay: Math.floor(Math.random() * 45),  // 出現タイミングを一定範囲(0〜0.75秒)でランダム
+                    crossFired: false
+                });
+            }
+        }
+    }
+
+
     //  heavy=true （重降下狙撃）    : 自機狙い1wayを40発撃ち続ける
     // 停止位置(targetY)はウェーブ全体で共通＝横一列に揃える
     function spawnTopAimedWave(count, heavy) {
@@ -1229,7 +1252,7 @@
         var lightPool = ['sCurveL', 'sCurveR', 'zCurve', 'topAimed'];
         if (stage >= 1 || diffW >= 1) lightPool.push('invertedUL', 'invertedUR');
         // 重量パターン（必ず単独スロット）
-        var heavyPool = ['mediumEscort', 'largeTank'];
+        var heavyPool = ['mediumEscort', 'largeTank', 'crossing'];
         if (stage >= 2 || diffW >= 2) heavyPool.push('topAimedHeavy');
         if (stage >= 2 || diffW >= 3) heavyPool.push('dualTurret');
 
@@ -1289,6 +1312,9 @@
                 break;
             case 'zCurve':       // 稲妻（L/R統合・両側から出現）
                 spawnZCurveFormation();
+                break;
+            case 'crossing':     // 横断（小型が左右から各15体、高速平行横断）
+                spawnCrossingFormation();
                 break;
         }
     }
@@ -1405,6 +1431,10 @@
                 if (e.x > W - 20) e.x = W - 20;
             }
         }
+        else if (e.pattern === 'crossing') {
+            // 出現タイミングまで画面外で待機 → まっすぐ平行に高速横断
+            if (e.age >= e.appearDelay) e.x += e.dir * e.speed;
+        }
         else if (e.pattern === 'spawnerHover') {
             if (e.y < e.targetSy) e.y += e.speed;
             else e.x += Math.sin(e.age * 0.03) * 0.4;
@@ -1509,6 +1539,11 @@
                     e.lnSchedIdx++;
                 }
             }
+        } else if (e.pattern === 'crossing') {
+            // 横断: 出現後 CROSS_FIRE_DELAY で一度だけ扇を放つ
+            if (!e.crossFired && e.age >= e.appearDelay + CROSS_FIRE_DELAY) {
+                e.crossFired = true; fireCrossingFan(e);
+            }
         } else if (e.fireTimer >= e.fireRate && e.y > 10 && e.y < H * 0.65) {
             e.fireTimer = 0; fireEnemyBullet(e);
         }
@@ -1541,6 +1576,16 @@
         }
         var ang = e.burstAim[entry.burst];
         eBullets.push({ x: e.x, y: e.y, vx: Math.cos(ang) * LN_SPEED, vy: Math.sin(ang) * LN_SPEED, size: 5, grazed: false, color: e.lnColor, bulletType: 'medium' });
+    }
+
+    // 横断の射撃。下向き±60°の扇を一度だけ。弾数は wayCount+2（5/7/9/11）、速めの小弾。
+    function fireCrossingFan(e) {
+        var base = Math.PI / 2, half = Math.PI / 3;
+        var n = diff.wayCount + 2;
+        for (var i = 0; i < n; i++) {
+            var a = base - half + (half * 2 / (n - 1)) * i;
+            eBullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * CROSS_BULLET_SPEED, vy: Math.sin(a) * CROSS_BULLET_SPEED, size: 3, grazed: false, color: 2, bulletType: 'small' });
+        }
     }
 
     function fireEnemyBullet(e) {
