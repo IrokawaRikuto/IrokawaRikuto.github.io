@@ -114,6 +114,7 @@
 - ミニゲーム: 自機オプションの追尾弾ダメージを 0.5→0.75（通常ショットの0.75）に
 - ミニゲーム: 決定音の二重再生を修正（`playSE` の 'decide' のみ70msデバウンス。キー処理 `handleMenuKey` で decide 再生→そのキーが起こすボタン click ハンドラでも decide 再生、で二重に鳴っていた。選択音はデバウンスせず重ね再生維持）
 - ミニゲーム: 稲妻の最初の発射遅延を 2秒→0.5秒（`LN_FIRE_DELAY` 120→30F）
+- ミニゲーム: 道中パターン「横断」追加（crossing）。小型が左右から各15体（計30）、上部を高さ・出現タイミングをランダムに、まっすぐ平行に高速横断（`CROSS_SPEED`4.0）。出現後0.25秒（`CROSS_FIRE_DELAY`15F）で一度だけ下向き±60°の扇（`diff.wayCount+2`＝5/7/9/11way、速め `CROSS_BULLET_SPEED`3.3 の小弾）を放つ。heavyPool（単独スロット）＋プラクティスに「横断」ボタン追加。道中パターン 10→11種
 - ミニゲーム: 起動時の専用URL対応（`#minigame`）。開くと `history.replaceState` で `#minigame` を付与、閉じると除去。`#minigame` で直接アクセス／共有するとミニゲームが自動起動（works モーダルの `#work-` と同方式。`checkGameHash` を load/hashchange で実行）
 - ミニゲーム: 稲妻(zCurve)を改修。①L/Rを1パターンに統合（両側から各5体ずつ計10体、`spawnZCurveFormation` 引数なしで両側生成）。プラクティスも「稲妻」1ボタンに。②出現(zone0)と1回目の曲がり(zone1)の角度を緩やかに（横速 1.7→0.8）、2回目の降下(zone2)は従来1.7のまま。③射撃をグミ撃ち似のバーストに変更＝出現(y>0)した瞬間から自機狙い5発バースト×2回（全弾同速 LN_SPEED3.2・グラデーションなし、バーストごとに1発目で方向固定）。`LN_SCHEDULE`/`fireLightningShot` 追加、弾色 index12（黄）。道中パターン 11→10種
 
@@ -236,6 +237,7 @@
 - mediumEscort=護衛編隊: 中型1+小型5の護衛編成
 - largeTank=重戦車隊: 大型1+小型3
 - dualTurret=双砲台: 画面上部左右に大型2体固定、自機狙い全方位(中弾)+回転全方位(大弾、左右逆回転)
+- crossing=横断: 小型が左右から各15体（計30）、上部を高さ(y30〜140)・出現タイミング(0〜0.75秒)をランダムに、まっすぐ平行に高速横断（`CROSS_SPEED`4.0）。出現後 `CROSS_FIRE_DELAY`(15F≒0.25秒)で一度だけ下向き±60°の扇（`diff.wayCount+2`＝5/7/9/11way、速め `CROSS_BULLET_SPEED`3.3 の小弾・紫index2）を放つ。`spawnCrossingFormation`/`fireCrossingFan`、heavyPool（単独スロット）
 - invertedUL/UR=弧月L/R: 片側の下から∩を描いて反対側へ抜ける（6-7体、小弾、L=左→右 / R=右→左）
 - sCurveL/R=蛇行L/R: 片側の上から正弦波S字で降下（7-9体、自機狙い、L=左から / R=右から）
 - zCurve=稲妻: 左右両方の上からジグザグZ字で降下（L/R統合、各5体ずつ計10体）。出現(zone0)と1回目の曲がり(zone1)は横に大きく動く（横速 2.5）、2回目の降下(zone2)は従来（横速 1.7）。射撃は出現(y>0)後 `LN_FIRE_DELAY`(30F≒0.5秒)待ってから、自機狙い**5発バースト×2回**（中弾 size5・全弾同速 `LN_SPEED`4.5、グラデーションなし）。各バーストは1発目で自機方向を固定（`burstAim`、グミ撃ち似）。スケジュール `LN_SCHEDULE`（burst1=0,6,12,18,24 / burst2=57,63,69,75,81、`LN_BURST_GAP`=57＝バースト間の撃つ間隔）を `lnTimer`/`lnSchedIdx` で消化。弾色 index2（紫）。`fireLightningShot` 使用
@@ -272,7 +274,7 @@
 ### プラクティスモード
 - タイトル → 「プラクティス」ボタンから入る
 - 上部に難易度切替（Easy/Normal/Hard/Lunatic、デフォルトは現在の `diffKey` か Normal）
-- 道中パターン10種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=滝/topAimedHeavy=グミ撃ち/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurve=稲妻（L/R統合））
+- 道中パターン11種（プラクティスは隊列名で表示。`executeWaveEvent` のキー: topAimed=滝/topAimedHeavy=グミ撃ち/mediumEscort=護衛編隊/largeTank=重戦車隊/dualTurret=双砲台/invertedUL=弧月L/invertedUR=弧月R/sCurveL=蛇行L/sCurveR=蛇行R/zCurve=稲妻（L/R統合）/crossing=横断）
 - ボス4種（A=星弾/B=楔弾/C=氷弾/D=札弾）× 6攻撃（攻撃1〜4=phase0〜3、大技1〜2=spell0〜1）
 - 仕様: ライフ1・ボム0、被弾即終了、敵ドロップ無し、スポナー召喚無効、ボススペル/フェーズは固定（HPでの自動遷移なし、スペルは時間で自動ループ）
 - 初期Power: 道中=MIN_POWER（Lv1）／ボス=MAX_POWER（Lv4）
