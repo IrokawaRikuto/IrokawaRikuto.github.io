@@ -239,6 +239,7 @@ const workData = {
         video: { type: 'placeholder', src: '' },
         screenshots: [],
         download: '',
+        repo: 'https://github.com/IrokawaRikuto/Re-GAMMA',
     },
     'sd-mcp': {
         title: { ja: 'Stable Diffusion MCP', en: 'Stable Diffusion MCP' },
@@ -406,6 +407,17 @@ function openModal(workId) {
         dlLink.textContent = 'Download';
     } else {
         dlSection.classList.remove('has-link');
+    }
+
+    // ソースコード：GitHubリポジトリURL
+    const repoSection = modal.querySelector('.work-detail-repo-section');
+    const repoLink = modal.querySelector('.work-detail-repo');
+    if (data.repo) {
+        repoSection.classList.add('has-link');
+        repoLink.href = data.repo;
+        repoLink.textContent = 'GitHub';
+    } else {
+        repoSection.classList.remove('has-link');
     }
 
     // セクションタイトルの言語切替
