@@ -888,14 +888,17 @@ section {
     display: none;
 }
 
-.work-detail-download-section {
+.work-detail-download-section,
+.work-detail-repo-section {
     display: none;
 }
-.work-detail-download-section.has-link {
+.work-detail-download-section.has-link,
+.work-detail-repo-section.has-link {
     display: block;
 }
 
-.work-detail-download {
+.work-detail-download,
+.work-detail-repo {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -907,7 +910,8 @@ section {
     letter-spacing: 0.03em;
     transition: background 0.2s, color 0.2s;
 }
-.work-detail-download:hover {
+.work-detail-download:hover,
+.work-detail-repo:hover {
     background: var(--accent);
     color: #fff;
     opacity: 1;
