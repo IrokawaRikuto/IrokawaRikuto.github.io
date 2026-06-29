@@ -256,6 +256,20 @@ const workData = {
         download: '',
         repo: 'https://github.com/IrokawaRikuto/Re-GAMMA',
     },
+    'discord-bot': {
+        title: { ja: 'Discord BOT', en: 'Discord BOT' },
+        year: '2026',
+        tags: ['Discord', { ja: '個人制作', en: 'Personal' }, { ja: '制作中', en: 'In Development' }],
+        award: null,
+        env: '',
+        desc: {
+            ja: '個人で開発・運用している Discord BOT。実装した機能の技術的な紹介は後日追記予定。',
+            en: 'A Discord bot I developed and operate personally. A technical write-up of the features I implemented will be added later.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+    },
     'sd-mcp': {
         title: { ja: 'Stable Diffusion MCP', en: 'Stable Diffusion MCP' },
         year: '2026',

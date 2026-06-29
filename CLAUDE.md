@@ -92,6 +92,7 @@
 - Sand Tetris: 配布形式を `SandTetris.exe` → `SandTetris.zip` に変更（`games/SandTetris.zip` 約20KB）。カード desc に「同色の砂がフィールド左壁から右壁まで連結したときにライン消去となる独自の消去ルールを持つ」の一文を追記（data-ja 属性と表示テキストの不整合を解消）
 - RE:GAMMA を完全削除（GAMMA+ に統合済み）: `workData.regamma` 削除、HTML側のコメントアウト版 RE:GAMMA カード削除
 - Works 並び順を更新: ぺったんメイカー / RM Engine / GAMMA+ / Sand Tetris / ConsoleSTG / GAMMA / CIRCLESTRIKER / 東方春三校（年表tooltipも同順）
+- Works に Discord BOT（2026, Discord/個人制作/制作中）を枠だけ追加（SD-MCP の次、年表2026 tooltip にも追加）。本人のネット名義で制作したもののため、実名ポートフォリオでは個人特定につながる情報（BOT名・コミュニティ名・名義）は載せず「作った機能の技術紹介」程度に留める方針。技術タグ・機能説明・env は後日追記（現状プレースホルダ desc）。private リポジトリ `RMDiscordBOT` だが privacy 配慮もありリンクしない
 - Works に ±9（プラマイナイン）（2026, 戦略カードゲーム, Unity/C#/個人制作/制作中）を追加。ぺったんメイカーの次に配置、年表2026 tooltip にも追加。プロトは Unity/C#、本制作は C++ 予定（env に明記）。GitHub `https://github.com/IrokawaRikuto/puramai9` をリンク（公開リポジトリ）。画像は今後追加。自主制作のため `個人制作`（チーム化したら差し替え予定）
 - モーダルに「ソースコード（GitHub）」リンク欄を追加。`workData[id].repo` にURLを入れるとモーダルに `GitHub` ボタンが出る（`.work-detail-repo-section`、ダウンロード欄と同じ `.has-link` 表示制御・同スタイル）。GAMMA+ に `https://github.com/IrokawaRikuto/Re-GAMMA` を設定（Re-GAMMA=GAMMA+の公開リポジトリ）。private リポジトリ（TestEngine/RMDiscordBOT）は他者が閲覧不可のためリンクしない方針
 - Works に Stable Diffusion MCP（2026, MCP/Python/Stable Diffusion/個人制作, 説明文のみ・画像/リンクなし）を追加。ぺったんメイカーの次（2番目）に配置。年表2026 tooltip にも同順で追加。内容＝Claude からローカルの Forge WebUI(REST API) を操作して画像生成する自作 Python MCP サーバー。5ツール(sd_generate/sd_status/sd_list_checkpoints/sd_set_checkpoint/sd_list_samplers)、アニメSDXL既定値(1024²/Euler a/steps28/Clip skip2)、オンデマンド自動起動・終了、Claude Desktop 用 .mcpb 拡張パッケージ化。「AIを使う／拡張できる」アピール。生成サンプル画像は同梱されているが本人選択により画像は未掲載（後日追加候補）
@@ -127,6 +128,7 @@
 | pettan-maker | ぺったんメイカー | 2026 | Unity, C#, 課題制作：チーム, 制作中 | Unity / VS | ✅ PV | ✅ 6枚 | - |
 | puramai9 | ±9（プラマイナイン） | 2026 | Unity, C#, 個人制作, 制作中 | Unity/C#(proto)→C++(予定) | - | - | GitHub |
 | sd-mcp | Stable Diffusion MCP | 2026 | MCP, Python, Stable Diffusion, 個人制作 | Python / MCP / Stable Diffusion (Forge WebUI) | - | - | - |
+| discord-bot | Discord BOT | 2026 | Discord, 個人制作, 制作中 | （TBD） | - | - | - |
 | rm-engine | RM Engine | 2026 | C++, DirectX, 個人制作, 制作中 | VS / DX11 / Claude Code Pro | - | ✅ 6枚 | - |
 | gamma-plus | GAMMA+ | 2026 | C++, DirectX, リメイク, 個人制作 | VS / DX11 / Claude Code Pro | - | - | - |
 | sand-tetris | Sand Tetris | 2026 | C++, 個人制作 | VS / Claude Code Pro | - | ✅ 2枚 | ✅ SandTetris.zip |
