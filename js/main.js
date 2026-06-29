@@ -240,6 +240,20 @@ const workData = {
         screenshots: [],
         download: '',
     },
+    'sd-mcp': {
+        title: { ja: 'Stable Diffusion MCP', en: 'Stable Diffusion MCP' },
+        year: '2026',
+        tags: ['MCP', 'Python', 'Stable Diffusion', { ja: '個人制作', en: 'Personal' }],
+        award: null,
+        env: 'Python / MCP / Stable Diffusion (Forge WebUI)',
+        desc: {
+            ja: '生成AIの Claude から、ローカルで動く画像生成AI『Stable Diffusion』（Forge WebUI）を操作して画像を生成できるようにする、自作の MCP（Model Context Protocol）サーバー。Python製で、Forge の REST API を介して動作する。\n\n「博麗霊夢を神社で描いて」のように Claude へ自然言語で指示するだけで、Claude がプロンプト（Danbooruタグ等）へ変換し、画像生成から保存までを自動で実行する。提供ツールは画像生成(txt2img)・接続確認・モデル一覧・モデル切替・サンプラー一覧の5種で、アニメ系SDXL向けの推奨設定（1024×1024 / Euler a / steps28 / Clip skip2）を既定値に組み込んでいる。VRAM 8GB 環境を考慮し、生成を頼まれた時だけ Forge を自動起動し、一定時間使われなければ自動終了する「オンデマンド方式」も実装。Claude Desktop 向けにはワンクリックで導入できる拡張（.mcpb）としてもパッケージ化した。\n\n生成AIを単に「使う」だけでなく、AIエージェントに独自ツールを与えて機能を拡張する MCP を自ら実装することで、AIを目的に合わせて「拡張する・制作ワークフローへ組み込む」側に回れることを示した一作。',
+            en: 'A custom MCP (Model Context Protocol) server that lets the generative AI Claude operate a locally running image generator, "Stable Diffusion" (Forge WebUI), to create images. Written in Python, it works through Forge\'s REST API.\n\nWith a simple natural-language instruction to Claude — for example, "draw Reimu Hakurei at a shrine" — Claude converts the request into a prompt (Danbooru tags, etc.) and automatically handles everything from generation to saving. It exposes five tools: image generation (txt2img), connection check, model listing, model switching, and sampler listing, with recommended anime-SDXL defaults built in (1024×1024 / Euler a / steps 28 / Clip skip 2). Mindful of an 8GB VRAM environment, it also implements an "on-demand" approach: Forge is auto-launched only when a generation is requested, and auto-terminates after a period of inactivity. For Claude Desktop, it is also packaged as a one-click extension (.mcpb).\n\nBeyond merely using generative AI, by implementing MCP — the mechanism for extending an AI agent with custom tools — myself, this project shows the ability to extend AI for a purpose and fold it into a production workflow.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+    },
     'rm-engine': {
         title: { ja: 'RM Engine', en: 'RM Engine' },
         year: '2026',
