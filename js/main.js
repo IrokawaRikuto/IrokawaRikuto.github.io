@@ -184,6 +184,21 @@ const modalBackdrop = modal.querySelector('.modal-backdrop');
 
 // 作品ごとのデータ
 const workData = {
+    'puramai9': {
+        title: { ja: '±9（プラマイナイン）', en: '±9 (Plus-Minus Nine)' },
+        year: '2026',
+        tags: ['Unity', 'C#', { ja: '個人制作', en: 'Personal' }, { ja: '制作中', en: 'In Development' }],
+        award: null,
+        env: 'Unity / C#（プロトタイプ）→ C++（本制作で予定）',
+        desc: {
+            ja: '現在開発中のオリジナル戦略カードゲーム。まずプロトタイプを Unity / C# で制作して遊びの手応えを確かめ、本制作ではより自由度の高い実装を目指して C++ での作り直しを予定している。ルールやカードデザインを練りながら開発を進めている最中の一作で、画面写真などは今後追加予定。',
+            en: 'An original strategy card game currently in development. I first built a prototype in Unity / C# to validate the gameplay, and the full version is planned to be rebuilt in C++ for greater flexibility. The game is actively being designed — refining its rules and card design — with screenshots and more to be added going forward.'
+        },
+        video: { type: 'placeholder', src: '' },
+        screenshots: [],
+        download: '',
+        repo: 'https://github.com/IrokawaRikuto/puramai9',
+    },
     'touhou': {
         title: { ja: '東方春三校', en: 'Touhou Harusankou' },
         year: '2024',
